@@ -1,0 +1,565 @@
+:root {
+    --bs-bg-color: #F3F5F4 !important;
+    --bs-text-color: #000 !important;
+    --bs-theme-red: #EC4E54 !important;
+    --bs-text-medium: "AirbnbMedium" !important;
+    --bs-text-light: "Airbnb" !important;
+    --bs-text-bold: "AirbnbBold" !important;
+    /* --bs-border-color: rgba(135, 140, 189, 0.3) !important; */
+    --bs-border-color: #DEE7E6 !important;
+    --bs-inactive-grey: #838383 !important;
+    --bs-orange: #FFB547;
+    --bs-green: #10AF0C;
+    --bs-white: #fff !important;
+    --bs-inp-border: #858585 !important;
+    --new-font: 'calibri' !important;
+}
+
+/* --upload-content-cards-- */
+
+/* --content-Management-- */
+
+.common_table tbody .remarks_wrap.remarks_wrap_edit {
+    position: relative;
+}
+
+.common_table tbody .remarks_wrap.remarks_wrap_edit img.icn_edit {
+    height: 18px;
+    width: 15px;
+    object-fit: contain;
+    position: absolute;
+    /* right: 14px;
+    bottom: 40px; */
+    right: 25px;
+    bottom: 20px;
+}
+
+.common_table tbody .remarks_wrap.remarks_wrap_edit textarea::placeholder {
+    color: #000;
+}
+
+.Cardfeed_container {
+    flex: 0 0 285px;
+    /* width: 285px; */
+    width: 100%;
+    height: auto;
+    background-color: var(--bs-white);
+    border-radius: 15px;
+}
+
+.cardfeed_wrapper .feedImgTag {
+    position: relative;
+}
+
+.cardfeed_wrapper .feedImgTag .feedMedia {
+    max-width: 100%;
+    border-radius: 15px;
+    height: 200px;
+    width: 100%;
+    object-fit: cover;
+}
+
+.cardfeed_wrapper .feedMedia_icons {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 250px;
+    max-width: 250px;
+    min-width: 250px;
+    z-index: 9999;
+}
+
+.feedMedia_icons .feedIcons {
+    background: rgba(63, 78, 76, 0.696484);
+    padding: 6px;
+    border-radius: 12px;
+    background: rgba(63, 78, 76, 0.696484);
+    padding: 6px;
+    border-radius: 12px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.feedcontent_wrap {
+    padding: 10px 15px;
+    position: relative;
+}
+
+.feedcontent_wrap .contentAcuthor_type {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.contentAcuthor_type .author_type,
+.content_type {
+    display: flex;
+    align-items: center;
+}
+
+.author_type .authName {
+    display: inline-block;
+    margin-left: 6px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.content_type img {
+    margin-right: 6px;
+    height: 20px;
+}
+
+.feed_date_time small {
+    align-items: center;
+    color: var(--bs-inactive-grey);
+    display: flex;
+    font-family: "AirbnbMedium";
+    font-size: 12px;
+    margin-bottom: 5px;
+    letter-spacing: 0;
+}
+
+.feed_date_time svg {
+    color: var(--bs-border-color);
+    margin-right: 5px;
+}
+
+.feedcontent_wrap::after {
+    content: "";
+    width: 100%;
+    height: 1px;
+    background: #DEE7E6;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+}
+
+.CardfeedFooter {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    justify-content: space-between;
+}
+
+.CardfeedFooter .viewNow {
+    font-size: 13px;
+    line-height: 16px;
+    color: var(--bs-theme-red);
+    font-family: var(--bs-text-medium);
+}
+
+.CardfeedFooter .cardbutton {
+    display: inline-flex;
+    background-color: var(--bs-theme-red);
+    padding: 5px 18px;
+    justify-content: center;
+    align-items: center;
+    font-family: var(--bs-text-medium);
+    font-style: normal;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 32px;
+    text-align: center;
+    color: #FFFFFF;
+    border-radius: 13px;
+}
+
+.css-j3id07 {
+    display: none;
+}
+
+/* --invoicing and payment-- */
+.cardCustomHead.cardHeader {
+    padding: 10px 10px 0px 10px;
+}
+
+.cardCustomHead .select_wrap {
+    width: 90px;
+    margin-left: auto;
+}
+
+.cardCustomHead .select_wrap select {
+    border-radius: 15px;
+}
+
+.cardcontent .card-grwth p:nth-child(2) {
+    margin-top: 4px;
+    font-family: var(--bs-text-light);
+}
+
+/* --Invoicing Table --  */
+
+.Invoice_Number {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.common_table .check_wrapper {
+    width: 130px;
+    max-width: 130px;
+    min-width: 130px;
+}
+
+/* --Invoice--Transactions-- */
+
+.Top_Invoice_Logo .sidebarLogo {
+    width: 112px;
+    height: auto;
+    min-width: 112px;
+    max-width: 112px;
+}
+
+.Invoice_Gen_Date .timedate_wrape {
+    display: flex;
+    justify-content: end;
+}
+
+.Invoice_Gen_Date .timedate_wrape .timedate {
+    display: flex;
+    gap: 5px;
+    margin: 0px;
+    padding: 0px;
+    align-items: center;
+}
+
+.Top_Invoice_header .timedate_wrape p.timedate img {
+    height: 15px;
+    width: auto;
+}
+
+.Top_Invoice_header .timedate_wrape p.timedate {
+    font-size: 13px;
+}
+
+.Invoice_Gen_Date .timedate_wrape .timedate img.icn_time {
+    width: 18px;
+    height: 100%;
+    border-radius: 0;
+}
+
+.invoice_wrapper.css-126lb7s {
+    background: var(--bs-bg-color);
+}
+
+.Top_Invoice_header {
+    position: relative;
+}
+
+.Top_Invoice_header::after {
+    content: "";
+    width: 100%;
+    height: 1px;
+    background: #DEE7E6;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+}
+
+.invoice_details img.icn {
+    margin-top: -4px;
+}
+
+.invoice_wrapper {
+    background: var(--bs-bg-color);
+    border-radius: 20px;
+}
+
+.invoice_wrapper .text_title {
+    font-family: var(--bs-text-medium);
+    font-size: 13px;
+    font-weight: unset;
+    letter-spacing: 0px;
+}
+
+.invoice_wrapper .text_title_com {
+    font-family: var(--bs-text-medium);
+    font-size: 15px;
+    margin: 3px 0px;
+    font-weight: unset;
+}
+
+.text_sub_title.d_flex {
+    display: flex;
+    flex-direction: column;
+}
+
+.text_sub_title.d_flex span {
+    font-size: 13px;
+    font-family: var(--bs-text-light);
+}
+
+.m_left_auto {
+    text-align: right;
+    display: block;
+}
+
+.css-rklm6r .css-9n5vx8 {
+    background: var(--bs-bg-color);
+}
+
+.invoice_wrapper .payment_d_wrap {
+    width: 100%;
+    padding: 0px 0px 15px;
+    position: relative;
+}
+
+.invoice_wrapper .payment_d_wrap.no_pb {
+    padding: 0px !important;
+}
+
+img.icn {
+    height: 16px;
+    object-fit: contain;
+    display: inline-block;
+}
+
+.invoice_wrapper .payment_d_wrap .Payment_txt {
+    font-size: 12px;
+    font-family: var(--bs-text-light);
+    /* line-height: 14px; */
+    text-align: right;
+}
+
+.invoice_wrapper .Payment_txt.text_bold {
+    font-family: var(--bs-text-medium);
+}
+
+.invoice_wrapper .payment_d_wrap .Payment_recievd {
+    min-width: 90px;
+    max-width: 90px;
+    width: 90px;
+}
+
+.invoice_wrapper span.Payment_recievd.Payment_txt {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    gap: 3px;
+}
+
+td.text_center {
+    text-align: center;
+}
+
+.invoice_wrapper .border_bottom {
+    border-bottom: 1px solid #DEE7E6;
+}
+
+.invoice_wrapper .payment_d_wrap .Bnk_dtl {
+    padding-bottom: 6px;
+}
+
+.invoice_wrapper .common_table thead th:first-child,
+.invoice_wrapper .common_table tr td:first-child {
+    padding: 10px 10px 10px 0px;
+    width: 90px;
+    min-width: 70px;
+    max-width: 90px;
+}
+
+.invoice_wrapper .common_table .description_details {
+    min-width: 135px;
+    max-width: 135px;
+    width: 135px;
+}
+
+/* .invoice_wrapper .common_table td {
+    padding: 10px 10px;
+} */
+.invoice_wrapper.trnscn_dlt_tbl .common_table td {
+    padding: 10px 10px 20px;
+}
+
+.invoice_wrapper .common_table thead th:last-child,
+.invoice_wrapper .common_table tr td:last-child {
+    padding: 10px 0px 10px 10px;
+    text-align: end;
+}
+
+.m_auto {
+    margin: 0 auto;
+}
+
+.invoice_wrapper .css-rx6q9j {
+    padding: 0px;
+}
+
+.invoice_wrapper .common_table tbody .timedate_wrap {
+    min-width: 110px;
+    width: 110px;
+    max-width: 110px;
+}
+
+.invoice_wrapper .Invoice_total {
+    max-width: 220px;
+    min-width: 22px;
+    width: 220px;
+    height: auto;
+    margin-left: auto;
+    display: block;
+}
+
+.invoice_wrapper .Invoice_total .payment_d_wrap {
+    padding-inline-end: 1px;
+}
+
+.invoice_wrapper .common_table th,
+.common_table td {
+    padding: 10px 10px;
+}
+
+.common_table th,
+.common_table td {
+    padding: 10px 15px;
+}
+
+
+/* ---Admin_Registration--css-- */
+
+.chakra-input__group.chkra_password_grp,
+.select_wrapper {
+    background: #FFFFFF;
+    border: 1px solid var(--bs-inp-border);
+    border-radius: 8px;
+    outline: none;
+}
+
+input.chakra-input::placeholder {
+    font-size: 14px;
+    line-height: 21px;
+    font-family: var(--bs-text-light);
+}
+
+.check_wrapper {
+    display: flex;
+    align-items: center;
+}
+
+
+
+.dtl_wrap_img {
+    width: 120.73px;
+    height: 108.02px;
+    border: 1px solid var(--bs-inp-border);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.dtl_wrap_img input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+}
+
+
+.PhoneInput.phone_inp {
+    height: 40px;
+    border: 1px solid var(--bs-inp-border);
+    border-radius: 5px;
+    flex: 1;
+}
+
+.PhoneInput.phone_inp .PhoneInputCountry {
+    margin-left: 9px;
+}
+
+.PhoneInput.phone_inp input:focus-visible {
+    outline: unset !important;
+}
+
+.chakra-input__group {
+    border: none;
+}
+
+.chakra-input.css-x1msal {
+    border: 1px solid var(--bs-inp-border);
+}
+
+button.chakra-button.admin_dtl_save {
+    display: inline-block;
+    width: 500px;
+    background: var(--bs-theme-red);
+    font-size: 14px;
+    color: white;
+    font-family: var(--bs-text-bold);
+    /* font-family: var(--new-font);
+    font-weight: bold; */
+    border-radius: 8px;
+}
+
+.select_wrapper {
+    position: relative;
+    flex: 0.4;
+    /* flex: 1; */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+.select_wrapper .location-icon {
+    position: absolute;
+    top: 10px;
+    left: 9px;
+    width: 16px;
+}
+
+select.chakra-select.icon_left_side.css-t1yet {
+    padding-left: 28px !important;
+    border: none;
+    outline: none;
+}
+
+.admin_reg select.chakra-select.icon_left_side.css-t1yet {
+    padding-left: 35px !important;
+}
+
+input.chakra-input.chkra_inpu_pass {
+    border: none;
+    outline: none;
+}
+
+
+.add_hopper.admin_reg img {
+    width: 20px;
+    height: 20px;
+    z-index: 9;
+}
+
+
+
+.dtl_wrap.admn_details {
+    flex: 1;
+}
+
+.dtl_wrap.admn_details .select_wrapper {
+    flex: 1;
+}
+
+.invoice_wrapper .common_table tbody tr:last-child td {
+    border-bottom: 1px solid var(--bs-border-color) !important;
+}
+
+.Payment_txt.pt_sml {
+    padding-top: 2px;
+}
+
+.chakra-input.css-x1msal {
+    border: 1px solid var(--bs-inp-border);
+}

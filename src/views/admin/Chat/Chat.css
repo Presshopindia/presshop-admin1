@@ -1,0 +1,71 @@
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+  }
+  
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+  
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+  }
+  
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
+
+.unseen {
+  font-weight: 500 !important;
+  font-size: 13px !important;
+  color : black;
+  font-family: var(--bs-text-medium);
+}
+
+
+/* .msgChecks{
+  display: flex;
+}
+.msgChecks svg:first-child{
+  z-index: 5;
+  background-color: white;
+}
+.msgChecks svg:last-child{
+  z-index: -1;
+  margin-left: -8px;
+} */
+
+
+.chatingHeader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 15px 20px;
+  width: 100%;
+  background-color: white;
+  border-bottom: 1px solid #DEE7E6;
+  display: flex;
+  gap: 10px;
+  z-index: 5;
+}
+.chatingHeader h5 {
+  font-family: var(--bs-text-medium);
+}
+.chatingHeader .activeStatus {
+  font-size: 13px;
+}
+.chatingHeader .chat_user_img {
+  width: 39px;
+  height: 39px;
+  border-radius: 50%;
+  max-width: unset;
+  object-fit: cover;
+  border: 2px solid var(--bs-border-color);
+}

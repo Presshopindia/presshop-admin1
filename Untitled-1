@@ -1,0 +1,32 @@
+/* Addhopper custom End */
+
+
+/* Addhopper custom start */
+.addr_custom_inp{
+
+  height: 40px;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 4px;
+  padding-inline-start: 1rem;
+  width: 100%;
+}
+/* Addhopper custom End */
+
+
+.number_wrap.edit_inputs_wrap{
+   position: relative;
+}
+.number_wrap .input_nmbr{
+  position: absolute;
+  top: 1px;
+  left: 97px;
+  height: 38px;
+  width: 38%;
+}
+.number_wrap .cntry_code input{
+   max-width: 60px;
+}
+
+.position_relative{
+  position: relative !important;
+}
