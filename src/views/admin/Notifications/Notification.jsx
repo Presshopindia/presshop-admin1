@@ -45,6 +45,8 @@ import Loader from "components/Loader";
 import { Patch } from "api/admin.services";
 import { useMsgContext } from "contexts/PendindMsgContext";
 import ReactPaginate from "react-paginate";
+import profileimg from "assets/img/icons/profile.svg";
+
 
 const Notification = () => {
   const history = useHistory();
@@ -60,22 +62,18 @@ const Notification = () => {
   const HopperId = selectedOptionsHopper.map((item) => item?.value);
   const receiver_id = [...MediaHouseId, ...HopperId];
   const [notificationOther, setNotificationOther] = useState([]);
-  console.log(
-    "🚀 ~ file: Notification.jsx:59 ~ Notification ~ notificationOther:",
-    notificationOther
-  );
   const [notificationAdmin, setNotificationAdmin] = useState([]);
   const [notificationById, setNotificationById] = useState();
   const [loading, setLoading] = useState(false);
   const [activeNotification, setActiveNotification] = useState();
   let { setPendingNotifications } = useMsgContext();
 
-  const [currentPage , setCurrentPage] = useState(1)
-  const [ totalPages , setTotalPages] = useState(10)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(10)
 
-  const [currentPageForSent , setCurrentPageForSent] = useState(1)
-  const [ totalPagesForSent , setTotalPagesForSent] = useState(10)
- const perPage = 8;
+  const [currentPageForSent, setCurrentPageForSent] = useState(1)
+  const [totalPagesForSent, setTotalPagesForSent] = useState(10)
+  const perPage = 8;
 
   // get list of media house
   const getMediahouseList = async () => {
@@ -186,7 +184,7 @@ const Notification = () => {
     return () => {
       clearTimeout(debounce);
     };
-  }, [search ,currentPage ]);
+  }, [search, currentPage]);
 
   useEffect(() => {
     const debounce = setTimeout(() => {
@@ -196,7 +194,7 @@ const Notification = () => {
     return () => {
       clearTimeout(debounce);
     };
-  }, [search ,currentPageForSent  ]);
+  }, [search, currentPageForSent]);
 
 
   useEffect(() => {
@@ -207,17 +205,22 @@ const Notification = () => {
   useEffect(() => {
     if (notificationOther.length > 0) {
       getNotificationById(notificationOther[0]?._id, "received");
-    //  setActiveNotification(notificationOther[0]?._id);
+      //  setActiveNotification(notificationOther[0]?._id);
     }
   }, [notificationOther]);
 
   //handling seen notification , update backend
-  const handleSeen = async (id) => {
+  const handleSeen = async (id, seen, i) => {
     try {
       const res = await Patch("admin/updateNotification", { id: id });
-      getNotificationOTHERS(search);
+      setNotificationOther((prev) => {
+        const updatedData = [...prev];
+        updatedData[i].is_read = true;
+        return updatedData;
+      })
+      getNotificationById(id, "received");
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -289,40 +292,51 @@ const Notification = () => {
                             key={curr?._id}
                             className="chat_tabs_wrap notification_list lft_notfs"
                             onClick={() => {
-                              getNotificationById(curr?._id, "received");
                               setActiveNotification(curr?._id);
-                              handleSeen(curr?._id, "seen");
+                              curr?.is_read !== true ? handleSeen(curr?._id, "seen", index) : getNotificationById(curr?._id, "received");;
                             }}
                           >
-                            {/* {index===0 &&  getNotificationById(curr?._id, "received")} */}
-                            {/* { console.log("hello" , index)} */}
                             <div className="notif_list">
                               <div
-                                className={`notif_item ${
-                                  activeNotification === curr?._id || curr?.is_read === true
-                                    ? "active"
-                                    : ""
-                                }`}
+                                className={`notif_item ${activeNotification === curr?._id || curr?.is_read !== true
+                                  ? "active"
+                                  : ""
+                                  }`}
                               >
                                 <div className="hding" >
-                                  {/* <p className="ntf_title">{curr?.title}</p> */}
-                                  <Text
-                                    className="ntf_title"
-                                    display="flex"
-                                    alignItems="center"
-                                    gap="5px"
-                                  >
-                                    {curr?.sender_id?.role === "Hopper"
-                                      ? `${curr?.sender_id?.first_name} ${curr?.sender_id?.last_name} ( ${curr?.sender_id?.role} )`
-                                      : `${curr?.sender_id?.first_name} ${curr?.sender_id?.last_name} (${curr?.sender_id?.company_name} )`}
-                                  </Text>
-                                  <Text
-                                    className={`ntf_desc  ${
-                                      curr?.is_read === false ? "unseen" : ""
-                                    }`}
-                                  >
-                                    {curr?.title}
-                                  </Text>
+                                  <div className="img-wrap">
+                                    <div className="cht_img">
+                                      <img
+                                        src={
+                                          !curr?.sender_id?.hasOwnProperty("admin_detail") ? process.env.REACT_APP_HOPPER_AVATAR + curr?.sender_id?.avatar_id?.avatar :
+                                          curr?.sender_id?.admin_detail?.admin_profile
+                                        }
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src = profileimg;
+                                        }}
+                                        alt="user"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Text
+                                        className="ntf_title"
+                                        display="flex"
+                                        alignItems="center"
+                                        gap="5px"
+                                      >
+                                        {curr?.sender_id?.role === "Hopper"
+                                          ? `${curr?.sender_id?.first_name} ${curr?.sender_id?.last_name} ( ${curr?.sender_id?.role} )`
+                                          : `${curr?.sender_id?.first_name} ${curr?.sender_id?.last_name} (${curr?.sender_id?.company_name} )`}
+                                      </Text>
+                                      <Text
+                                        className={`ntf_desc  ${curr?.is_read === false ? "unseen" : ""
+                                          }`}
+                                      >
+                                        {curr?.title}
+                                      </Text>
+                                    </div>
+                                  </div>
                                 </div>
                                 <div className="notf_time">
                                   <p
@@ -365,8 +379,7 @@ const Notification = () => {
 
                   <TabPanel className="chat_panels">
                     {notificationAdmin &&
-                      notificationAdmin.map((curr) => {
-                        // console.log(curr, `,========currrrrrr`);
+                      notificationAdmin.filter((el) => el?.receiver_id?.length != 0)?.map((curr) => {
                         return (
                           <div
                             key={curr?._id}
@@ -376,72 +389,48 @@ const Notification = () => {
                               setActiveNotification(curr?._id);
                             }}
                           >
-                            <div className="notif_list">
+                            <div className="notif_ilst">
                               <div
-                                className={`notif_item ${
-                                  curr
-                                    ? activeNotification === curr?._id
-                                      ? "active"
-                                      : ""
+                                className={`notif_item ${curr
+                                  ? activeNotification === curr?._id
+                                    ? "active"
                                     : ""
-                                }`}
+                                  : ""
+                                  }`}
                                 onClick={() => setActiveNotification(curr?._id)}
                               >
                                 <div className="hding">
-                                  {/* <p className="ntf_title">{curr?.title}</p> */}
-                                  <Text
-                                    className="ntf_title"
-                                    display="flex"
-                                    alignItems="center"
-                                    gap="5px"
-                                  >
-                                    {curr &&
-                                    curr?.receiver_id &&
-                                    curr?.receiver_id[0]?.role === "Hopper"
-                                      ? curr?.receiver_id[0]?.user_name
-                                      : curr?.receiver_id[0]?.company_name}
+                                  <div className="img-wrap">
+                                    <div className="cht_img">
+                                      <img
+                                        src={
+                                          curr?.receiver_id[0]?.hasOwnProperty("admin_detail") ? curr?.receiver_id[0]?.admin_detail?.admin_profile :
+                                          process.env.REACT_APP_HOPPER_AVATAR + curr?.receiver_id[0]?.avatar_id?.avatar
+                                        }
+                                        onError={(e) => {
+                                          e.target.onerror = null;
+                                          e.target.src = profileimg;
+                                        }}
+                                        alt="user"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Text
+                                        className="ntf_title"
+                                        display="flex"
+                                        alignItems="center"
+                                        gap="5px"
+                                      >
+                                        {curr?.receiver_id[0]?.role === "Hopper"
+                                          ? `${curr?.receiver_id[0]?.first_name} ${curr?.receiver_id[0]?.last_name} ( ${curr?.receiver_id[0]?.user_name} )`
+                                          : curr?.receiver_id[0]?.company_name}
+                                      </Text>
+                                      <Text className="ntf_desc">
+                                        {curr?.title}
+                                      </Text>
+                                    </div>
+                                  </div>
 
-                                    <Popover>
-                                      <PopoverTrigger>
-                                        <Button
-                                          bg="unset"
-                                          className="notf_sent_to_btn"
-                                        >
-                                          <img
-                                            src={moresent}
-                                            alt="Notification sent to"
-                                          />
-                                        </Button>
-                                      </PopoverTrigger>
-                                      <PopoverContent>
-                                        <PopoverArrow />
-                                        <PopoverCloseButton />
-                                        <PopoverHeader>Sent to</PopoverHeader>
-                                        <PopoverBody>
-                                          <ul>
-                                            {notificationById?.receiver_id?.map(
-                                              (curr) => {
-                                                if (curr?.role === "Hopper") {
-                                                  return (
-                                                    <li>{curr?.user_name}</li>
-                                                  );
-                                                } else {
-                                                  return (
-                                                    <li>
-                                                      {curr?.company_name}
-                                                    </li>
-                                                  );
-                                                }
-                                              }
-                                            )}
-                                          </ul>
-                                        </PopoverBody>
-                                      </PopoverContent>
-                                    </Popover>
-                                  </Text>
-                                  <Text className="ntf_desc">
-                                    {curr?.title}
-                                  </Text>
                                 </div>
                                 <div className="notf_time">
                                   <p>
@@ -454,11 +443,12 @@ const Notification = () => {
                                   </p>
                                 </div>
                               </div>
+                              <hr />
                             </div>
                           </div>
                         );
                       })}
-                      <div>
+                    <div>
                       <ReactPaginate
                         className="paginated"
                         breakLabel="..."

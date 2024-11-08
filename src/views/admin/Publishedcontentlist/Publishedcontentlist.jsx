@@ -35,7 +35,7 @@ import pdfic from "assets/img/icons/contentpdf.svg";
 import audiowaveic from "assets/img/icons/audimgsmall.svg";
 import ReactPaginate from "react-paginate";
 
-import audioIcn from "assets/img/audioIcn.svg";
+import audioIcn from "assets/img/audimg.svg";
 import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
 
 export default function Publishedcontentlist() {
@@ -43,20 +43,19 @@ export default function Publishedcontentlist() {
   const [loading, setLoading] = useState(false)
   const history = useHistory()
   const location = useLocation();
-    // Extracting the contentPage from the URL query parameters
-    const queryParams = new URLSearchParams(location.search);
-    const contentPageUrl = queryParams.get('page');
-  const [ contentPage , setContentPage ]= useState(contentPageUrl || 1)
-  const [ totalPageCount  , setTotalPageCount] = useState(10)
-  const perPage  =  6;
-  
+  // Extracting the contentPage from the URL query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const contentPageUrl = queryParams.get('page');
+  const [contentPage, setContentPage] = useState(contentPageUrl || 1)
+  const [totalPageCount, setTotalPageCount] = useState(10)
+  const perPage = 8;
+
   const GetPublishedData = async (page) => {
     const offset = (page - 1) * perPage;
     setLoading(true)
     try {
       // await Get(`admin/getallpublishcontent`).then((res) => {
-      await Get(`admin/getContentList?status=published&limit=${6}&offset=${offset}`).then((res) => {
-        console.log(res?.data?.contentList, `response of published data`)
+      await Get(`admin/getContentList?status=published&limit=${8}&offset=${offset}`).then((res) => {
         setPublishedData(res?.data?.contentList)
         setTotalPageCount(Math.ceil(res?.data?.totalCount / perPage))
         setLoading(false)
@@ -65,7 +64,7 @@ export default function Publishedcontentlist() {
 
     } catch (error) {
       setLoading(false)
-      console.log(error)
+      // console.log(error)
     }
 
   }
@@ -76,8 +75,8 @@ export default function Publishedcontentlist() {
 
   }, [contentPage])
 
-   // Function to update URL query parameters
-   const updateUrl = (newContentPage) => {
+  // Function to update URL query parameters
+  const updateUrl = (newContentPage) => {
     const searchParams = new URLSearchParams(location.search);
     searchParams.set('page', newContentPage);
     history.push({ search: searchParams.toString() });
@@ -85,8 +84,8 @@ export default function Publishedcontentlist() {
 
   //scroll positioning retaining 
   const savedScrollPosition = localStorage.getItem('scrollPosition');
-  const [scrollPosition, setScrollPosition] = useState( savedScrollPosition || 0);
-  const  [autoScroll , setAutoScroll] = useState(false)
+  const [scrollPosition, setScrollPosition] = useState(savedScrollPosition || 0);
+  const [autoScroll, setAutoScroll] = useState(false)
   // const [counter , setCounter] = useState(0)
   const [contentReady, setContentReady] = useState(false);
 
@@ -102,26 +101,26 @@ export default function Publishedcontentlist() {
   // Save scroll position when component unmounts
   useEffect(() => {
     return () => {
-      localStorage.setItem('scrollPosition',  window.pageYOffset.toString());
+      localStorage.setItem('scrollPosition', window.pageYOffset.toString());
     };
   }, []);
 
-    // Restore scroll position on component mount
-    useEffect(() => {
-  const savedScrollPosition = localStorage.getItem('scrollPosition');
-    if(publishedData.length > 0 && !autoScroll && contentReady  ){
-      
+  // Restore scroll position on component mount
+  useEffect(() => {
+    const savedScrollPosition = localStorage.getItem('scrollPosition');
+    if (publishedData.length > 0 && !autoScroll && contentReady) {
+
       if (savedScrollPosition !== null) {
-      window.scrollTo(0, parseInt(savedScrollPosition));
-          console.log('scroll run' ,parseInt(savedScrollPosition))
-        }
+        window.scrollTo(0, parseInt(savedScrollPosition));
+        // console.log('scroll run', parseInt(savedScrollPosition))
+      }
       setAutoScroll(true)
     }
-  
-    }, [publishedData , contentReady]);
+
+  }, [publishedData, contentReady]);
 
 
-      // for pagination
+  // for pagination
   const handlePageChangeLiveUploaded = (selectedPage) => {
     setContentPage(selectedPage.selected + 1);
   };
@@ -133,9 +132,9 @@ export default function Publishedcontentlist() {
 
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
         <div className="back_link">
-          <a onClick={() => 
-          // window.history.back()
-          history.push("/admin/default")
+          <a onClick={() =>
+            // window.history.back()
+            history.push("/admin/default")
           }>
             <BsArrowLeft />
             <span>Back</span>
@@ -147,7 +146,7 @@ export default function Publishedcontentlist() {
           gap='25px'
           mb='20px'>
           {
-            publishedData && publishedData.map((curr ,index) => {
+            publishedData && publishedData.map((curr, index) => {
               const audio1 = curr?.content?.filter(curr => (curr?.media_type === "audio"))
               const image = curr?.content?.filter(curr => (curr?.media_type === "image"))
               const video1 = curr?.content?.filter(curr => (curr?.media_type === "video"))
@@ -184,24 +183,20 @@ export default function Publishedcontentlist() {
                                       className="slider_cont"
                                     />
                                   ) : curr?.media_type === "audio" ? (
-                                    <div className="slide_audio_wrap myaudio">
-                                      <img src={audiowaveic} alt="" className="audio_wave_ic" />
-                                      <audio controls className="slider_cont">
-                                        <source
-                                          src={process.env.REACT_APP_CONTENT + curr?.media}
-                                          type="audio/mpeg"
-                                        />
-                                      </audio>
-                                    </div>
+                                    <img
+                                      src={audioIcn}
+                                      alt=""
+                                      className="slider_cont"
+                                    />
                                   ) : curr?.media_type === "pdf" ? (
                                     <div className="slide_audio_wrap myaudio">
-                                      <embed 
-                                        src={`${process.env.REACT_APP_CONTENT + curr?.media}`} 
-                                        type="application/pdf" 
+                                      <embed
+                                        src={`${process.env.REACT_APP_CONTENT + curr?.media}`}
+                                        type="application/pdf"
                                         // width="100%" 
-                                        height="298" 
+                                        height="298"
                                         cursor="pointer"
-                                        style={{borderRadius:"20px", cursor:"pointer"}}
+                                        style={{ borderRadius: "20px", cursor: "pointer" }}
                                       />
                                     </div>
                                   ) : null}
@@ -212,8 +207,6 @@ export default function Publishedcontentlist() {
                       </a>
 
                       <div className="cont_icon_list">
-
-
                         {
                           video1 && video1?.length > 0 &&
                           <div className="feedIcons vdo feed_icn_txt">
@@ -238,7 +231,7 @@ export default function Publishedcontentlist() {
                             <img src={interview}></img>
                           </div>}
 
-                          {pdf && pdf?.length > 0 &&
+                        {pdf && pdf?.length > 0 &&
                           <div className="feedIcons rec feed_icn_txt">
                             <span>{pdf && pdf?.length > 0 && pdf?.length}</span>
                             <img src={pdfic}></img>
@@ -259,18 +252,18 @@ export default function Publishedcontentlist() {
                         <div className="contentAcuthor_type">
                           <div className="author_type">
                             <img className="authImg cont_hpr"
-                             src={  process.env.REACT_APP_HOPPER_AVATAR + (curr?.hopper_id?.avatar_id?.avatar ? curr?.hopper_id?.avatar_id?.avatar
-                             : curr?.hopper_id?.avatar_detail?.avatar
+                              src={process.env.REACT_APP_HOPPER_AVATAR + (curr?.hopper_id?.avatar_id?.avatar ? curr?.hopper_id?.avatar_id?.avatar
+                                : curr?.hopper_id?.avatar_detail?.avatar
 
-                             )} 
-                             alt="" />
+                              )}
+                              alt="" />
                             <Text className="authName"
                               color="#838383"
                               fontFamily="AirbnbMedium"
                               fontSize='13px'
                               fontWeight='700'
                               lineHeight='100%'>
-                               {`${curr?.hopper_id?.first_name}  ${curr?.hopper_id?.last_name}  (${curr?.hopper_id?.user_name})` }
+                              {`${curr?.hopper_id?.first_name}  ${curr?.hopper_id?.last_name}  (${curr?.hopper_id?.user_name})`}
                             </Text>
                           </div>
                           <div className="content_type">
@@ -318,7 +311,7 @@ export default function Publishedcontentlist() {
                           <a className="viewNow" onClick={() => { history.push(`/admin/live-published-content/${curr._id}/Published Content`) }}>View details</a>
                         </div>
                         <button className="cardbutton" tabIndex={0} type="button">&pound;{curr?.ask_price
- ?? 0}</button>
+                          ?? 0}</button>
                       </div>
                     </a>
 
@@ -332,17 +325,17 @@ export default function Publishedcontentlist() {
         </SimpleGrid>
         <div className="d-flex">
 
-        <ReactPaginate
-          className="paginated"
-          breakLabel="..."
-          nextLabel=">"
-          onPageChange={handlePageChangeLiveUploaded}
-          pageRangeDisplayed={5}
-          pageCount={totalPageCount}
-          previousLabel="<"
-          renderOnZeroPageCount={null}
-          forcePage={contentPage - 1}
-        />
+          <ReactPaginate
+            className="paginated"
+            breakLabel="..."
+            nextLabel=">"
+            onPageChange={handlePageChangeLiveUploaded}
+            pageRangeDisplayed={5}
+            pageCount={totalPageCount}
+            previousLabel="<"
+            renderOnZeroPageCount={null}
+            forcePage={contentPage - 1}
+          />
         </div>
       </Box>
     </>

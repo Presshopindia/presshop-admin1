@@ -70,7 +70,7 @@ export default function PurchasedContentfulHistory() {
         setLoading(false)
       })
     } catch (error) {
-      console.log(error)
+      // console.log(error)
       setLoading(false)
 
     }
@@ -100,7 +100,7 @@ export default function PurchasedContentfulHistory() {
 
 
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
 
   };
@@ -155,8 +155,8 @@ export default function PurchasedContentfulHistory() {
 
   return (
     <>
-      {console.log(historyDetails[0]?.content_id?.purchased_publication?.id, `<---this is a `)
-      }      {loading && <Loader />}
+      {/* {console.log(historyDetails[0]?.content_id?.purchased_publication?.id, `<---this is a `) */}
+      {loading && <Loader />}
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
         <div className="back_link">
           <a onClick={() => { window.history.back() }}>

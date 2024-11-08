@@ -156,7 +156,14 @@ export default function PaymentTransation() {
     try {
       await Post('admin/addactiondetails', actionObj);
       toast.success('Action Added');
-      setCreateAction({});
+      setCreateAction({
+        mode: 'call',
+        coversationWithhopper: '',
+        Actiontaken: '',
+        send_statment: false,
+        blockaccess: false,
+        removeuser: false,
+      });
       onClose();
       getActionDetails(currentPage);
     } catch (error) {
@@ -172,6 +179,8 @@ export default function PaymentTransation() {
     }));
   };
 
+  // console.log(createAction)
+
   const downloadCsvActionDetails = async (page) => {
     const offset = (page - 1) * perPage;
     try {
@@ -181,7 +190,7 @@ export default function PaymentTransation() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log('Error:', err);
+      // console.log('Error:', err);
     }
   };
 
@@ -189,7 +198,7 @@ export default function PaymentTransation() {
     const offset = (page - 1) * perPage;
     setLoading(true)
     try {
-      const response = await Get(`admin/getactiondetails?type=transiction&limit=${perPage}&offset=${offset}&${parametersName}=${parameters}`);
+      const response = await Get(`admin/getactiondetails?type=transiction&limit=${perPage}&offset=${offset}&${parametersName}=${parameters}&Payment_id=${id}`);
       setTime(response?.data?.response[response?.data?.response.length - 1]?.updatedAt);
       setActionDetails(response?.data?.response);
       setPath2(response?.data?.fullPath);
@@ -418,11 +427,11 @@ export default function PaymentTransation() {
                     <Thead>
                       <Tr>
                         <Th>Content</Th>
-                        <Th>Description</Th>
+                        <Th>Header</Th>
                         <Th>Time & date</Th>
                         {/* <Th>Kind</Th> */}
                         <Th>Type</Th>
-                        <Th>License</Th>
+                        {data?.type == "content" && <Th>License</Th>}
                         <Th>Category</Th>
                         <Th>Amount</Th>
                       </Tr>
@@ -510,43 +519,37 @@ export default function PaymentTransation() {
 
                         <Td className="description_details">
                           <p className="desc_ht">
-                            <span>{data?.content_id?.description || data?.task_content_id?.task_id?.task_description}</span>
+                            <span>{data?.content_id?.heading || data?.task_content_id?.task_id?.heading}</span>
                           </p>
                         </Td>
 
                         <Td className="timedate_wrap">
-                          <p className="timedate"><img src={watch} className="icn_time" />{moment(data?.content_id?.createdAt).format(`hh:mm A`)}</p>
-                          <p className="timedate"><img src={calendar} className="icn_time" />{moment(data?.content_id?.createdAt).format(`DD MMMM YYYY`)}</p>
+                          <p className="timedate"><img src={watch} className="icn_time" />{moment(data?.createdAt).format(`hh:mm A`)}</p>
+                          <p className="timedate"><img src={calendar} className="icn_time" />{moment(data?.createdAt).format(`DD MMMM YYYY`)}</p>
                         </Td>
-
-                        {/* <Td className='text_center'>
-                          {
-                            data?.type === "content" ? <img src={content} className="icn" /> : <img src={conImg} className="icn" />
-                          }
-                        </Td> */}
 
                         <Td className="text_center">
                           <div className="dir_col text_center">
                             {data?.type === "content" ? (
                               <>
                                 {audio && audio.length > 0 && (
-                                  <img src={interview} alt="Content thumbnail" className="icn m_auto" />
+                                  <Tooltip label="Audio"><img src={interview} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
                                 )}
                                 {video1 && video1.length > 0 && (
-                                  <img src={video} alt="Content thumbnail" className="icn m_auto" />
+                                  <Tooltip label="Video"><img src={video} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
                                 )}
                                 {image && image.length > 0 && (
-                                  <img src={camera} alt="Content thumbnail" className="icn m_auto" />
+                                  <Tooltip label="Photo"><img src={camera} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
                                 )}
                               </>
                             ) : data?.type === "task_content" ? (
                               <>
                                 {data?.task_content_id?.type === "image" ? (
-                                  <img src={camera} alt="Content thumbnail" className="icn m_auto" />
+                                  <Tooltip label="Photo"><img src={camera} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
                                 ) : data?.task_content_id?.type === "video" ? (
-                                  <img src={video} alt="Content thumbnail" className="icn m_auto" />
+                                  <Tooltip label="Video"><img src={video} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
                                 ) : data?.task_content_id?.type === "audio" ? (
-                                  <img src={interview} alt="Content thumbnail" className="icn m_auto" />
+                                  <Tooltip label="Interview"><img src={interview} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
                                 ) : (
                                   ""
                                 )}
@@ -559,24 +562,24 @@ export default function PaymentTransation() {
                           </div>
                         </Td>
 
-                        <Td className="text_center">
-                          {data?.type === "content" ? (
-                            <>
-                              {data?.content_id?.type === "shared" ? (
+                        {
+                          data?.type == "content" && <Td className="text_center">
+                            {data?.content_id?.Vat[0]?.purchased_content_type === "shared" ? (
+                              <Tooltip label="Shared">
                                 <img src={shared} alt="Content thumbnail" className="icn" />
-                              ) : (
+                              </Tooltip>
+                            ) : (
+                              <Tooltip label="Exclusive">
                                 <img src={crown} alt="Content thumbnail" className="icn" />
-                              )}
-                            </>
-                          ) : (
-                            ""
-                          )}
-                        </Td>
+                              </Tooltip>
+                            )}
+                          </Td>
+                        }
 
                         <Td className='text_center'>
                           {data?.type === "content" ?
-                            <Tooltip label={data?.content_id?.task_id?.category_id?.name}>
-                              {<img src={data?.content_id?.task_id?.category_id?.icon} className="icn m_auto" />}
+                            <Tooltip label={data?.content_id?.category_id?.name}>
+                              {<img src={data?.content_id?.category_id?.icon} className="icn m_auto" />}
                             </Tooltip>
                             :
                             <Tooltip label={data?.task_content_id?.task_id?.category_id?.name}>

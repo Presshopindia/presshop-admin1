@@ -288,7 +288,7 @@ export default function InvoicingHistory() {
                               defaultChecked={curr?.payment_id?.send_reminder === true ? true : false}
 
                             />
-                            <span>Sent reminder</span>
+                            <span>Send reminder</span>
                           </div>
 
                           <div className="check_wrap check_wrapper">
@@ -298,7 +298,7 @@ export default function InvoicingHistory() {
                               defaultChecked={curr?.payment_id?.send_statement === true ? true : false}
 
                             />
-                            <span>Sent statement</span>
+                            <span>Send statement</span>
                           </div>
 
                           <div className="check_wrap check_wrapper">
@@ -308,7 +308,7 @@ export default function InvoicingHistory() {
                               defaultChecked={curr?.payment_id?.blockaccess === true ? true : false}
 
                             />
-                            <span>Blocked</span>
+                            <span>Block</span>
                           </div>
                           <div className="check_wrap check_wrapper">
                             <Checkbox
@@ -316,7 +316,7 @@ export default function InvoicingHistory() {
                               me='10px'
                               defaultChecked={curr?.payment_id?.removeuser === true ? true : false}
                             />
-                            <span>Removed</span>
+                            <span>Remove</span>
                           </div>
                         </Td>
                         <Td className="conversation-td">

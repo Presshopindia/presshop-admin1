@@ -71,7 +71,7 @@ export default function AvatarsN() {
         setLoading(false)
       })
     } catch (er) {
-      console.log(er)
+      // console.log(er)
       setLoading(false)
     }
 

@@ -124,7 +124,6 @@ export default function InvoiceTransaction() {
 
   const addAction = async () => {
     if (
-      !createAction ||
       !createAction.mode ||
       !createAction.coversationWithhopper ||
       !createAction.Actiontaken ||
@@ -132,6 +131,7 @@ export default function InvoiceTransaction() {
       createAction.coversationWithhopper.trim() === '' ||
       createAction.Actiontaken.trim() === ''
     ) {
+      // console.log(createAction)
       toast.error('Required');
     } else {
       let obj = {
@@ -149,7 +149,15 @@ export default function InvoiceTransaction() {
       try {
         await Post('admin/addactiondetails', obj);
         toast.success('Action Added');
-        setCreateAction({});
+        setCreateAction({
+          mode: 'call',
+          coversationWithhopper: '',
+          Actiontaken: '',
+          send_reminder: false,
+          send_statment: false,
+          blockaccess: false,
+          removeuser: false,
+        });
         onClose();
         getActionDetails(currentPage);
       } catch (error) {
@@ -166,6 +174,8 @@ export default function InvoiceTransaction() {
     }));
   };
 
+  // console.log(createAction)
+  
   const downloadCsvActionDetails = async (page) => {
     const offset = (page - 1) * perPage;
     try {
@@ -175,7 +185,7 @@ export default function InvoiceTransaction() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log('<---Have an error ->', err);
+      // console.log('<---Have an error ->', err);
     }
   };
 
@@ -183,7 +193,7 @@ export default function InvoiceTransaction() {
     setLoading(true)
     const offset = (page - 1) * perPage;
     try {
-      await Get(`admin/getactiondetails?type=invoice&limit=${perPage}&offset=${offset}&${parametersName}=${parameters}`).then((res) => {
+      await Get(`admin/getactiondetails?type=invoice&limit=${perPage}&offset=${offset}&${parametersName}=${parameters}&Payment_id=${id}`).then((res) => {
         setTime(res?.data?.response[res?.data?.response.length - 1]?.updatedAt);
         setActionDetails(res?.data?.response);
         setpath2(res?.data?.fullPath);
@@ -292,7 +302,7 @@ export default function InvoiceTransaction() {
             gap="5px" fontSize='13px' className="invoice_details">
             <div className="">
               <span className="number">Invoice</span>
-              <span className="invoice_number">#{data?._id}</span>
+              <span className="invoice_number">#{" "}{data?.invoiceNumber || data?._id}</span>
             </div>
             <div className="">
               <span className="number">Transaction ID</span>
@@ -385,7 +395,7 @@ export default function InvoiceTransaction() {
                     <Tbody>
                       <Tr>
 
-                        <Td>
+                        <Td onClick={() => history.push(`/admin/live-published-content/${data?.content_id?._id}/Manage content`)} style={{cursor:"pointer"}}> 
                           {data?.type === "content" ? (
                             data?.content_id?.content.length === 1 ? (
                               data?.content_id?.content[0].media_type === "image" ? (
@@ -410,6 +420,7 @@ export default function InvoiceTransaction() {
                             ) : (
                               data?.content_id?.content.length > 1 && (
                                 <div className="content_imgs_wrap contnt_lngth_wrp">
+
                                   <div className="content_imgs">
                                     {data?.content_id?.content.map((value) => (
                                       <>
@@ -475,27 +486,47 @@ export default function InvoiceTransaction() {
                           <p className="timedate"><img src={calendar} className="icn_time" />{moment(data?.content_id?.createdAt).format(`DD MMM YYYY`)}</p>
                         </Td>
                         <Td className="text_center">
+                        
                           <div className="dir_col text_center">
                             {data?.type === "content" ? (
                               <>
-                                {audio && audio.length > 0 && (
-                                  <img src={interview} alt="Content thumbnail" className="icn m_auto" />
-                                )}
-                                {video1 && video1.length > 0 && (
-                                  <img src={video} alt="Content thumbnail" className="icn m_auto" />
-                                )}
-                                {image && image.length > 0 && (
-                                  <img src={camera} alt="Content thumbnail" className="icn m_auto" />
-                                )}
+                                {audio && audio?.length > 0 && (
+                                <Tooltip label={"Audio"}>
+                                  <img
+                                    src={interview}
+                                    alt="Content thumbnail"
+                                    className="icn m_auto"
+                                  />
+                                </Tooltip>
+                              )}
+                              {video1 && video1?.length > 0 && (
+                                <Tooltip label={"Video"}>
+                                  <img
+                                    src={video}
+                                    alt="Content thumbnail"
+                                    className="icn m_auto"
+                                  />
+                                </Tooltip>
+                              )}
+
+                              {image && image?.length > 0 && (
+                                <Tooltip label={"Photo"}>
+                                  <img
+                                    src={camera}
+                                    alt="Content thumbnail"
+                                    className="icn m_auto"
+                                  />
+                                </Tooltip>
+                              )}
                               </>
                             ) : data?.type === "task_content" ? (
                               <>
                                 {data?.task_content_id?.type === "image" ? (
-                                  <img src={camera} alt="Content thumbnail" className="icn m_auto" />
+                                  <Tooltip label={"Photo"}><img src={camera} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
                                 ) : data?.task_content_id?.type === "video" ? (
-                                  <img src={video} alt="Content thumbnail" className="icn m_auto" />
+                                  <Tooltip label={"Video"}><img src={video} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
                                 ) : data?.task_content_id?.type === "audio" ? (
-                                  <img src={interview} alt="Content thumbnail" className="icn m_auto" />
+                                  <Tooltip label={"Interview"}><img src={interview} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
                                 ) : (
                                   ""
                                 )}
@@ -506,27 +537,34 @@ export default function InvoiceTransaction() {
 
 
                           </div>
+                        
                         </Td>
 
                         <Td className="text_center">
-                          {data?.type === "content" ? (
-                            <>
-                              {data?.content_id?.type === "shared" ? (
-                                <img src={shared} alt="Content thumbnail" className="icn" />
-                              ) : (
-                                <img src={crown} alt="Content thumbnail" className="icn" />
-                              )}
-                            </>
-                          ) : (
-                            ""
-                          )}
+                        {data?.content_id?.Vat[0]?.purchased_content_type == "shared" ? (
+                              <Tooltip label={"Shared"}>
+                                <img
+                                  src={shared}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
+                            ) : (
+                              <Tooltip label={"Exclusive"}>
+                                <img
+                                  src={crown}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
+                            )}
                         </Td>
 
 
                         <Td className='text_center'>
                           {data?.type === "content" ?
-                            <Tooltip label={data?.content_id?.task_id?.category_id?.name}>
-                              {<img src={data?.content_id?.task_id?.category_id?.icon} className="icn m_auto" />}
+                            <Tooltip label={data?.content_id?.category_id?.name}>
+                              {<img src={data?.content_id?.category_id?.icon} className="icn m_auto" />}
                             </Tooltip>
                             :
                             <Tooltip label={data?.task_content_id?.task_id?.category_id?.name}>

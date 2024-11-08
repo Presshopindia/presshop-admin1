@@ -108,7 +108,7 @@ export default function LiveTasks() {
       setDetails(response?.data?.response);
       setpath1(response?.data.fullPath)
     } catch (error) {
-      console.log(error, "<------ Error");
+      // console.log(error, "<------ Error");
     }
   };
 
@@ -216,7 +216,7 @@ export default function LiveTasks() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
@@ -229,7 +229,7 @@ export default function LiveTasks() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
@@ -283,15 +283,15 @@ export default function LiveTasks() {
   const Audio = details?.uploaded_content?.filter((item) => item.type === "audio")
   const Video = details?.uploaded_content?.filter((item) => item.type === "video")
   const Image = details?.uploaded_content?.filter((item) => item.type === "image")
-  console.log(Audio?.length, `<-----length`)
+
   return (
     <>
       {loading && <Loader />}
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
         <div className="back_link">
-          <Link onClick={()=> {
+          <Link onClick={() => {
             window.history.back()
-            }}>
+          }}>
             <BsArrowLeft />
             <span>Back</span>
           </Link>
@@ -392,24 +392,23 @@ export default function LiveTasks() {
                 <div className="sub_content wdth_40">
                   <p>Hopper</p>
                 </div>
-                <div className="overlay_imgs tsk_hoppers">
-                  {details?.acceptedby &&
-                    details?.acceptedby.map((item) => {
-                      return (
-                        <React.Fragment key={item?._id}>
-                          <Tooltip
-                            label={`${item?.first_name} ${item?.last_name}`}
-                            placement="top"
-                          >
-                            <img
-                              src={process.env.REACT_APP_HOPPER_AVATAR + item?.avatar_details[0]?.avatar}
-                              className="ovrlays"
-                              alt="Avatar"
-                            />
-                          </Tooltip>
-                        </React.Fragment>
-                      );
-                    })}
+               
+                <div className="info_img_text">
+                  <img
+                    src={process.env.REACT_APP_HOPPER_AVATAR + details?.acceptedby?.[0]?.avatar_details[0]?.avatar}
+                    className="icn_hopper_avt "
+                    alt=""
+                  />
+                  <Text
+                    color={textColor}
+                    fontSize="15px"
+                    lineHeight="100%"
+                    fontFamily="AirbnbMedium"
+                    letterSpacing={0.3}
+                  >
+                    {`${details?.acceptedby?.[0]?.first_name}  ${details?.acceptedby?.[0]?.last_name}`}
+                  </Text>
+                  {`(${details?.acceptedby?.[0]?.user_name})`}
                 </div>
               </div>
               <div className="info_wrapper">
@@ -570,10 +569,10 @@ export default function LiveTasks() {
                 }}
                 className="txt_danger_mdm"
               >
-                 <Tooltip label={"Share"}>
-                    <img src={share} className="opt_icons" />
-                 </Tooltip>
-              </a>  
+                <Tooltip label={"Share"}>
+                  <img src={share} className="opt_icons" />
+                </Tooltip>
+              </a>
               <span onClick={downloadCsvContent}>
                 <Tooltip label={"Print"}>
                   <img src={print} className="opt_icons" />
@@ -797,13 +796,13 @@ export default function LiveTasks() {
                 }}
                 className="txt_danger_mdm"
               >
-                 <Tooltip label={"Share"}>
-                    <img src={share} className="opt_icons" />
-                 </Tooltip>
-              </a> 
+                <Tooltip label={"Share"}>
+                  <img src={share} className="opt_icons" />
+                </Tooltip>
+              </a>
               <span onClick={() => downloadCsvActionDetails(currentPage)}>
-              <Tooltip label={"Print"}>
-                <img src={print} className="opt_icons" />
+                <Tooltip label={"Print"}>
+                  <img src={print} className="opt_icons" />
                 </Tooltip>
               </span>
               <div className="fltr_btn">
@@ -864,9 +863,9 @@ export default function LiveTasks() {
                         </Td>
                         <Td>{curr?.admin_id?.office_id?.address?.city}</Td>
                         <Td className="text_center">
-                          {curr?.mode === "chat" &&  <Tooltip label={"Chat"}><img src={chat} alt="Content thumbnail" className="icn" /> </Tooltip>}
-                          {curr?.mode === "email" &&  <Tooltip label={"Mail"}><img src={mail} className="icn" /> </Tooltip>}
-                          {curr?.mode === "call" &&  <Tooltip label={"HeadPhone"}><img src={Hphone} alt="Content thumbnail" className="icn" /> </Tooltip>}
+                          {curr?.mode === "chat" && <Tooltip label={"Chat"}><img src={chat} alt="Content thumbnail" className="icn" /> </Tooltip>}
+                          {curr?.mode === "email" && <Tooltip label={"Mail"}><img src={mail} className="icn" /> </Tooltip>}
+                          {curr?.mode === "call" && <Tooltip label={"HeadPhone"}><img src={Hphone} alt="Content thumbnail" className="icn" /> </Tooltip>}
                           {!curr?.mode && "no mode"}
                         </Td>
                         <Td className="contact_details">

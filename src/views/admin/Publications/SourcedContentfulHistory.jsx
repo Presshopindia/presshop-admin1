@@ -54,7 +54,7 @@ export default function SourcedContentful() {
     setloading(true)
     try {
       await Get(`admin/viewSourcedContent/SummeryPublication/viewdetailsHistory?content_id=${id}&limit=${perPage}&offset=${offset}&${parametersName}=${parameters}`).then((res) => {
-        console.log(res, `<----ress`)
+        // console.log(res, `<----ress`)
         setDetails(res?.data?.data);
         const company = res?.data?.data?.[0]?.content_id?.purchased_publication?.company_name ?? '';
         setCompany(company);
@@ -78,7 +78,7 @@ export default function SourcedContentful() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setloading(false);
     }
   }

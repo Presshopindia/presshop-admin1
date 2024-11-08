@@ -51,10 +51,6 @@ export default function Payments() {
   const perPage = 5;
   const [paymentDetail, setPaymentDetail] = useState([]);
   const [dataWithCheckboxes, setDataWithCheckboxes] = useState([]);
-  console.log(
-    "🚀 ~ file: Payments.jsx:51 ~ Payments ~ dataWithCheckboxes:",
-    dataWithCheckboxes
-  );
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentImageIndices, setCurrentImageIndices] = useState({});
  
@@ -532,7 +528,7 @@ export default function Payments() {
                                         className="arrow_span"
                                         onClick={() =>
                                           setCurrentImageIndices(prevIndices => {
-                                            console.log("id",setId)
+                                            // console.log("id",setId)
                                             const newIndices = { ...prevIndices };
                                             newIndices[setId] = ((newIndices[setId] || 0) + 1 ) % curr?.transictions_content[0]?.content_id?.content.length;
                                             return newIndices;

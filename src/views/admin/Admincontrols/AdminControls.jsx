@@ -74,6 +74,12 @@ import ReactPaginate from "react-paginate";
 import { async } from "@firebase/util";
 import Share from "components/share/Share";
 import SortFilterDashboard from "components/sortfilters/SortFilterDashboard";
+import { deleteCSV } from "utils/commonFunction";
+import docic from "assets/img/icons/contentdoc.svg";
+import pdfic from "assets/img/icons/contentpdf.svg";
+import PopupConfirm from "components/Pop Confirm";
+import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
+import DeletedContents from "../Content/components/DeletedContents";
 
 export default function AdminControls() {
   //pagination
@@ -101,6 +107,7 @@ export default function AdminControls() {
 
   // content 
   const [contentList, setContentList] = useState([])
+  const [blockedContentList, setBlockedContentList] = useState([]);
   const [currentPageContent, setCurrentPageContent] = useState(1);
   const [totalContentPages, setTotalContentPages] = useState(0);
 
@@ -115,6 +122,22 @@ export default function AdminControls() {
   const [show, setShow] = useState(false)
   const [csv, setCsv] = useState("")
 
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+
+  const pubPage = queryParams.get('pubPage');
+  const deletedContent = queryParams.get('deletedContent');
+
+  const [categories, setCategories] = useState([]);
+  const [Nudity, setNudity] = useState(null);
+  const [gdpr, setGdpr] = useState(null);
+  const [publishedData, setPublishedData] = useState([]);
+  const [currentPagePublishdContent, setCurrentPagePublishdContent] = useState(pubPage || 1);
+  const [totalPublishdContentPages, setTotalPublishdContentPages] = useState(0);
+  const [currentPageDelCont, setCurrentPageDelCont] = useState(deletedContent || 1);
+  const [deletedContents, setDeletedContents] = useState([]);
+  const [deletedContentPages, setDeletedContentPages] = useState(10)
+
   //  uploaded Content on boarding
   const getContentList = async (page, parametersName, parameters, parametersName1, parameters1) => {
     const offset = (page - 1) * perPage
@@ -128,7 +151,7 @@ export default function AdminControls() {
       });
 
     } catch (err) {
-      console.log("<---Have a erro ->", err);
+      // console.log("<---Have a erro ->", err);
       setLoading(false)
     }
   };
@@ -162,6 +185,7 @@ export default function AdminControls() {
           const resp = await Patch(`admin/editContent`, obj);
           if (resp) {
             contentList[index].remarks = "";
+            getBlockedContentList();
             getContentList(currentPageContent);
             toast.error("Rejected");
             mode[0][index] = currentContent.mode;
@@ -179,6 +203,7 @@ export default function AdminControls() {
           const resp = await Patch(`admin/editContent`, obj);
           if (resp) {
             contentList[index].remarks = "";
+            getBlockedContentList();
             getContentList(currentPageContent);
             toast.success("Updated");
             mode[0][index] = currentContent.mode;
@@ -198,6 +223,7 @@ export default function AdminControls() {
           const resp = await Patch(`admin/editContent`, obj);
           if (resp) {
             contentList[index].remarks = "";
+            getBlockedContentList();
             getContentList(currentPageContent);
             toast.success("Updated");
             mode[0][index] = currentContent.mode;
@@ -227,7 +253,7 @@ export default function AdminControls() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false)
     }
   };
@@ -263,7 +289,7 @@ export default function AdminControls() {
         window.open(path);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false);
     }
   };
@@ -313,7 +339,7 @@ export default function AdminControls() {
     const offset = (page - 1) * perPage
     setLoading(true)
     try {
-      await Get(`admin/getPublicationList?status=pending&offset=${offset}&limit=${perPage}&${parametersName}=${parameters}&${parametersName1}=${parameters1}`).then((res) => {
+      await Get(`admin/getPublicationList?offset=${offset}&limit=${perPage}&${parametersName}=${parameters}&${parametersName1}=${parameters1}`).then((res) => {
         setpublicationData(res.data.data);
         setpath3(res?.data?.fullPath)
         setTotalPublicationPages(res?.data?.totalCount / perPage)
@@ -351,6 +377,7 @@ export default function AdminControls() {
         checkAndApprove: publicationData[index].checkAndApprove,
         isTempBlocked: publicationData[index].isTempBlocked,
         isPermanentBlocked: publicationData[index].isPermanentBlocked,
+        is_terms_accepted: publicationData[index].is_terms_accepted
       };
       await Patch(`admin/editPublication`, obj).then((res) => {
         toast.success("updated");
@@ -358,7 +385,7 @@ export default function AdminControls() {
         setLoading(false)
       });
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       setLoading(false)
     }
   };
@@ -366,13 +393,13 @@ export default function AdminControls() {
   // download csv of publication control
   const printPublicationTable = async () => {
     try {
-      const response = await Get(`admin/getPublicationList?status=pending`);
+      const response = await Get(`admin/getPublicationList?`);
       if (response) {
         const onboardinPrint = response?.data?.fullPath;
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false)
     }
   };
@@ -410,7 +437,7 @@ export default function AdminControls() {
         window.open(path);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false);
     }
   }
@@ -444,7 +471,7 @@ export default function AdminControls() {
         HopperControls();
       });
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       setLoading(false)
     }
   };
@@ -456,7 +483,7 @@ export default function AdminControls() {
 
     setLoading(true)
     const offset = (page - 1) * perPage;
-    console.log(offset, `,-------offset`)
+    // console.log(offset, `,-------offset`)
 
     try {
       await Get(`admin/getEmployees?offset=${isNaN(offset) ? 0 : offset}&limit=${perPage}&${parametersName}=${parameters}&${parametersName1}=${parameters1}`).then(
@@ -488,7 +515,7 @@ export default function AdminControls() {
         window.open(path);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false);
     }
   };
@@ -626,17 +653,228 @@ export default function AdminControls() {
   };
   // comma seprator
   const formatAmountInMillion = (amount) =>
-    amount.toLocaleString('en-US', {
+    amount?.toLocaleString('en-US', {
       maximumFractionDigits: 0,
     });
 
+  // Get content categories -
+  const getContentCategories = async () => {
+    try {
+      const response = await Get(`admin/getCategoryType?type=content`);
+
+      if (response) {
+        let data = response.data?.data;
+        setCategories(data);
+      }
+    } catch (err) {
+      // console.log("<---Have an error ->", err);
+    }
+  };
+
+  useEffect(() => {
+    getContentCategories();
+  }, []);
+
+  // Blocked content-
+  const getBlockedContentList = async (
+    page,
+    parametersName,
+    parameters,
+    parametersName1,
+    parameters1,
+  ) => {
+    setLoading(true);
+    const offset = (page - 1) * perPage || 0;
+    try {
+      await Get(`admin/getContentList?status=blocked
+        &limit=${perPage}&offset=${offset}&${parametersName}=${parameters}
+        &${parametersName1}=${parameters1}`).then((res) => {
+        setBlockedContentList(res?.data?.contentList);
+        setpath1(res?.data?.fullPath);
+        setTotalContentPages(res?.data?.totalCount / perPage);
+        setLoading(false);
+        deleteCSV(res?.data?.fullPath)
+      });
+    } catch (err) {
+      // console.log("<---Have a erro ->", err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(async () => {
+    if (hideShow?.type === "contentOnboarding") {
+      getBlockedContentList(
+        currentPageContent,
+        parametersName,
+        parameters,
+        parametersName1,
+        parameters1
+      );
+    } else {
+      getBlockedContentList(currentPageContent);
+    }
+
+    mode.push(
+      contentList.map((value) => {
+        return value.mode;
+      })
+    );
+  }, [currentPageContent]);
+
+  // Delete blocked content-
+  const [idOfBlockContent, setIdOfBlockContent] = useState([]);
+
+  const deleteBlockedContent = async () => {
+    try {
+      if (idOfBlockContent.length === 0) {
+        return;
+      }
+      setLoading(true);
+      await Post("admin/deleteMultiContent", { content_id: idOfBlockContent });
+      setIdOfBlockContent([]);
+      getBlockedContentList();
+      setLoading(false);
+    }
+    catch (error) {
+      setLoading(false);
+    }
+  }
+
+
+  // Download csv
+  const DownloadCsv = async (page) => {
+    const offset = (page - 1) * perPage;
+    try {
+      const response = await Get(
+        `admin/getContentList?status=published&offset=${offset}&limit=${perPage}`
+      );
+
+      if (response) {
+        const onboardinPrint = response?.data?.fullPath;
+        window.open(onboardinPrint);
+        deleteCSV(response?.data?.fullPath)
+      }
+    } catch (err) {
+      // console.log("<---Have an error ->", err);
+    }
+  };
+
+  // Handle delete -
+  const handleDelete = async (item) => {
+    try {
+      // if(item?.purchased_mediahouse?.length > 0){
+      //   return  toast.success("This is a sold content, so it cannot be deleted.");
+      // }
+      await Post("admin/deleteContent", { content_id: item._id, is_deleted: true });
+      toast.success("Content Deleted Successfully");
+      getContentListPublished(currentPagePublishdContent);
+      getDeletedContents(currentPageDelCont)
+    } catch (error) {
+      // console.log(error.message);
+    }
+  };
+
+  // pagination
+  const handlePageChangePublished = (selectedPage) => {
+    setCurrentPagePublishdContent(selectedPage.selected + 1);
+    history.push(`?pubPage=${selectedPage.selected + 1}`);
+  };
+
+  // Published content-
+  const getContentListPublished = async (page, parametersName, parameters) => {
+    setLoading(true);
+    const offset = (page - 1) * perPage;
+    try {
+      const data = await Get(
+        `admin/getContentList?status=published&offset=${offset}&limit=${perPage}&${parametersName}=${parameters}`
+      );
+      setPublishedData(data.data.contentList);
+      setpath2(data?.data?.fullPath);
+      setTotalPublishdContentPages(data.data.totalCount / perPage);
+      setLoading(false);
+      deleteCSV(data?.data?.fullPath)
+    } catch (err) {
+      // console.log("<---Have a erro ->", err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getContentListPublished(currentPagePublishdContent)
+  }, [currentPagePublishdContent]);
+
+
+  //delete content listing
+  const getDeletedContents = async (page, parametersName, parameters) => {
+    setLoading(true);
+    const offset = (page - 1) * perPage;
+    try {
+      const data = await Get(
+        `admin/getContentList?status=published&is_deleted=true&limit=${perPage}&offset=${offset}&${parametersName}=${parameters}`
+      );
+      setDeletedContents(data.data?.contentList)
+      setDeletedContentPages(data?.data?.totalCount / perPage);
+      setLoading(false);
+
+    } catch (err) {
+      // console.log("<---Have a erro ->", err);
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    getDeletedContents(currentPageDelCont)
+  }, [currentPageDelCont])
+
+
+  const PublishedUpdated = async (index) => {
+    let obj = {
+      content_id: publishedData[index]._id,
+      heading: publishedData[index].heading,
+      mode: publishedData[index].mode,
+      description: publishedData[index].description,
+      latestAdminRemark: publishedData[index].remarks,
+    };
+
+    try {
+      if (
+        !publishedData[index].heading ||
+        publishedData[index].heading.trim() === ""
+      ) {
+        toast.error("Enter heading");
+      } else if (
+        !publishedData[index].mode ||
+        publishedData[index].mode.trim() === null
+      ) {
+        toast.error("Choose mode");
+      } else if (
+        !publishedData[index].remarks ||
+        publishedData[index].remarks.trim() === ""
+      ) {
+        toast.error("Enter remarks");
+      } else {
+        const resp = await Patch(`admin/editPublishedContent`, obj);
+        if (resp) {
+          // onboard[index].remarks = ""
+          getContentListPublished(currentPagePublishdContent);
+          toast.success("Successfully updated");
+        }
+      }
+    } catch (error) { }
+  };
+
+  const handlePageChangeDeleted = (selectedPage) => {
+    setCurrentPageDelCont(selectedPage.selected + 1);
+    history.push(`?deletedContent=${selectedPage.selected + 1}`);
+  };
 
 
   return (
     <>
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
         {loading && <Loader />}
-        {/* <> */}
+
+        {/* Content onboarding */}
         <Card
           className="tab_card"
           direction="column"
@@ -653,7 +891,7 @@ export default function AdminControls() {
               lineHeight="100%"
               fontFamily="AirbnbBold"
             >
-              Content control
+              Content onboarding
             </Text>
             <div className="opt_icons_wrap">
               <a
@@ -764,7 +1002,7 @@ export default function AdminControls() {
                               value?.content.length > 1 && (
                                 <div className="content_imgs_wrap contnt_lngth_wrp">
                                   <div className="content_imgs">
-                                    {value?.content.map((value ,index) => (
+                                    {value?.content.map((value, index) => (
                                       <>
                                         {value.media_type === "image" ? (
                                           <img
@@ -787,7 +1025,7 @@ export default function AdminControls() {
                                             alt="Content thumbnail"
                                           />
                                         )}
-                                        
+
                                       </>
                                     ))}
                                   </div>
@@ -859,8 +1097,10 @@ export default function AdminControls() {
 
                           <audio />
                         </Td>
+
                         <Td className="text_center">
                           <div className="dir_col text_center">
+
                             {audio && audio?.length > 0 && (
                               <Tooltip label={"Audio"}>
                                 <img
@@ -880,7 +1120,7 @@ export default function AdminControls() {
                               </Tooltip>
                             )}
                             {image && image?.length > 0 && (
-                              <Tooltip label={"Image"}>
+                              <Tooltip label={"Photo"}>
                                 <img
                                   src={camera}
                                   alt="Content thumbnail"
@@ -910,7 +1150,13 @@ export default function AdminControls() {
                           )}
                         </Td>
                         <Td className="text_center">
-                          {value?.categoryData?.name}
+                          <Tooltip label={value?.categoryData?.name}>
+                            <img
+                              src={value?.categoryData?.icon}
+                              alt="Content thumbnail"
+                              className="icn"
+                            />
+                          </Tooltip>
                         </Td>
                         <Td className="text_center">
                           {audio && audio?.length > 0 && audio?.length}
@@ -927,9 +1173,9 @@ export default function AdminControls() {
                             alt="Content thumbnail"
                           />
                           <Text className="nameimg">
-                            {`${value.hopper_id.first_name}  ${value.hopper_id.last_name}`}{" "}
+                            {`${value?.hopper_id?.first_name}  ${value?.hopper_id?.last_name}`}{" "}
                             <br />
-                            <span>({value.hopper_id.user_name})</span>
+                            <span>({value?.hopper_id?.user_name})</span>
                           </Text>
                         </Td>
                         <Td className="item_detail">
@@ -942,7 +1188,7 @@ export default function AdminControls() {
                               onChange={(e) => {
                                 value.firstLevelCheck.nudity = e.target.checked;
 
-                                console.log(value, "<- Value is here");
+                                // console.log(value, "<- Value is here");
                                 setContentList((prevItems) => {
                                   const updatedItems = [...prevItems];
                                   updatedItems[index] = value;
@@ -985,6 +1231,29 @@ export default function AdminControls() {
                               }}
                             />
                             <span>GDPR check</span>
+                          </div>
+
+                          {/* Newly added */}
+                          <div className="check_wrap">
+                            <Checkbox
+                              colorScheme="brandScheme"
+                              me="10px"
+                              content_id={value._id}
+                              isChecked={value.firstLevelCheck?.deep_fake_check}
+                              isDisabled={
+                                profile?.subadmin_rights?.viewRightOnly &&
+                                !profile?.subadmin_rights?.controlContent
+                              }
+                              onChange={(e) => {
+                                value.firstLevelCheck.deep_fake_check = e.target.checked;
+                                setContentList((prevItems) => {
+                                  const updatedItems = [...prevItems];
+                                  updatedItems[index] = value;
+                                  return updatedItems;
+                                });
+                              }}
+                            />
+                            <span>Deep fake check</span>
                           </div>
                         </Td>
                         <Td className="remarks_wrap">
@@ -1072,7 +1341,7 @@ export default function AdminControls() {
                             <option value="pending">Pending</option>
                             <option value="rejected">Rejected </option>
                             {
-                              (value?.firstLevelCheck?.isAdult && value?.firstLevelCheck?.isGDPR && value?.firstLevelCheck?.nudity && value?.secondLevelCheck) ? <option value="published">Published</option> : null
+                              (value?.firstLevelCheck?.isAdult && value?.firstLevelCheck?.isGDPR && value?.firstLevelCheck?.nudity && value?.secondLevelCheck && value?.firstLevelCheck?.deep_fake_check) ? <option value="published">Published</option> : null
                             }
                           </Select>
                         </Td>
@@ -1142,6 +1411,1730 @@ export default function AdminControls() {
           />
         </Card>
 
+        {/* Blocked content summary */}
+        <Card
+          className="tab_card"
+          direction="column"
+          w="100%"
+          px="0px"
+          mb="24px"
+          overflowX={{ sm: "scroll", lg: "hidden" }}
+        >
+          <Flex px="20px" justify="space-between" mb="10px" align="center">
+            <Text
+              color={textColor}
+              fontSize="22px"
+              fontWeight="700"
+              lineHeight="100%"
+              fontFamily="AirbnbBold"
+            >
+              Blocked content summary
+            </Text>
+            <div className="opt_icons_wrap">
+              <a
+                onClick={() => {
+                  setShow(true);
+                  setCsv(path1);
+                }}
+                className="txt_danger_mdm"
+              >
+                <Tooltip label={"Share"}>
+                  <img src={share} className="opt_icons" />
+                </Tooltip>
+              </a>
+
+              <span onClick={printOnboardingTable}>
+                <Tooltip label={"Print"}>
+                  <img src={print} className="opt_icons" />
+                </Tooltip>
+              </span>
+
+              <div className="fltr_btn">
+                <Text fontSize={"15px"}>
+                  <span
+                    onClick={() =>
+                      setHideShow((prevHideShow) => ({
+                        ...prevHideShow,
+                        status: true,
+                        type: "contentOnboarding",
+                      }))
+                    }
+                  >
+                    Sort
+                  </span>
+                </Text>
+                {hideShow.type === "contentOnboarding" && (
+                  <SortFilterDashboard
+                    hideShow={hideShow}
+                    closeSort={closeSort}
+                    sendDataToParent={collectSortParms}
+                    sendDataToParent1={collectSortParms1}
+                    handleApplySorting={handleApplySorting}
+                  />
+                )}
+              </div>
+            </div>
+          </Flex>
+
+          <Flex px="20px" gap={5} mb="10px" align="center">
+            <Button
+              className="theme_btn tbl_btn"
+              onClick={() => {
+                setIdOfBlockContent((prev) => {
+                  let updatedData = [...prev];
+                  if (updatedData.length > 0) {
+                    return updatedData = []
+                  }
+                  else {
+                    return updatedData = blockedContentList?.map((el) => el._id)
+                  }
+                })
+              }}
+            >
+              Select all
+            </Button>
+
+            <Button
+              className="theme_btn tbl_btn del-btn"
+              onClick={() => deleteBlockedContent()}
+            >
+              Delete
+            </Button>
+          </Flex>
+
+          <TableContainer className="fix_ht_table">
+            <Table mx="20px" variant="simple" className="common_table">
+              <Thead>
+                <Tr>
+                  <Th>
+                    <Checkbox
+                      colorScheme="brandScheme"
+                      me="10px"
+                      isChecked={true}
+                    />
+                  </Th>
+                  <Th>Posted content</Th>
+                  <Th>Time & date</Th>
+                  <Th>Location</Th>
+                  <Th>Heading</Th>
+                  <Th>Description</Th>
+                  <Th>Voice note</Th>
+                  <Th>Type</Th>
+                  <Th>Licence</Th>
+                  <Th>Category</Th>
+                  <Th>Volume</Th>
+                  <Th>Price</Th>
+                  <Th>Posted by</Th>
+                  <Th className="width_th_comn">1st level check</Th>
+                  <Th className="width_th_comn">2nd level check & call</Th>
+                  <Th className="width_th_comn">Call time & date</Th>
+                  <Th className="check_th">Check & approve</Th>
+                  <Th>Mode</Th>
+                  <Th>Status</Th>
+                  <Th>Remarks</Th>
+                  <Th>Employee details</Th>
+                  <Th>CTA</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {blockedContentList &&
+                  blockedContentList.map((value, index) => {
+                    const audio = value?.content?.filter(
+                      (curr) => curr?.media_type === "audio"
+                    );
+                    const image = value?.content?.filter(
+                      (curr) => curr?.media_type === "image"
+                    );
+                    const video1 = value?.content?.filter(
+                      (curr) => curr?.media_type === "video"
+                    );
+                    const Doc = value?.content?.filter(
+                      (curr) => curr?.media_type === "doc"
+                    );
+                    const Pdf = value?.content?.filter(
+                      (curr) => curr?.media_type === "pdf"
+                    );
+
+                    return (
+                      <Tr key={value._id}>
+                        <Td>
+                          <Checkbox
+                            colorScheme="brandScheme"
+                            me="10px"
+                            isChecked={idOfBlockContent.includes(value._id)}
+                            onChange={(e) => {
+                              setIdOfBlockContent((prev) => {
+                                if (idOfBlockContent.includes(value._id)) {
+                                  return prev.filter((el) => el !== value._id);
+                                } else {
+                                  return [...prev, value._id];
+                                }
+                              });
+                            }}
+                          />
+                        </Td>
+                        <Td>
+                          <a
+                            onClick={() =>
+                              history.push(
+                                `/admin/live-published-content/${value._id}/Manage content`
+                              )
+                            }
+                          >
+                            {value?.content.length === 1 ? (
+                              value?.content[0].media_type === "image" ? (
+                                <img
+                                  // src={process.env.REACT_APP_CONTENT + value?.content[0]?.media}
+                                  src={value?.content[0]?.watermark}
+                                  className="content_img"
+                                  alt="Content thumbnail"
+                                />
+                              ) : value?.content[0].media_type === "audio" ? (
+                                <span>
+                                  <img
+                                    src={interview}
+                                    alt="Content thumbnail"
+                                    className="icn m_auto"
+                                  />
+                                </span>
+                              ) : value?.content[0].media_type === "video" ? (
+                                <img
+                                  src={
+                                    process.env.REACT_APP_CONTENT +
+                                    value?.content[0]?.thumbnail
+                                  }
+                                  className="content_img"
+                                  alt="Content thumbnail"
+                                />
+                              ) : value?.content[0].media_type === "doc" ? (
+                                <img
+                                  src={docic}
+                                  className="content_img"
+                                  alt="Content thumbnail"
+                                />
+                              ) : value?.content[0].media_type === "pdf" ? (
+                                <img
+                                  src={pdfic}
+                                  className="content_img"
+                                  alt="Content thumbnail"
+                                />
+                              ) : null
+                            ) : value?.content.length === 0 ? (
+                              "no content"
+                            ) : (
+                              value?.content.length > 1 && (
+                                <div className="content_imgs_wrap contnt_lngth_wrp">
+                                  <div className="content_imgs">
+                                    {value?.content.slice(0, 3).map((value) => (
+                                      <>
+                                        {value.media_type === "image" ? (
+                                          <img
+                                            // src={process.env.REACT_APP_CONTENT + value.media}
+                                            src={value?.watermark}
+                                            className="content_img"
+                                            alt="Content thumbnail"
+                                          />
+                                        ) : value.media_type === "audio" ? (
+                                          <span>
+                                            <img
+                                              src={interview}
+                                              alt="Content thumbnail"
+                                              className="icn m_auto"
+                                            />
+                                          </span>
+                                        ) : value.media_type === "audio" ? (
+                                          <img
+                                            src={
+                                              process.env.REACT_APP_CONTENT +
+                                              value.thumbnail
+                                            }
+                                            className="content_img"
+                                            alt="Content thumbnail"
+                                          />
+                                        ) : value.media_type === "doc" ? (
+                                          <img
+                                            src={docic}
+                                            className="content_img"
+                                            alt="Content thumbnail"
+                                          />
+                                        ) : value.media_type === "pdf" ? (
+                                          <img
+                                            src={pdfic}
+                                            className="content_img"
+                                            alt="Content thumbnail"
+                                          />
+                                        ) : null}
+                                      </>
+                                    ))}
+                                  </div>
+                                  <span className="arrow_span">
+                                    <BsArrowRight />
+                                  </span>
+                                </div>
+                              )
+                            )}
+                          </a>
+                        </Td>
+
+                        <Td className="timedate_wrap">
+                          <p className="timedate">
+                            <img src={watch} className="icn_time" />
+                            {moment(value.createdAt).format("hh:mm A")}
+                          </p>
+                          <p className="timedate">
+                            <img src={calendar} className="icn_time" />
+                            {moment(value.createdAt).format("DD MMMM YYYY")}
+                          </p>
+                        </Td>
+                        <Td className="item_detail address_details">
+                          {value.location}
+                          {/* <br /> E14 5AQ */}
+                        </Td>
+                        <Td className="remarks_wrap remarks_wrap_edit">
+                          <Textarea
+                            className="desc_txtarea"
+                            isRequired
+                            defaultValue={value.heading}
+                            isDisabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            placeholder="Enter heading..."
+                            content_id={value._id}
+                            name="heading"
+                            onChange={(e) => {
+                              value.heading = e.target.value;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                          <img className="icn_edit" src={write} />
+                        </Td>
+                        <Td className="remarks_wrap remarks_wrap_edit">
+                          <Textarea
+                            className="desc_txtarea"
+                            content_id={value._id}
+                            defaultValue={value.description}
+                            isDisabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            name="description"
+                            onChange={(e) => {
+                              value.description = e.target.value;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                          <img className="icn_edit" src={write} />
+                        </Td>
+
+                        <Td>
+                          {value?.audio_description && (
+                            <audio controls>
+                              <source
+                                src={
+                                  process.env.REACT_APP_CONTENT +
+                                  value?.audio_description
+                                }
+                                type="audio/mp3"
+                              />
+                            </audio>
+                          )}
+
+                          <audio />
+                        </Td>
+                        <Td className="text_center">
+                          <div className="dir_col text_center">
+                            {audio && audio?.length > 0 && (
+                              <Tooltip label={"Audio"}>
+                                <img
+                                  src={interview}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </Tooltip>
+                            )}
+                            {video1 && video1?.length > 0 && (
+                              <Tooltip label={"Video"}>
+                                <img
+                                  src={video}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </Tooltip>
+                            )}
+                            {image && image?.length > 0 && (
+                              <Tooltip label={"Photo"}>
+                                <img
+                                  src={camera}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </Tooltip>
+                            )}
+                            {Doc && Doc?.length > 0 && (
+                              <Tooltip label={"document"}>
+                                <img
+                                  src={docic}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </Tooltip>
+                            )}
+                            {Pdf && Pdf?.length > 0 && (
+                              <Tooltip label={"pdf"}>
+                                <img
+                                  src={pdfic}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </Tooltip>
+                            )}
+                          </div>
+                        </Td>
+                        <Td className="text_center">
+                          {/* {value.type == "shared" ? (
+                          <Tooltip label={"Shared"}>
+                            <img
+                              src={shared}
+                              alt="Content thumbnail"
+                              className="icn"
+                            />
+                          </Tooltip>
+                        ) : (
+                          <Tooltip label={"Exclusive"}>
+                            <img
+                              src={crown}
+                              alt="Content thumbnail"
+                              className="icn"
+                            />
+                          </Tooltip>
+                        )} */}
+                          <Select
+                            placeholder="Select option"
+                            value={value?.type}
+                            name="type"
+                            onChange={(e) => {
+                              const selectedId = e.target.value;
+                              const updatedItems = contentList.map(
+                                (item, idx) => {
+                                  if (idx === index) {
+                                    return { ...item, type: selectedId };
+                                  }
+                                  return item;
+                                }
+                              );
+                              setContentList(updatedItems);
+                            }}
+                          >
+                            <option key={"shared"} value={"shared"}>Shared</option>
+                            <option key={"exclusive"} value={"exclusive"}>Exclusive</option>
+                          </Select>
+                        </Td>
+                        <Td className="text_center">
+                          <Tooltip label={value?.categoryData?.name}>
+                            {/* <img
+                            src={value?.categoryData?.icon}
+                            alt="Content thumbnail"
+                            className="icn"
+                          /> */}
+                            <Select
+                              placeholder="Select option"
+                              value={value?.category_id}
+                              name="categoryData"
+                              onChange={(e) => {
+                                const selectedId = e.target.value;
+                                const updatedItems = contentList.map(
+                                  (item, idx) => {
+                                    if (idx === index) {
+                                      return { ...item, category_id: selectedId };
+                                    }
+                                    return item;
+                                  }
+                                );
+                                // Update the contentList with the new array
+                                setContentList(updatedItems);
+                              }}
+                            >
+                              {categories?.map((option) => (
+                                <option key={option._id} value={option._id}>
+                                  {option.name}
+                                </option>
+                              ))}
+                            </Select>
+                          </Tooltip>
+                          {/* {value?.categoryData?.name} */}
+                        </Td>
+                        <Td className="text_center">
+                          <p>{audio && audio?.length > 0 && audio?.length}</p>
+                          <p>{video1 && video1?.length > 0 && video1?.length}</p>
+                          <p>{image && image?.length > 0 && image?.length}</p>
+                          <p>{Doc && Doc?.length > 0 && Doc?.length}</p>
+                          <p>{Pdf && Pdf?.length > 0 && Pdf?.length}</p>
+                        </Td>
+                        <Td>
+                          <Flex alignItems="center" gap="4px">
+                            £
+                            <input
+                              type="number"
+                              value={value.ask_price}
+                              onChange={(e) => {
+                                value.ask_price = e.target.value;
+                                value.original_ask_price = (e.target.value * 5) / 6;
+                                setContentList((prevItems) => {
+                                  const updatedItems = [...prevItems];
+                                  updatedItems[index] = value;
+                                  return updatedItems;
+                                });
+                              }}
+                            />
+                          </Flex>
+                        </Td>
+                        <Td className="item_detail">
+                          <img
+                            src={
+                              process.env.REACT_APP_HOPPER_AVATAR +
+                              value?.hopper_id?.avatar_detail?.avatar
+                            }
+                            alt="Content thumbnail"
+                          />
+                          <Text className="nameimg naming_comn">
+                            <span className="txt_mdm">{`${value?.hopper_id?.first_name}  ${value?.hopper_id?.last_name}`}{" "}</span>
+                            <br />
+                            <span>({value?.hopper_id?.user_name})</span>
+                          </Text>
+                        </Td>
+                        <Td className="item_detail">
+                          <div className="check_wrap">
+                            <Checkbox
+                              colorScheme="brandScheme"
+                              me="10px"
+                              content_id={value._id}
+                              isChecked={value.firstLevelCheck?.nudity}
+                              isDisabled={
+                                profile?.subadmin_rights?.viewRightOnly &&
+                                !profile?.subadmin_rights?.controlContent
+                              }
+                              onChange={(e) => {
+                                value.firstLevelCheck.nudity = e.target.checked;
+                                if (e.target.checked == true) {
+                                  setNudity(true);
+                                } else {
+                                  setNudity(false);
+                                }
+                                setContentList((prevItems) => {
+                                  const updatedItems = [...prevItems];
+                                  updatedItems[index] = value;
+                                  return updatedItems;
+                                });
+                              }}
+                            />
+
+                            <span>No nudity</span>
+                          </div>
+                          <div className="check_wrap">
+                            <Checkbox
+                              colorScheme="brandScheme"
+                              me="10px"
+                              // isDisabled={
+                              //   profile?.subadmin_rights?.viewRightOnly &&
+                              //   !profile?.subadmin_rights?.controlContent
+                              // }
+                              content_id={value._id}
+                              isChecked={value.firstLevelCheck?.isAdult}
+                              onChange={(e) => {
+                                // if(e.target.checked==true){
+                                  // console.log('sdhhhhhhhhhhhhhhhjhv')
+                                //   setAdult[index](true)
+                                // }else{
+                                //   setAdult[index](false)
+                                // }
+                                value.firstLevelCheck.isAdult = e.target.checked;
+                                setContentList((prevItems) => {
+                                  const updatedItems = [...prevItems];
+                                  updatedItems[index] = value;
+                                  return updatedItems;
+                                });
+                              }}
+                            />
+                            <span>No children</span>
+                          </div>
+                          <div className="check_wrap">
+                            <Checkbox
+                              colorScheme="brandScheme"
+                              me="10px"
+                              content_id={value._id}
+                              isChecked={value.firstLevelCheck?.isGDPR}
+                              isDisabled={
+                                profile?.subadmin_rights?.viewRightOnly &&
+                                !profile?.subadmin_rights?.controlContent
+                              }
+                              onChange={(e) => {
+                                value.firstLevelCheck.isGDPR = e.target.checked;
+                                if (e.target.checked == true) {
+                                  setGdpr(true);
+                                } else {
+                                  setGdpr(false);
+                                }
+                                setContentList((prevItems) => {
+                                  const updatedItems = [...prevItems];
+                                  updatedItems[index] = value;
+                                  return updatedItems;
+                                });
+                              }}
+                            />
+                            <span>GDPR check</span>
+                          </div>
+
+                          {/* Newly added */}
+                          <div className="check_wrap">
+                            <Checkbox
+                              colorScheme="brandScheme"
+                              me="10px"
+                              content_id={value._id}
+                              isChecked={value.firstLevelCheck?.deep_fake_check}
+                              isDisabled={
+                                profile?.subadmin_rights?.viewRightOnly &&
+                                !profile?.subadmin_rights?.controlContent
+                              }
+                              onChange={(e) => {
+                                value.firstLevelCheck.deep_fake_check = e.target.checked;
+                                setContentList((prevItems) => {
+                                  const updatedItems = [...prevItems];
+                                  updatedItems[index] = value;
+                                  return updatedItems;
+                                });
+                              }}
+                            />
+                            <span>Deep fake check</span>
+                          </div>
+
+                        </Td>
+
+                        <Td className="remarks_wrap">
+                          <Textarea
+                            placeholder="Enter details of call..."
+                            content_id={value._id}
+                            defaultValue={value.secondLevelCheck}
+                            isDisabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            name="secondLevelCheck"
+                            onChange={(e) => {
+                              value.secondLevelCheck = e.target.value;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                        </Td>
+                        <Td className="timedate_wrap">
+                          {value.mode_updated_at ? (
+                            <>
+                              <p className="timedate">
+                                <img src={watch} className="icn_time" />
+                                {moment(value.mode_updated_at).format("hh:mm A")}
+                              </p>
+                              <p className="timedate">
+                                <img src={calendar} className="icn_time" />
+                                {moment(value.mode_updated_at).format(
+                                  "DD MMMM, YYYY"
+                                )}
+                              </p>
+                            </>
+                          ) : (
+                            ""
+                          )}
+                        </Td>
+                        <Td className="text_center">
+                          <Checkbox
+                            colorScheme="brandScheme"
+                            me="10px"
+                            isChecked={value.checkAndApprove}
+                            isDisabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            onChange={(e) => {
+                              value.checkAndApprove = e.target.checked;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                        </Td>
+                        <Td className="select_wrap">
+                          <Select
+                            isDisabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            value={value.mode}
+                            content_id={value._id}
+                            name="mode"
+                            onChange={(e) => {
+                              value.mode = e.target.value;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          >
+                            <option value="chat">Chat</option>
+                            <option value="call">Call</option>
+                            <option value="email">Email</option>
+                          </Select>
+                        </Td>
+
+                        <Td className="big_select_wrap">
+                          <Select
+                            value={value.status}
+                            content_id={value._id}
+                            isDisabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            name="status"
+                            onChange={(e) => {
+                              value.status = e.target.value;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="rejected">Rejected </option>
+                            {/* {
+                            value?.firstLevelCheck?.isAdult === true && value?.checkAndApprove && value?.secondLevelCheck !== undefined ||
+                              value?.firstLevelCheck?.isGDPR === true && value?.checkAndApprove && value?.secondLevelCheck !== undefined ||
+                              (value?.firstLevelCheck?.nudity === true && value?.checkAndApprove && value?.secondLevelCheck !== undefined)
+                              ? <option value="published">Published</option>
+                              : null
+                          } */}
+                            {value?.firstLevelCheck?.isAdult &&
+                              value?.firstLevelCheck?.isGDPR &&
+                              value?.firstLevelCheck?.nudity &&
+                              value?.firstLevelCheck?.deep_fake_check &&
+                              value?.checkAndApprove &&
+                              value?.secondLevelCheck ? (
+                              <option value="published">Published</option>
+                            ) : null}
+                          </Select>
+                        </Td>
+                        <Td className="remarks_wrap">
+                          <Textarea
+                            placeholder="Enter remarks if any..."
+                            content_id={value._id}
+                            disabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            name="remarks"
+                            defaultValue={value.remarks}
+                            onChange={(e) => {
+                              value.remarks = e.target.value;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                        </Td>
+
+                        <Td className="timedate_wrap">
+                          <p className="timedate">{value?.admin_details?.name}</p>
+                          <p className="timedate">
+                            <img src={watch} className="icn_time" />
+                            {moment(value.updatedAt).format("hh:mm A")}
+                          </p>
+                          <p className="timedate">
+                            <img src={calendar} className="icn_time" />
+                            {moment(value.updatedAt).format("DD MMMM YYYY")}
+                          </p>
+                          <a
+                            className="timedate"
+                            onClick={() =>
+                              history.push(
+                                `/admin/content-onboarding-history/${value._id}/Content onboarding history/Manage content`
+                              )
+                            }
+                          >
+                            <BsEye className="icn_time" />
+                            View history
+                          </a>
+                        </Td>
+                        <Td>
+                          {(profile?.subadmin_rights?.viewRightOnly &&
+                            profile?.subadmin_rights?.controlContent) ||
+                            profile?.subadmin_rights?.controlContent ? (
+                            <Button
+                              className="theme_btn tbl_btn"
+                              onClick={() => updateContent(index)}
+                            >
+                              Publish
+                            </Button>
+                          ) : (
+                            <Button
+                              className="theme_btn tbl_btn"
+                              onClick={() => updateContent(index)}
+                              disabled
+                            >
+                              Publish
+                            </Button>
+                          )}
+                        </Td>
+                      </Tr>
+                    );
+                  })}
+              </Tbody>
+            </Table>
+          </TableContainer>
+          <ReactPaginate
+            className="paginated"
+            breakLabel="..."
+            nextLabel=">"
+            onPageChange={handleChangeContent}
+            pageRangeDisplayed={5}
+            pageCount={totalContentPages}
+            previousLabel="<"
+            renderOnZeroPageCount={null}
+            previousClassName="custom-arrow"
+            nextClassName="custom-arrow"
+            forcePage={currentPageContent - 1}
+          />
+        </Card>
+
+        {/* Published content summary */}
+        <Card
+          className="tab_card"
+          direction="column"
+          w="100%"
+          px="0px"
+          mb="24px"
+          overflowX={{ sm: "scroll", lg: "hidden" }}
+        >
+          <div className="">
+            <Flex px="20px" justify="space-between" mb="10px" align="center">
+              <Text
+                color={textColor}
+                fontSize="22px"
+                fontFamily={"AirbnbBold"}
+                lineHeight="100%"
+              >
+                Published content summary
+              </Text>
+              <div className="opt_icons_wrap">
+                <a
+                  onClick={() => {
+                    setShow(true);
+                    setCsv(path2);
+                  }}
+                  className="txt_danger_mdm"
+                >
+                  <Tooltip label={"Share"}>
+                    <img src={share} className="opt_icons" />
+                  </Tooltip>
+                </a>
+                <span onClick={() => DownloadCsv(currentPagePublishdContent)}>
+                  <Tooltip label={"Print"}>
+                    <img src={print} className="opt_icons" />
+                  </Tooltip>
+                </span>
+
+                <div className="fltr_btn">
+                  <Text fontSize={"15px"}>
+                    <span
+                      onClick={() =>
+                        setHideShow((prevHideShow) => ({
+                          ...prevHideShow,
+                          status: true,
+                          type: "Live published content",
+                        }))
+                      }
+                    >
+                      Sort
+                    </span>
+                  </Text>
+
+                  {hideShow.type === "Live published content" && (
+                    <SortFilterDashboard
+                      hideShow={hideShow}
+                      closeSort={closeSort}
+                      sendDataToParent={collectSortParms}
+                      sendDataToParent1={collectSortParms1}
+                      handleApplySorting={handleApplySorting}
+                    />
+                  )}
+                </div>
+              </div>
+            </Flex>
+
+            <TableContainer className="fix_ht_table">
+              <Table mx="20px" variant="simple" className="common_table">
+                <Thead>
+                  <Tr>
+                    <Th>Published content</Th>
+                    <Th>Time & date</Th>
+                    <Th>Location</Th>
+                    <Th>Heading</Th>
+                    <Th>Description</Th>
+                    <Th>Voice note</Th>
+                    <Th>Type</Th>
+                    <Th>License</Th>
+                    <Th>Category</Th>
+                    <Th>Volume</Th>
+                    <Th>Asking price</Th>
+                    <Th>Sale price</Th>
+                    {/* <Th>Published by</Th> */}
+                    <Th>Sale status</Th>
+                    <Th>Amount received</Th>
+                    <Th>Presshop commission</Th>
+                    <Th>Amount paid</Th>
+                    <Th>Amount payable</Th>
+                    <Th className="rcvd_comn_th">Received From</Th>
+                    <Th>Published by</Th>
+                    <Th>Mode</Th>
+                    <Th>Remarks</Th>
+                    <Th>Employee details</Th>
+                    <Th>CTA</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {/* ?.sort(
+                      (a, b) =>
+                        new Date(b.published_time_date) -
+                        new Date(a.published_time_date)
+                    ) */}
+                  {publishedData &&
+                    publishedData
+                      ?.map((curr, index) => {
+                        const audio = curr.content.filter(
+                          (curr) => curr.media_type === "audio"
+                        );
+                        const image = curr.content.filter(
+                          (curr) => curr.media_type === "image"
+                        );
+                        const video1 = curr.content.filter(
+                          (curr) => curr.media_type === "video"
+                        );
+                        const Doc = curr.content.filter(
+                          (curr) => curr.media_type === "doc"
+                        );
+                        const Pdf = curr.content.filter(
+                          (curr) => curr.media_type === "pdf"
+                        );
+
+                        return (
+                          <Tr key={curr._id}>
+                            <Td>
+                              <a
+                                onClick={() => {
+                                  history.push(
+                                    `/admin/live-published-content/${curr._id}/Manage content`
+                                  );
+                                }}
+                              >
+                                {curr?.content.length === 1 ? (
+                                  curr?.content[0].media_type === "image" ? (
+                                    <img
+                                      // src={process.env.REACT_APP_CONTENT + curr?.content[0]?.media}
+                                      src={curr?.content[0]?.watermark}
+                                      className="content_img"
+                                      alt="Content thumbnail"
+                                    />
+                                  ) : curr?.content[0].media_type === "audio" ? (
+                                    <img
+                                      src={interview}
+                                      alt="Content thumbnail"
+                                      className="icn m_auto"
+                                    />
+                                  ) : curr?.content[0].media_type === "video" ? (
+                                    <img
+                                      // src={process.env.REACT_APP_CONTENT + curr?.content[0]?.thumbnail}
+                                      src={curr?.content[0]?.watermark}
+                                      className="content_img"
+                                      alt="Content thumbnail"
+                                    />
+                                  ) : curr?.content[0].media_type === "doc" ? (
+                                    <img
+                                      // src={process.env.REACT_APP_CONTENT + curr?.content[0]?.thumbnail}
+                                      src={docic}
+                                      className="icn m_auto"
+                                      alt="Content thumbnail"
+                                    />
+                                  ) : curr?.content[0].media_type === "pdf" ? (
+                                    <img
+                                      // src={process.env.REACT_APP_CONTENT + curr?.content[0]?.thumbnail}
+                                      src={pdfic}
+                                      className="icn m_auto"
+                                      alt="Content thumbnail"
+                                    />
+                                  ) : null
+                                ) : curr?.content.length === 0 ? null : (
+                                  curr?.content.length > 1 && (
+                                    <div className="content_imgs_wrap contnt_lngth_wrp">
+                                      <div className="content_imgs">
+                                        {curr?.content
+                                          .slice(0, 3)
+                                          .map((value) => (
+                                            <>
+                                              {value.media_type === "image" ? (
+                                                <img
+                                                  // src={process.env.REACT_APP_CONTENT + value.media}
+                                                  src={value?.watermark}
+                                                  className="content_img"
+                                                  alt="Content thumbnail"
+                                                />
+                                              ) : value.media_type === "audio" ? (
+                                                <img
+                                                  src={interview}
+                                                  alt="Content thumbnail"
+                                                  className="icn m_auto"
+                                                />
+                                              ) : value.media_type === "video" ? (
+                                                <img
+                                                  // src={process.env.REACT_APP_CONTENT + value.thumbnail}
+                                                  src={value?.watermark}
+                                                  className="content_img"
+                                                  alt="Content thumbnail"
+                                                />
+                                              ) : curr?.content[0].media_type ===
+                                                "doc" ? (
+                                                <img
+                                                  // src={process.env.REACT_APP_CONTENT + curr?.content[0]?.thumbnail}
+                                                  src={docic}
+                                                  className="icn m_auto"
+                                                  alt="Content thumbnail"
+                                                />
+                                              ) : curr?.content[0].media_type ===
+                                                "pdf" ? (
+                                                <img
+                                                  // src={process.env.REACT_APP_CONTENT + curr?.content[0]?.thumbnail}
+                                                  src={pdfic}
+                                                  className="icn m_auto"
+                                                  alt="Content thumbnail"
+                                                />
+                                              ) : null}
+                                            </>
+                                          ))}
+                                      </div>
+                                      <span className="arrow_span">
+                                        <BsArrowRight />
+                                      </span>
+                                    </div>
+                                  )
+                                )}
+                              </a>
+                            </Td>
+                            <Td className="timedate_wrap">
+                              <p className="timedate">
+                                <img src={watch} className="icn_time" />
+                                {moment(curr.published_time_date).format(
+                                  "hh:mm A"
+                                )}
+                              </p>
+                              <p className="timedate">
+                                <img src={calendar} className="icn_time" />
+                                {moment(curr.published_time_date).format(
+                                  "DD MMMM YYYY"
+                                )}
+                              </p>
+                            </Td>
+                            <Td className="item_detail address_details">
+                              {curr.location}
+                            </Td>
+                            <Td className="remarks_wrap remarks_wrap_edit">
+                              <Textarea
+                                className="desc_txtarea"
+                                value={curr.heading}
+                                content_id={curr._id}
+                                isDisabled={
+                                  profile?.subadmin_rights?.viewRightOnly &&
+                                  !profile?.subadmin_rights?.controlContent
+                                }
+                                onChange={(e) => {
+                                  curr.heading = e.target.value;
+                                  setPublishedData((pre) => {
+                                    const updatedData = [...pre];
+                                    updatedData[index] = curr;
+                                    return updatedData;
+                                  });
+                                }}
+                              />
+                              <img className="icn_edit" src={write} />
+                            </Td>
+                            <Td className="remarks_wrap remarks_wrap_edit">
+                              <Textarea
+                                className="desc_txtarea"
+                                value={curr?.description}
+                                content_id={curr._id}
+                                isDisabled={
+                                  profile?.subadmin_rights?.viewRightOnly &&
+                                  !profile?.subadmin_rights?.controlContent
+                                }
+                                onChange={(e) => {
+                                  curr.description = e.target.value;
+                                  setPublishedData((pre) => {
+                                    const updatedData = [...pre];
+                                    updatedData[index] = curr;
+                                    return updatedData;
+                                  });
+                                }}
+                              />
+                              <img className="icn_edit" src={write} />
+                            </Td>
+
+                            {/* <Td className="description_details"><p className="desc_ht">{curr.description}</p></Td> */}
+                            <Td>
+                              {curr.audio_description && (
+                                <audio controls>
+                                  <source
+                                    src={
+                                      process.env.REACT_APP_CONTENT +
+                                      curr.audio_description
+                                    }
+                                    type="audio/mp3"
+                                  />
+                                </audio>
+                              )}
+                            </Td>
+                            <Td className="text_center">
+                              <div className="dir_col text_center">
+                                {audio && audio?.length > 0 && (
+                                  <Tooltip label={"Interview"}>
+                                    <img
+                                      src={interview}
+                                      alt="Content thumbnail"
+                                      className="icn m_auto"
+                                    />
+                                  </Tooltip>
+                                )}
+
+                                {video1 && video1?.length > 0 && (
+                                  <Tooltip label={"Video"}>
+                                    <img
+                                      src={video}
+                                      alt="Content thumbnail"
+                                      className="icn m_auto"
+                                    />
+                                  </Tooltip>
+                                )}
+
+                                {image && image?.length > 0 && (
+                                  <Tooltip label={"Photo"}>
+                                    <img
+                                      src={camera}
+                                      alt="Content thumbnail"
+                                      className="icn m_auto"
+                                    />
+                                  </Tooltip>
+                                )}
+                              </div>
+                            </Td>
+
+                            <Td className="text_center">
+                              {curr.type == "shared" ? (
+                                <Tooltip label={"Shared"}>
+                                  <img
+                                    src={shared}
+                                    alt="Content thumbnail"
+                                    className="icn"
+                                  />
+                                </Tooltip>
+                              ) : (
+                                <Tooltip label={"Exclusive"}>
+                                  <img
+                                    src={crown}
+                                    alt="Content thumbnail"
+                                    className="icn"
+                                  />
+                                </Tooltip>
+                              )}
+                            </Td>
+
+                            <Td className="text_center">
+                              <a>
+                                <Tooltip label={curr?.categoryData?.name}>
+                                  <img
+                                    src={curr?.categoryData?.icon}
+                                    alt="Content thumbnail"
+                                    className="icn"
+                                  />
+                                </Tooltip>
+                              </a>
+                            </Td>
+                            <Td className="text_center">
+                              <p>
+                                {" "}
+                                {audio && audio?.length > 0 && audio?.length}
+                              </p>
+                              <p>
+                                {video1 && video1?.length > 0 && video1?.length}
+                              </p>
+                              <p>{image && image?.length > 0 && image?.length}</p>
+                            </Td>
+
+                            <Td className="text-nowrap">
+                              &pound; {formatAmountInMillion(curr?.ask_price)}
+                            </Td>
+                            <Td>
+                              &pound; {formatAmountInMillion(curr?.amount_paid)}
+                            </Td>
+                            <Td className="sale-status gr">
+                              {curr?.sale_status === "sold" ? (
+                                <span className="txt_success_mdm">Sold</span>
+                              ) : (
+                                <span className="txt_danger_mdm">Unsold</span>
+                              )}
+                            </Td>
+                            <Td>&pound; {curr?.amount_paid}</Td>
+                            <Td>&pound; {curr?.commition_to_payable}</Td>
+                            <Td>&pound; {curr?.amount_paid_to_hopper ?? "0"}</Td>
+
+                            <Td>
+                              &pound;{" "}
+                              {curr?.amount_paid_to_hopper &&
+                                curr?.amount_paid_to_hopper
+                                ? "0"
+                                : curr?.amount_payable_to_hopper}
+                            </Td>
+                            <Td className="rcvd_comn_td">
+                              <p>
+                                {
+                                  curr?.purchased_publication
+                                    ?.company_bank_details?.bank_name
+                                }
+                              </p>
+                              <p>{`Sort Code ${curr?.purchased_publication?.company_bank_details?.sort_code}`}</p>
+                              <p>{`Account ${curr?.purchased_publication?.company_bank_details?.account_number}`}</p>
+                            </Td>
+                            <Td className="item_detail">
+                              <img
+                                src={
+                                  process.env.REACT_APP_HOPPER_AVATAR +
+                                  curr?.hopper_id?.avatar_detail?.avatar
+                                }
+                                alt="Content thumbnail"
+                              />
+                              <Text className="nameimg naming_comn">
+                                <span className="txt_mdm">
+                                  {`${curr?.hopper_id?.first_name}  ${curr?.hopper_id?.last_name} `}{" "}
+                                </span>
+                                <br />
+                                <span>({curr?.hopper_id?.user_name})</span>
+                              </Text>
+                            </Td>
+                            <Td className="select_wrap">
+                              <Select
+                                value={curr.mode}
+                                content_id={curr._id}
+                                isDisabled={
+                                  profile?.subadmin_rights?.viewRightOnly &&
+                                  !profile?.subadmin_rights?.controlContent
+                                }
+                                onChange={(e) => {
+                                  curr.mode = e.target.value;
+                                  setPublishedData((pre) => {
+                                    const updatedData = [...pre];
+                                    updatedData[index] = curr;
+                                    return updatedData;
+                                  });
+                                }}
+                              >
+                                <option value="email">Email</option>
+                                <option value="chat">Chat</option>
+                                <option value="call">Call</option>
+                              </Select>
+                            </Td>
+                            <Td className="remarks_wrap">
+                              <Textarea
+                                value={curr.remarks}
+                                content_id={curr._id}
+                                isDisabled={
+                                  profile?.subadmin_rights?.viewRightOnly &&
+                                  !profile?.subadmin_rights?.controlContent
+                                }
+                                onChange={(e) => {
+                                  curr.remarks = e.target.value;
+                                  setPublishedData((pre) => {
+                                    const updatedData = [...pre];
+                                    updatedData[index] = curr;
+                                    return updatedData;
+                                  });
+                                }}
+                              />
+                            </Td>
+                            <Td className="timedate_wrap">
+                              <p className="timedate emp_nme">
+                                {curr?.admin_details?.name}
+                              </p>
+                              <p className="timedate">
+                                <img src={watch} className="icn_time" />
+                                {moment(curr?.updatedAt).format("hh:mm A")}
+                              </p>
+                              <p className="timedate">
+                                <img src={calendar} className="icn_time" />
+                                {moment(curr?.updatedAt).format("DD MMMM YYYY")}
+                              </p>
+                              <a
+                                className="timedate"
+                                onClick={() => {
+                                  // history.push(
+                                  //   `/admin/live-published-content/${curr._id}/Manage content`
+                                  // );
+                                  history.push(
+                                    `/admin/content-published-history/${curr._id}/Published Content Summary History/Manage content`
+                                  )
+                                }
+
+                                }
+                              >
+                                <BsEye className="icn_time" />
+                                View history
+                              </a>
+                            </Td>
+                            <Td>
+                              {(profile?.subadmin_rights?.viewRightOnly &&
+                                profile?.subadmin_rights?.controlContent) ||
+                                profile?.subadmin_rights?.controlContent ? (
+                                <Button
+                                  className="theme_btn tbl_btn"
+                                  onClick={() => PublishedUpdated(index)}
+                                >
+                                  Save
+                                </Button>
+                              ) : (
+                                <Button
+                                  className="theme_btn tbl_btn"
+                                  onClick={() => PublishedUpdated(index)}
+                                  disabled
+                                >
+                                  Save
+                                </Button>
+                              )}
+                              {
+                                profile?.role === "admin" ?
+                                  <PopupConfirm
+                                    title="Confirmation"
+                                    description="Are you sure you want to delete this content?"
+                                    onConfirm={() => handleDelete(curr)}
+                                    buttonTitle={"Delete"}
+                                  /> : null
+                              }
+                            </Td>
+
+                          </Tr>
+                        );
+                      })}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </div>
+          <ReactPaginate
+            className="paginated"
+            breakLabel="..."
+            nextLabel=">"
+            onPageChange={handlePageChangePublished}
+            pageRangeDisplayed={5}
+            pageCount={totalPublishdContentPages}
+            previousLabel="<"
+            renderOnZeroPageCount={null}
+            forcePage={currentPagePublishdContent - 1}
+
+          />
+        </Card>
+
+        {/* Uploaded content summary */}
+
+
+        {/* Deleted content summary */}
+        <DeletedContents
+          setShow={setShow}
+          setCsv={setCsv}
+          DownloadCsv={DownloadCsv}
+          setHideShow={setHideShow}
+          hideShow={hideShow}
+          closeSort={closeSort}
+          collectSortParms={collectSortParms}
+          setLoading={setLoading}
+          deletedContents={deletedContents}
+          setDeletedContents={setDeletedContents}
+          handlePageChangeDeleted={handlePageChangeDeleted}
+          handleApplySorting={handleApplySorting}
+          deletedContentPages={deletedContentPages}
+          getDeletedContents={getDeletedContents}
+          currentPageDelCont={currentPageDelCont}
+          getContentListPublished={getContentListPublished}
+          currentPagePublishdContent={currentPagePublishdContent}
+          profile={profile}
+        />
+
+        {/* Hopper control */}
+        <Card
+          direction="column"
+          w="100%"
+          px="0px"
+          mb="24px"
+          overflowX={{ sm: "scroll", lg: "hidden" }}
+        >
+          <Flex px="20px" justify="space-between" mb="10px" align="center">
+            <Text
+              color={textColor}
+              fontSize="22px"
+              fontWeight="700"
+              lineHeight="100%"
+              fontFamily={"AirbnbBold"}>
+              Hopper control
+            </Text>
+            <div className="opt_icons_wrap">
+              <a
+                onClick={() => {
+                  setShow(true)
+                  setCsv(path4)
+                }}
+                className="txt_danger_mdm"
+              >
+                <Tooltip label={"Share"}>
+                  <img src={share} className="opt_icons" />
+                </Tooltip>
+              </a>
+              <span onClick={() => DownloadCsvHopper(currentHopperPages)}>
+                <Tooltip label={"Print"}>
+                  <img src={print} className="opt_icons" />
+                </Tooltip>
+              </span>
+              <div className="fltr_btn">
+                <Text fontSize={"15px"}>
+                  <span onClick={() => setHideShow((prevHideShow) => ({
+                    ...prevHideShow,
+                    status: true,
+                    type: "HopperControls"
+                  }))}>Sort</span>
+                </Text>
+                {hideShow.type === "HopperControls" &&
+                  <SortFilterDashboard hideShow={hideShow}
+                    closeSort={closeSort}
+                    sendDataToParent={collectSortParms}
+                    sendDataToParent1={collectSortParms1}
+                    handleApplySorting={handleApplySorting}
+                  />}
+              </div>
+            </div>
+          </Flex>
+          <TableContainer className="fix_ht_table">
+            <Table mx="20px" variant="simple" className="common_table">
+              <Thead>
+                <Tr>
+                  <Th>Hopper details</Th>
+                  <Th>Time & date</Th>
+                  <Th className="adr_dtl">Address</Th>
+                  <Th>Contact details</Th>
+                  <Th>Category</Th>
+                  <Th>Ratings</Th>
+                  <Th>Uploaded docs</Th>
+                  <Th>Banking details</Th>
+                  <Th>Legal T&C's signed</Th>
+                  <Th>Check & approve</Th>
+                  <Th>Mode</Th>
+                  <Th>Status</Th>
+                  <Th>Action</Th>
+                  <Th>Remarks</Th>
+                  <Th>Employee details</Th>
+                  <Th>CTA</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {hopperDetails?.map((curr, index) => {
+                  return (
+                    <Tr key={curr?._id}>
+                      <Td className="item_detail">
+                        <a
+                          onClick={() => {
+                            history.push(`/admin/hopper-control-history/${curr?._id}/Admin controls`);
+                          }}
+                        >
+                          <img
+                            src={process.env.REACT_APP_HOPPER_AVATAR + curr?.avatarData?.avatar}
+                            alt="Content thumbnail"
+                          />
+                          <Text className="nameimg">
+                            <span className="txt_mdm">{`${curr?.first_name} ${curr?.last_name}`}</span>
+                            <br />
+                            <span>({curr?.user_name})</span>
+                          </Text>
+                        </a>
+                      </Td>
+                      <Td className="timedate_wrap">
+                        <p className="timedate">
+                          <img src={watch} className="icn_time" />
+                          {moment(curr?.createdAt).format("hh:mm A")}
+                        </p>
+                        <p className="timedate">
+                          <img src={calendar} className="icn_time" />
+                          {moment(curr?.createdAt).format("DD MMMM YYYY")}
+                        </p>
+                      </Td>
+                      <Td className="address_wrap">{curr?.address}</Td>
+                      <Td className="contact_details">
+                        <div className="mobile detail_itm">
+                          <img src={mobile} className="icn" />
+                          <span>
+                            {curr?.country_code}&nbsp;{curr?.phone}
+                          </span>
+                        </div>
+                        <div className="mobile detail_itm">
+                          <img src={mail} className="icn" />
+                          <span>{curr?.email}</span>
+                        </div>
+                      </Td>
+
+                      <Td className="text_center">
+                        <img
+                          src={curr?.category === "amateur" ? amt : pro}
+                          className="catgr_img m_auto"
+                        />
+                        <Select
+                          mt="10px"
+                          value={curr?.category}
+                          name="category"
+                          onChange={(e) => {
+                            curr.category = e.target.value;
+
+                            setHopperDetails((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = curr;
+                              return updatedItems;
+                            });
+                          }}
+                        >
+                          <option value="pro">pro</option>
+                          <option value="amateur">Amateur</option>
+                        </Select>
+                      </Td>
+                      <Td>{curr.ratingsforMediahouse ? (+(curr.ratingsforMediahouse)).toFixed(2) : 0}</Td>
+                      <Td className="contact_details">
+                        {
+                          curr?.doc_to_become_pro && curr?.doc_to_become_pro?.comp_incorporation_cert !== null ? <div className="doc_flex"> <img src={docuploaded} className='doc_uploaded' alt="document uploaded"
+                            onClick={() => { window.open(process.env.REACT_APP_HOPPER_Docs_App + curr?.doc_to_become_pro?.comp_incorporation_cert, '_blank') }} /> <p className="text_center">{curr?.doc_to_become_pro?.comp_incorporation_cert_mediatype}</p> </div> : ""
+                        }
+                        {
+                          curr?.doc_to_become_pro && curr?.doc_to_become_pro?.govt_id !== null ? <div className="doc_flex"><img src={docuploaded} className='doc_uploaded' alt="document uploaded"
+                            onClick={() => { window.open(process.env.REACT_APP_HOPPER_Docs_App + curr?.doc_to_become_pro?.govt_id, '_blank') }} /> <p className="text_center">{curr?.doc_to_become_pro?.govt_id_mediatype}</p></div> : ""
+
+                        }
+                        {
+                          curr?.doc_to_become_pro && curr?.doc_to_become_pro?.photography_licence !== null ? <div className="doc_flex"> <img src={docuploaded} className='doc_uploaded' alt="document uploaded"
+                            onClick={() => { window.open(process.env.REACT_APP_HOPPER_Docs_App + curr?.doc_to_become_pro?.photography_licence, '_blank') }} /> <p className="text_center">{curr?.doc_to_become_pro?.photography_mediatype}</p></div> : ""
+                        }
+
+                      </Td>
+                      <Td className="contact_details">
+                        {curr?.bank_detail[0]?.bank_name}
+                        <br /> Sort Code - {curr?.bank_detail[0]?.sort_code}
+                        <br /> Account - {curr?.bank_detail[0]?.acc_number}
+                      </Td>
+                      <Td className="check_td">
+                        <Checkbox
+                          colorScheme="brandScheme"
+                          me="10px"
+                          isChecked={
+                            curr?.is_terms_accepted === true ? true : false
+                          }
+                        />
+                      </Td>
+
+                      <Td className="check_aprv_td">
+                        <Checkbox
+                          colorScheme="brandScheme"
+                          me="10px"
+                          name="checkAndApprove"
+                          isChecked={curr?.checkAndApprove}
+                          onChange={(e) => {
+                            curr.checkAndApprove = e.target.checked;
+                            setHopperDetails((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = curr;
+                              return updatedItems;
+                            });
+                          }}
+                        />
+                      </Td>
+
+                      <Td className="select_wrap">
+                        <Select
+                          value={curr?.mode}
+                          name="mode"
+                          onChange={(e) => {
+                            curr.mode = e.target.value;
+                            setHopperDetails((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = curr;
+                              return updatedItems;
+                            });
+                          }}
+                        >
+                          <option value="call">Call</option>
+                          <option value="chat">Chat</option>
+                        </Select>
+                      </Td>
+
+                      <Td className="big_select_wrap">
+                        <Select
+                          value={curr?.status}
+                          name="status"
+                          onChange={(e) => {
+                            curr.status = e.target.value;
+                            setHopperDetails((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = curr;
+                              return updatedItems;
+                            });
+                          }}>
+                          <option value="pending">Pending</option>
+                          <option value="approved">Approved</option>
+                          <option value="rejected">Rejected</option>
+                        </Select>
+                      </Td>
+                      <Td>
+                        <div className="check_wrap">
+                          <Checkbox
+                            colorScheme="brandScheme"
+                            me="10px"
+                            isChecked={curr?.isTempBlocked}
+                            onChange={(e) => {
+                              setHopperDetails((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index].isTempBlocked =
+                                  !updatedItems[index].isTempBlocked;
+                                if (
+                                  updatedItems[index].isTempBlocked &&
+                                  updatedItems[index].isPermanentBlocked
+                                ) {
+                                  updatedItems[
+                                    index
+                                  ].isPermanentBlocked = false;
+                                }
+                                // console.log(updatedItems)
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                          <span>Temporary Block</span>
+                        </div>
+                        <div className="check_wrap">
+                          <Checkbox
+                            colorScheme="brandScheme"
+                            me="10px"
+                            isChecked={curr?.isPermanentBlocked}
+                            onChange={(e) => {
+                              setHopperDetails((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index].isPermanentBlocked =
+                                  !updatedItems[index].isPermanentBlocked;
+                                if (
+                                  updatedItems[index].isPermanentBlocked &&
+                                  updatedItems[index].isTempBlocked
+                                ) {
+                                  updatedItems[index].isTempBlocked = false;
+                                }
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                          <span>Permanent Block</span>
+                        </div>
+                      </Td>
+
+                      <Td className="remarks_wrap">
+                        <Textarea
+                          placeholder="Enter remarks if any..."
+                          id={curr?._id}
+                          value={curr?.latestAdminRemark}
+                          name="latestAdminRemark"
+                          onChange={(e) => {
+                            curr.latestAdminRemark = e.target.value;
+                            setHopperDetails((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = curr;
+                              return updatedItems;
+                            });
+                          }}
+                        />
+                      </Td>
+
+                      <Td className="timedate_wrap">
+                        <p className="timedate">
+                          {curr?.adminData
+                            ? curr?.adminData?.name
+                            : "no remarks "}
+                        </p>
+                        <p className="timedate">
+                          <img src={watch} className="icn_time" />
+                          {moment(curr?.updatedAt).format("hh:mm A")}
+                        </p>
+                        <p className="timedate">
+                          <img src={calendar} className="icn_time" />
+                          {moment(curr?.updatedAt).format("DD MMMM YYYY")}
+                        </p>
+
+                        <a
+                          onClick={() => {
+                            history.push(
+                              `/admin/hopper-control-history/${curr?._id}/Admin controls`
+                            );
+                          }}
+                          className="timedate"
+                        >
+                          <BsEye className="icn_time" />
+                          View history
+                        </a>
+                      </Td>
+                      <Td>
+                        <Button
+                          className="theme_btn tbl_btn"
+                          type="onSubmit"
+                          onClick={() => {
+                            handleHopperSave(index);
+                          }}
+                        >
+                          Save
+                        </Button>
+                      </Td>
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </TableContainer>
+          <ReactPaginate
+            className="paginated"
+            breakLabel="..."
+            nextLabel=">"
+            onPageChange={handlePageChangeHopper}
+            pageRangeDisplayed={5}
+            pageCount={totalHopperPages}
+            previousLabel="<"
+            renderOnZeroPageCount={null}
+          />
+        </Card>
+
+        {/* Task control */}
         <Card
           className="tab_card"
           direction="column"
@@ -1173,10 +3166,10 @@ export default function AdminControls() {
                   </Tooltip>
                 </a>
                 <span onClick={() => DownloadCsvLiveTask(currentPageLiveTask)}>
-                  
-                    <Tooltip label={"Print"}>
-                      <img src={print} className="opt_icons" />
-                    </Tooltip>
+
+                  <Tooltip label={"Print"}>
+                    <img src={print} className="opt_icons" />
+                  </Tooltip>
                 </span>
                 <div className="fltr_btn">
                   <Text fontSize={"15px"}>
@@ -1516,6 +3509,7 @@ export default function AdminControls() {
           />
         </Card>
 
+        {/* Publication control */}
         <Card
           className="tab_card"
           direction="column"
@@ -1623,11 +3617,13 @@ export default function AdminControls() {
                             </p>
                           </Td>
                           <Td className="text_center">
-                            <Tooltip label={"Television"}>
-                              <img src={monitor} alt="tv" className="icn" />
-                            </Tooltip>
+                            {
+                              curr?.hasOwnProperty("user_type_detail") && <Tooltip label={curr?.user_type_detail?.name}>
+                                <img src={curr?.user_type_detail?.icon || monitor} alt="tv" className="icn" />
+                              </Tooltip>
+                            }
                           </Td>
-                          <Td>4.1</Td>
+                          <Td>{curr.ratingsforMediahouse ? curr.ratingsforMediahouse : 'N/A'}</Td>
 
                           <Td className="item_detail address_details">
 
@@ -1690,8 +3686,17 @@ export default function AdminControls() {
                               colorScheme="brandScheme"
                               me="10px"
                               name="is_terms_accepted"
-                              checked={curr?.is_terms_accepted}
+                              isChecked={true}
+                            // onChange={(e) => {
+                            //   curr.is_terms_accepted = e.target.checked;
+                            //   setpublicationData((prevItems) => {
+                            //     const updatedItems = [...prevItems];
+                            //     updatedItems[index] = curr;
+                            //     return updatedItems;
+                            //   });
+                            // }}
                             />
+
                           </Td>
                           <Td className="check_aprv_td">
                             <Checkbox
@@ -1862,354 +3867,7 @@ export default function AdminControls() {
           />
         </Card>
 
-        <Card
-          direction="column"
-          w="100%"
-          px="0px"
-          mb="24px"
-          overflowX={{ sm: "scroll", lg: "hidden" }}
-        >
-          <Flex px="20px" justify="space-between" mb="10px" align="center">
-            <Text
-              color={textColor}
-              fontSize="22px"
-              fontWeight="700"
-              lineHeight="100%"
-              fontFamily={"AirbnbBold"}>
-              Hopper control
-            </Text>
-            <div className="opt_icons_wrap">
-              <a
-                onClick={() => {
-                  setShow(true)
-                  setCsv(path4)
-                }}
-                className="txt_danger_mdm"
-              >
-                <Tooltip label={"Share"}>
-                  <img src={share} className="opt_icons" />
-                </Tooltip>
-              </a>
-              <span onClick={() => DownloadCsvHopper(currentHopperPages)}>
-              <Tooltip label={"Print"}>
-                <img src={print} className="opt_icons"/>
-              </Tooltip>
-              </span>
-              <div className="fltr_btn">
-                <Text fontSize={"15px"}>
-                  <span onClick={() => setHideShow((prevHideShow) => ({
-                    ...prevHideShow,
-                    status: true,
-                    type: "HopperControls"
-                  }))}>Sort</span>
-                </Text>
-                {hideShow.type === "HopperControls" &&
-                  <SortFilterDashboard hideShow={hideShow}
-                    closeSort={closeSort}
-                    sendDataToParent={collectSortParms}
-                    sendDataToParent1={collectSortParms1}
-                    handleApplySorting={handleApplySorting}
-                  />}
-              </div>
-            </div>
-          </Flex>
-          <TableContainer className="fix_ht_table">
-            <Table mx="20px" variant="simple" className="common_table">
-              <Thead>
-                <Tr>
-                  <Th>Hopper details</Th>
-                  <Th>Time & date</Th>
-                  <Th className="adr_dtl">Address</Th>
-                  <Th>Contact details</Th>
-                  <Th>Category</Th>
-                  <Th>Ratings</Th>
-                  <Th>Uploaded docs</Th>
-                  <Th>Banking details</Th>
-                  <Th>Legal T&C's signed</Th>
-                  <Th>Check & approve</Th>
-                  <Th>Mode</Th>
-                  <Th>Status</Th>
-                  <Th>Action</Th>
-                  <Th>Remarks</Th>
-                  <Th>Employee details</Th>
-                  <Th>CTA</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {hopperDetails &&
-                  hopperDetails.map((curr, index) => {
-                    return (
-                      <Tr key={curr?._id}>
-                        <Td className="item_detail">
-                          <a
-                            onClick={() => {
-                              history.push(`/admin/hopper-edit/${curr?._id}`);
-                            }}
-                          >
-                            <img
-                              src={process.env.REACT_APP_HOPPER_AVATAR + curr?.avatarData?.avatar}
-                              alt="Content thumbnail"
-                            />
-                            <Text className="nameimg">
-                              <span className="txt_mdm">{`${curr?.first_name} ${curr?.last_name}`}</span>
-                              <br />
-                              <span>({curr?.user_name})</span>
-                            </Text>
-                          </a>
-                        </Td>
-                        <Td className="timedate_wrap">
-                          <p className="timedate">
-                            <img src={watch} className="icn_time" />
-                            {moment(curr?.createdAt).format("hh:mm A")}
-                          </p>
-                          <p className="timedate">
-                            <img src={calendar} className="icn_time" />
-                            {moment(curr?.createdAt).format("DD MMMM YYYY")}
-                          </p>
-                        </Td>
-                        <Td className="address_wrap">{curr?.address}</Td>
-                        <Td className="contact_details">
-                          <div className="mobile detail_itm">
-                            <img src={mobile} className="icn" />
-                            <span>
-                              {curr?.country_code}&nbsp;{curr?.phone}
-                            </span>
-                          </div>
-                          <div className="mobile detail_itm">
-                            <img src={mail} className="icn" />
-                            <span>{curr?.email}</span>
-                          </div>
-                        </Td>
-
-                        <Td className="text_center">
-                          <img
-                            src={curr?.category === "amateur" ? amt : pro}
-                            className="catgr_img m_auto"
-                          />
-                          <Select
-                            mt="10px"
-                            value={curr?.category}
-                            name="category"
-                            onChange={(e) => {
-                              curr.category = e.target.value;
-
-                              setHopperDetails((prevItems) => {
-                                const updatedItems = [...prevItems];
-                                updatedItems[index] = curr;
-                                return updatedItems;
-                              });
-                            }}
-                          >
-                            <option value="pro">pro</option>
-                            <option value="amateur">Amateur</option>
-                          </Select>
-                        </Td>
-                        <Td>4.1</Td>
-                        <Td className="contact_details">
-                          {
-                            curr?.doc_to_become_pro && curr?.doc_to_become_pro?.comp_incorporation_cert !== null ? <div className="doc_flex"> <img src={docuploaded} className='doc_uploaded' alt="document uploaded"
-                              onClick={() => { window.open(process.env.REACT_APP_HOPPER_Docs_App + curr?.doc_to_become_pro?.comp_incorporation_cert, '_blank') }} /> <p className="text_center">{curr?.doc_to_become_pro?.comp_incorporation_cert_mediatype}</p> </div> : ""
-                          }
-                          {
-                            curr?.doc_to_become_pro && curr?.doc_to_become_pro?.govt_id !== null ? <div className="doc_flex"><img src={docuploaded} className='doc_uploaded' alt="document uploaded"
-                              onClick={() => { window.open(process.env.REACT_APP_HOPPER_Docs_App + curr?.doc_to_become_pro?.govt_id, '_blank') }} /> <p className="text_center">{curr?.doc_to_become_pro?.govt_id_mediatype}</p></div> : ""
-
-                          }
-                          {
-                            curr?.doc_to_become_pro && curr?.doc_to_become_pro?.photography_licence !== null ? <div className="doc_flex"> <img src={docuploaded} className='doc_uploaded' alt="document uploaded"
-                              onClick={() => { window.open(process.env.REACT_APP_HOPPER_Docs_App + curr?.doc_to_become_pro?.photography_licence, '_blank') }} /> <p className="text_center">{curr?.doc_to_become_pro?.photography_mediatype}</p></div> : ""
-                          }
-
-                        </Td>
-                        <Td className="contact_details">
-                          {curr?.bank_detail[0]?.bank_name}
-                          <br /> Sort Code - {curr?.bank_detail[0]?.sort_code}
-                          <br /> Account - {curr?.bank_detail[0]?.acc_number}
-                        </Td>
-                        <Td className="check_td">
-                          <Checkbox
-                            colorScheme="brandScheme"
-                            me="10px"
-                            isChecked={
-                              curr?.is_terms_accepted === true ? true : false
-                            }
-                          />
-                        </Td>
-
-                        <Td className="check_aprv_td">
-                          <Checkbox
-                            colorScheme="brandScheme"
-                            me="10px"
-                            name="checkAndApprove"
-                            isChecked={curr?.checkAndApprove}
-                            onChange={(e) => {
-                              curr.checkAndApprove = e.target.checked;
-                              setHopperDetails((prevItems) => {
-                                const updatedItems = [...prevItems];
-                                updatedItems[index] = curr;
-                                return updatedItems;
-                              });
-                            }}
-                          />
-                        </Td>
-
-                        <Td className="select_wrap">
-                          <Select
-                            value={curr?.mode}
-                            name="mode"
-                            onChange={(e) => {
-                              curr.mode = e.target.value;
-                              setHopperDetails((prevItems) => {
-                                const updatedItems = [...prevItems];
-                                updatedItems[index] = curr;
-                                return updatedItems;
-                              });
-                            }}
-                          >
-                            <option value="call">Call</option>
-                            <option value="chat">Chat</option>
-                          </Select>
-                        </Td>
-
-                        <Td className="big_select_wrap">
-                          <Select
-                            value={curr?.status}
-                            name="status"
-                            onChange={(e) => {
-                              curr.status = e.target.value;
-                              setHopperDetails((prevItems) => {
-                                const updatedItems = [...prevItems];
-                                updatedItems[index] = curr;
-                                return updatedItems;
-                              });
-                            }}>
-                            <option value="pending">Pending</option>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
-                          </Select>
-                        </Td>
-                        <Td>
-                          <div className="check_wrap">
-                            <Checkbox
-                              colorScheme="brandScheme"
-                              me="10px"
-                              isChecked={curr?.isTempBlocked}
-                              onChange={(e) => {
-                                setEmployeeData((prevItems) => {
-                                  const updatedItems = [...prevItems];
-                                  updatedItems[index].isTempBlocked =
-                                    !updatedItems[index].isTempBlocked;
-                                  if (
-                                    updatedItems[index].isTempBlocked &&
-                                    updatedItems[index].isPermanentBlocked
-                                  ) {
-                                    updatedItems[
-                                      index
-                                    ].isPermanentBlocked = false;
-                                  }
-                                  return updatedItems;
-                                });
-                              }}
-                            />
-                            <span>Temporary Block</span>
-                          </div>
-                          <div className="check_wrap">
-                            <Checkbox
-                              colorScheme="brandScheme"
-                              me="10px"
-                              isChecked={curr?.isPermanentBlocked}
-                              onChange={(e) => {
-                                setHopperDetails((prevItems) => {
-                                  const updatedItems = [...prevItems];
-                                  updatedItems[index].isPermanentBlocked =
-                                    !updatedItems[index].isPermanentBlocked;
-                                  if (
-                                    updatedItems[index].isPermanentBlocked &&
-                                    updatedItems[index].isTempBlocked
-                                  ) {
-                                    updatedItems[index].isTempBlocked = false;
-                                  }
-                                  return updatedItems;
-                                });
-                              }}
-                            />
-                            <span>Permanent Block</span>
-                          </div>
-                        </Td>
-
-                        <Td className="remarks_wrap">
-                          <Textarea
-                            placeholder="Enter remarks if any..."
-                            id={curr?._id}
-                            value={curr?.latestAdminRemark}
-                            name="latestAdminRemark"
-                            onChange={(e) => {
-                              curr.latestAdminRemark = e.target.value;
-                              setHopperDetails((prevItems) => {
-                                const updatedItems = [...prevItems];
-                                updatedItems[index] = curr;
-                                return updatedItems;
-                              });
-                            }}
-                          />
-                        </Td>
-
-                        <Td className="timedate_wrap">
-                          <p className="timedate">
-                            {curr?.adminData
-                              ? curr?.adminData?.name
-                              : "no remarks "}
-                          </p>
-                          <p className="timedate">
-                            <img src={watch} className="icn_time" />
-                            {moment(curr?.updatedAt).format("hh:mm A")}
-                          </p>
-                          <p className="timedate">
-                            <img src={calendar} className="icn_time" />
-                            {moment(curr?.updatedAt).format("DD MMMM YYYY")}
-                          </p>
-
-                          <a
-                            onClick={() => {
-                              history.push(
-                                `/admin/hopper-control-history/${curr?._id}/Admin controls`
-                              );
-                            }}
-                            className="timedate"
-                          >
-                            <BsEye className="icn_time" />
-                            View history
-                          </a>
-                        </Td>
-                        <Td>
-                          <Button
-                            className="theme_btn tbl_btn"
-                            type="onSubmit"
-                            onClick={() => {
-                              handleHopperSave(index);
-                            }}
-                          >
-                            Save
-                          </Button>
-                        </Td>
-                      </Tr>
-                    );
-                  })}
-              </Tbody>
-            </Table>
-          </TableContainer>
-          <ReactPaginate
-            className="paginated"
-            breakLabel="..."
-            nextLabel=">"
-            onPageChange={handlePageChangeHopper}
-            pageRangeDisplayed={5}
-            pageCount={totalHopperPages}
-            previousLabel="<"
-            renderOnZeroPageCount={null}
-          />
-        </Card>
-
+        {/* Employee control */}
         <Card
           className="tab_card"
           direction="column"
@@ -2276,13 +3934,13 @@ export default function AdminControls() {
                     <Th>Banking details</Th>
                     <Th>Contract signed</Th>
                     <Th>Legal T&C’s signed</Th>
-                    <Th>Check & approve</Th>
+                    <Th>Approved</Th>
                     <Th>Status</Th>
                     {profile?.subadmin_rights?.blockRemoveEmployess && (
                       <Th>Action</Th>
                     )}
                     <Th>Remarks</Th>
-                    <Th>Employee details</Th>
+
                     <Th>CTA</Th>
                   </Tr>
                 </Thead>
@@ -2469,31 +4127,7 @@ export default function AdminControls() {
                               }}
                             />
                           </Td>
-                          <Td className="timedate_wrap">
-                            <p className="timedate emp_nme">
-                              {curr?.admin_details &&
-                                curr?.admin_details?.name !== ""
-                                ? curr?.admin_details?.name
-                                : "no updates"}
-                            </p>
-                            <p className="timedate">
-                              <img src={watch} className="icn_time" />
-                              {moment(curr?.updatedAt).format("hh:mm:A")}
-                            </p>
-                            <p className="timedate">
-                              <img src={calendar} className="icn_time" />
-                              {moment(curr?.updatedAt).format("DD MMMM YYYY")}
-                            </p>
-                            <a
-                              className="timedate"
-                              onClick={() => {
-                                history.push(`/admin/employee-manage-history/${curr?._id}/Admin controls`)
-                              }}
-                            >
-                              <BsEye className="icn_time" />
-                              View history
-                            </a>
-                          </Td>
+
                           <Td>
                             <Button
                               className="theme_btn tbl_btn"
@@ -2520,7 +4154,6 @@ export default function AdminControls() {
             renderOnZeroPageCount={null}
           />
         </Card>
-        {/* </> */}
       </Box>
       <Share show={show} csv={csv} update={handleClose} />
     </>

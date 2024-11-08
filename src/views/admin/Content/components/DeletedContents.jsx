@@ -77,7 +77,7 @@ const DeletedContents = ({
       getContentListPublished(currentPagePublishdContent);
       toast.success("Content restored successfully");
     } catch (error) {
-      console.log(error.message);
+      // console.log(error.message);
     }
   };
 
@@ -347,7 +347,7 @@ const DeletedContents = ({
                         )}
 
                         {image && image?.length > 0 && (
-                          <Tooltip label={"Camera"}>
+                          <Tooltip label={"Photo"}>
                             <img
                               src={camera}
                               alt="Content thumbnail"
@@ -388,7 +388,7 @@ const DeletedContents = ({
                           />
                         </Tooltip>
                       ) : (
-                        <Tooltip label={"Crown"}>
+                        <Tooltip label={"Exclusive"}>
                           <img
                             src={crown}
                             alt="Content thumbnail"

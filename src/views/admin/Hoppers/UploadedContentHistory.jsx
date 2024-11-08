@@ -65,7 +65,7 @@ export default function UploadedContentHistory() {
       })
 
     } catch (error) {
-      console.log(error, `<------errro`)
+      // console.log(error, `<------errro`)
       setloading(false)
     }
   }
@@ -95,7 +95,7 @@ export default function UploadedContentHistory() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setloading(false);
     }
   }

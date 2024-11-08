@@ -11,6 +11,8 @@ import publication2 from "assets/img/profile/publication2.svg";
 import publication3 from "assets/img/profile/publication3.svg";
 import watch from "assets/img/icons/watch.svg";
 import calendar from "assets/img/icons/calendar.svg";
+import { Tooltip } from "@chakra-ui/react";
+
 import celebrity from "assets/img/icons/celebrity.png";
 import camera from "assets/img/icons/camera.svg";
 import video from "assets/img/icons/video.svg";
@@ -72,7 +74,7 @@ export default function PurchasedContentful() {
     setLoading(true)
     try {
       await Get(`admin/viewPurchasedContent/SummeryPublication/viewdetails?mediahouse_id=${id}&limit=${perPage}&offset=${offset}&${parametersName}=${parameters}&${parametersName1}=${parameters1}`).then((res) => {
-        console.log(res, `<response of summary`)
+        // console.log(res, `<response of summary`)
         setCompanyName(res?.data?.data[0]?.purchased_publication?.company_name)
         setSummary(res?.data?.data)
         setTotalPages(res?.data?.total_count / perPage)
@@ -137,7 +139,7 @@ export default function PurchasedContentful() {
 
 
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
 
   };
@@ -448,46 +450,57 @@ export default function PurchasedContentful() {
                           <audio />
                         </Td>
 
-                        <Td className="text_center">
-                          <div className="dir_col text_center">
-                            {audio && audio?.length > 0 && (
-                              <img
-                                src={interview}
-                                alt="Content thumbnail"
-                                className="icn m_auto"
-                              />
+                       <Td className="text_center">
+                            <div className="dir_col text_center">
+                              {audio && audio?.length > 0 && (
+                                <Tooltip label={"Interview"}>
+                                  <img
+                                    src={interview}
+                                    alt="Content thumbnail"
+                                    className="icn m_auto"
+                                  />
+                                </Tooltip>
+                              )}
+                              {video1 && video1?.length > 0 && (
+                                <Tooltip label={"Video"}>
+                                  <img
+                                    src={video}
+                                    alt="Content thumbnail"
+                                    className="icn m_auto"
+                                  />
+                                </Tooltip>
+                              )}
+
+                              {image && image?.length > 0 && (
+                                <Tooltip label={"Photo"}>
+                                  <img
+                                    src={camera}
+                                    alt="Content thumbnail"
+                                    className="icn m_auto"
+                                  />
+                                </Tooltip>
+                              )}
+                            </div>
+                          </Td>
+                       <Td className="text_center">
+                            {value.type == "shared" ? (
+                              <Tooltip label={"Shared"}>
+                                <img
+                                  src={shared}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
+                            ) : (
+                              <Tooltip label={"Exclusive"}>
+                                <img
+                                  src={crown}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
                             )}
-                            {video1 && video1?.length > 0 && (
-                              <img
-                                src={video}
-                                alt="Content thumbnail"
-                                className="icn m_auto"
-                              />
-                            )}
-                            {image && image?.length > 0 && (
-                              <img
-                                src={camera}
-                                alt="Content thumbnail"
-                                className="icn m_auto"
-                              />
-                            )}
-                          </div>
-                        </Td>
-                        <Td className="text_center">
-                          {value.type == "shared" ? (
-                            <img
-                              src={shared}
-                              alt="Content thumbnail"
-                              className="icn"
-                            />
-                          ) : (
-                            <img
-                              src={crown}
-                              alt="Content thumbnail"
-                              className="icn"
-                            />
-                          )}
-                        </Td>
+                          </Td>
                         <Td className="text_center">
                           {value?.category_id?.name}
                         </Td>

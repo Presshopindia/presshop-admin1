@@ -212,7 +212,7 @@ export default function LiveUploadedContent() {
         window.open(onboardinPrint);
       }
     } catch (error) {
-      console.log("<---Have an error ->", error);
+      // console.log("<---Have an error ->", error);
     }
   };
 
@@ -227,7 +227,7 @@ export default function LiveUploadedContent() {
         window.open(onboardinPrint);
       }
     } catch (error) {
-      console.log("<---Have an error ->", error);
+      // console.log("<---Have an error ->", error);
     }
   };
 
@@ -295,7 +295,7 @@ export default function LiveUploadedContent() {
       maximumFractionDigits: 2,
     });
 
-  console.log(component, `<------from where we are coming`);
+  // console.log(component, `<------from where we are coming`);
   // path to back
   const backPath =
     component === "Dashboard"
@@ -438,8 +438,9 @@ export default function LiveUploadedContent() {
                     fontFamily="AirbnbMedium"
                   >
                     {/* {response?.uploaded_by?.user_name} */}
-                    {`${response?.uploaded_by?.first_name}  ${response?.uploaded_by?.last_name}  (${response?.uploaded_by?.user_name})` }
+                    {`${response?.uploaded_by?.first_name}  ${response?.uploaded_by?.last_name}` }
                   </Text>
+                  {`(${response?.uploaded_by?.user_name})`}
                 </div>
               </div>
               <div className="info_wrapper">
@@ -457,7 +458,7 @@ export default function LiveUploadedContent() {
               </div>
               <div className="info_wrapper">
                 <div className="sub_content">
-                  <p>Timestffamp</p>
+                  <p>Timestamp</p>
                 </div>
                 <div className="info_img_text">
                   <div className="content_information timedate_wrap">
@@ -510,7 +511,7 @@ export default function LiveUploadedContent() {
                   </div>
                 </div>
               </div>
-              <div className="info_wrapper">
+              {/* <div className="info_wrapper">
                 <div className="sub_content">
                   <p>Hashtags</p>
                 </div>
@@ -520,18 +521,14 @@ export default function LiveUploadedContent() {
                       <RiHashtag className="icn_time" />
                       <span className="info-text">football</span>
                     </div>
-                    <div className="hashtags_sub">
-                      <RiHashtag className="icn_time" />
-                      <span className="info-text">arsenal</span>
-                    </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="info_wrapper">
                 <div className="sub_content">
                   <p>category</p>
                 </div>
-                <div className="info_img_text justify_end">
+                <div className="info_img_text">
                   <img
                     src={response?.category_details?.icon}
                     className="icn"
@@ -547,7 +544,7 @@ export default function LiveUploadedContent() {
                   </Text>
                 </div>
               </div>
-              <div className="info_wrapper">
+              {/* <div className="info_wrapper">
                 <div className="sub_content">
                   <p>License</p>
                 </div>
@@ -562,7 +559,7 @@ export default function LiveUploadedContent() {
                     Exclusive
                   </Text>
                 </div>
-              </div>
+              </div> */}
             </div>
           </Flex>
 
@@ -696,9 +693,9 @@ export default function LiveUploadedContent() {
                   <Td className="text_center">
                     <div className="dir_col text_center">
                       <div className="volm_type_cont">
-                        <span>{response?.imagecount ?? "0"}</span>
+                        <span>{imageCount?.length ?? "0"}</span>
                         {response?.task_id?.need_photos ? (
-                          <Tooltip label={"Camera"}>
+                          <Tooltip label={"Photo"}>
                             <img
                               src={camera}
                               alt="Content thumbnail"
@@ -711,7 +708,7 @@ export default function LiveUploadedContent() {
                       </div>
 
                       <div className="volm_type_cont">
-                        <span>{response?.interviewcount ?? "0"}</span>
+                        <span>{AudioCount?.length ?? "0"}</span>
                         {response?.task_id?.need_interview ? (
                           <Tooltip label={"Interview"}>
                             <img
@@ -726,7 +723,7 @@ export default function LiveUploadedContent() {
                       </div>
 
                       <div className="volm_type_cont">
-                        <span>{response?.videocount ?? "0"}</span>
+                        <span>{videoCount?.length ?? "0"}</span>
                         {response?.task_id?.need_videos ? (
                           <Tooltip label={"Video"}>
                             <img
@@ -870,7 +867,7 @@ export default function LiveUploadedContent() {
                   <Th>Employee details</Th>
                   <Th>Office</Th>
                   <Th>Mode</Th>
-                  <Th>Contact number</Th>
+                  <Th>Contact</Th>
                   <Th>Conversation with hopper</Th>
                   <Th>Action taken</Th>
                 </Tr>

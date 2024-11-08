@@ -54,7 +54,7 @@ export default function PublishedContentHistory() {
     setLoading(true)
     try {
       await Get(`admin/gethopperViewHistory/${id}?limit=${perPage}&offset=${offset}&${parametersName}=${parameters}`).then((res) => {
-        console.log(res, `<--------res for name`)
+        // console.log(res, `<--------res for name`)
         setHistoryDetail(res?.data?.contnetMgmtHistory)
         setPath(res?.data?.fullPath)
         setHopper(res?.data?.contnetMgmtHistory[0]?.content_id?.hopper_id)
@@ -81,7 +81,7 @@ export default function PublishedContentHistory() {
         window.open(path);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 

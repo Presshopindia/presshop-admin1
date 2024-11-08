@@ -34,7 +34,7 @@ import { useMsgContext } from "contexts/PendindMsgContext";
 
 export function SidebarLinks(props) {
 
-  let {pendingChats,setPendingChats , pendingNotifications } = useMsgContext()
+  let { pendingChats, setPendingChats, pendingNotifications } = useMsgContext()
 
   const { profile, setProfile } = useContext(dataContext);
   const pathname = window.location.pathname;
@@ -66,6 +66,8 @@ export function SidebarLinks(props) {
     return location.pathname.includes(routeName);
   };
 
+  // console.log("routes", routes)
+
   const createLinks = (routes) => {
     const routesar = routes.filter((curr) => {
       if (!curr.hide) {
@@ -81,7 +83,10 @@ export function SidebarLinks(props) {
               profile?.subadmin_rights?.viewRightOnly === true)) ||
           (curr.name === "Manage hoppers" &&
             (profile?.subadmin_rights?.controlHopper === true ||
-              profile?.subadmin_rights?.viewRightOnly === true))
+              profile?.subadmin_rights?.viewRightOnly === true)) ||
+          (curr.name === "Chat" &&
+            (profile?.subadmin_rights?.allow_publication_chat === true ||
+              profile?.subadmin_rights?.allow_hopper_chat === true))
         ) {
           return curr.name;
         } else if (
@@ -98,9 +103,9 @@ export function SidebarLinks(props) {
         return true;
       } else if (curr?.name === "Invoicing & payments") {
         return true;
-      } else if (curr?.name === "Chat") {
-        return true;
       } else if (curr?.name === "Notifications") {
+        return true;
+      } else if (curr?.name === "Rating & reviews") {
         return true;
       } else if (curr?.name === "Manage tabs / categories") {
         return true;
@@ -271,28 +276,28 @@ export function SidebarLinks(props) {
           <NavLink key={index} to={route.layout + route.path}>
             {route.icon ? (
               <Box position="relative">
-              {(route.name==="Notifications" || route.name==="Chat") 
-              &&
-              <Box
-              position="absolute"
-              top="-2px"
-              left="-2px"
-              bgColor="#007BFF"
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              color="#FFFFFF"
-               p="0px 6px"
-              borderRadius="50%"
-              width="20px"
-              height="20px"
-              zIndex="1"
-             fontSize="11px"
-            >
-              {route.name==="Notifications" ? pendingNotifications : pendingChats}
-            </Box>
+                {(route.name === "Notifications" || route.name === "Chat")
+                  &&
+                  <Box
+                    position="absolute"
+                    top="-2px"
+                    left="-2px"
+                    bgColor="#007BFF"
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    color="#FFFFFF"
+                    p="0px 6px"
+                    borderRadius="50%"
+                    width="20px"
+                    height="20px"
+                    zIndex="1"
+                    fontSize="11px"
+                  >
+                    {route.name === "Notifications" ? pendingNotifications : pendingChats}
+                  </Box>
                 }
-             
+
                 <HStack
                   spacing={
                     activeRoute(route.path.toLowerCase()) ? "22px" : "26px"
@@ -338,7 +343,7 @@ export function SidebarLinks(props) {
                     borderRadius="5px"
                   />
                 </HStack>
-            
+
               </Box>
             ) : (
               <Box>

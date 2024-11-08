@@ -67,7 +67,7 @@ export default function SortFilterContent(props) {
         setCategoryName(res.data.categories);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -79,7 +79,7 @@ export default function SortFilterContent(props) {
 
   return (
     <>
-      {console.log(props, `<--these are props`)}
+      {/* {console.log(props, `<--these are props`)} */}
       {props?.hideShow.status === true &&
         <div className="sort_filter_wrap">
           <Flex

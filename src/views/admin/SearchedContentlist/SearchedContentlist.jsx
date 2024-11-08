@@ -37,7 +37,7 @@ import { Post } from "api/admin.services";
 
 export default function SearchedContentlist() {
   const { id, component } = useParams()
-  console.log(id, `<---tag id`)
+  // console.log(id, `<---tag id`)
   const [publishedData, setPublishedData] = useState([])
   const [loading, setLoading] = useState(false)
   const history = useHistory()
@@ -49,7 +49,7 @@ export default function SearchedContentlist() {
       //   search :id
       // }
       await Post(`admin/search`,{search :id}).then((res) => {
-        console.log(res?.data?.resp, `response of published data`)
+        // console.log(res?.data?.resp, `response of published data`)
         setPublishedData(res?.data?.resp)
         setLoading(false)
       })
@@ -57,7 +57,7 @@ export default function SearchedContentlist() {
 
     } catch (error) {
       setLoading(false)
-      console.log(error)
+      // console.log(error)
     }
 
   }

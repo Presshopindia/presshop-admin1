@@ -58,7 +58,7 @@ export function SearchBar(props) {
   return (
 
     <InputGroup position={"relative"} w={{ base: "100%", md: "200px" }} {...rest}>
-      {console.log(hastags, `<---`)}
+      {/* {console.log(hastags, `<---`)} */}
       <InputLeftElement
         children={
           <IconButton
@@ -86,7 +86,7 @@ export function SearchBar(props) {
         fontWeight='500'
         _placeholder={{ color: "gray.400", fontSize: "14px" }}
         borderRadius={borderRadius ? borderRadius : "30px"}
-        placeholder={placeholder ? placeholder : "Search content by hashtag & location"}
+        placeholder={placeholder ? placeholder : "Search content"}
         onChange={(e) => setSearchInput(e.target.value)}
       />
 

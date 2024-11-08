@@ -70,9 +70,9 @@ export default function UserReports() {
   const pubPage = queryParams.get('pubPage');
   const livePage = queryParams.get('livePage');
   const taskPage = queryParams.get('taskPage');
-  
+
   // pagination publshed content
-  const [currentPagePublishdContent, setCurrentPagePublishdContent] =useState(pubPage || 1);
+  const [currentPagePublishdContent, setCurrentPagePublishdContent] = useState(pubPage || 1);
   const [totalPublishdContentPages, setTotalPublishdContentPages] = useState(0);
 
   // live task
@@ -153,7 +153,7 @@ export default function UserReports() {
       setpath1(data.data.fullPath);
       setLoading(false);
     } catch (err) {
-      console.log("<---Have a erro ->", err);
+      // console.log("<---Have a erro ->", err);
       setLoading(false);
     }
   };
@@ -191,7 +191,7 @@ export default function UserReports() {
           toast.success("updated sucessfuly");
         }
       }
-    } catch (error) {}
+    } catch (error) { }
   };
   // pagination
   const handlePageChangePublished = (selectedPage) => {
@@ -212,7 +212,7 @@ export default function UserReports() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
@@ -261,7 +261,7 @@ export default function UserReports() {
         window.open(path);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
@@ -271,7 +271,7 @@ export default function UserReports() {
       task_id: liveTasks[index]._id,
       latestAdminRemark: liveTasks[index].remarks,
       mode: liveTasks[index].mode,
-      assign_more_hopper: checkedMoreHopper,
+      assign_more_hopper: liveTasks?.[index]?.assignmorehopperList?.filter((el) => el?.selected)?.map((el) => el?._id),
     };
 
     if (!liveTasks[index].mode || liveTasks[index].mode.trim() === null) {
@@ -358,7 +358,7 @@ export default function UserReports() {
       toast.success("updated");
       getLiveUploadedContent(liveUploadedContPage);
     } catch (err) {
-      console.log(err, `<------------err for tings`);
+      // console.log(err, `<------------err for tings`);
     }
   };
 
@@ -405,13 +405,13 @@ export default function UserReports() {
         window.open(path);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
   useEffect(() => {
     getReport();
-    if(hideShow?.type === "Live published content"){
+    if (hideShow?.type === "Live published content") {
       getContentList(
         currentPagePublishdContent,
         parametersName,
@@ -419,13 +419,13 @@ export default function UserReports() {
         parametersName1,
         parameters1
       )
-    }else{
-      getContentList(currentPagePublishdContent );
+    } else {
+      getContentList(currentPagePublishdContent);
     }
   }, [currentPagePublishdContent]);
 
-  useEffect(()=>{
-     if (hideShow?.type === "Live tasks"){
+  useEffect(() => {
+    if (hideShow?.type === "Live tasks") {
       getLiveTask(
         currentPageLiveTask,
         parametersName,
@@ -433,13 +433,13 @@ export default function UserReports() {
         parametersName1,
         parameters1
       );
-     }else{
+    } else {
       getLiveTask(currentPageLiveTask);
-     }
+    }
 
-  },[currentPageLiveTask])
+  }, [currentPageLiveTask])
 
-  useEffect(()=>{
+  useEffect(() => {
     if (hideShow?.type === "Live uploaded content") {
       getLiveUploadedContent(
         liveUploadedContPage,
@@ -448,22 +448,12 @@ export default function UserReports() {
         parametersName1,
         parameters1
       );
-    }else{
+    } else {
 
       getLiveUploadedContent(liveUploadedContPage);
     }
 
-  },[liveUploadedContPage])
-
-  const handleRowSelect = (id) => {
-    setCheckedMoreHopper((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((rowId) => rowId !== id);
-      } else {
-        return [...prev, id];
-      }
-    });
-  };
+  }, [liveUploadedContPage])
 
   // amount
   const million = 1000000;
@@ -491,7 +481,7 @@ export default function UserReports() {
       await Get(`admin/roomList?room_type=HoppertoAdmin`).then((res) => {
         setChatPerson(res?.data?.data);
       });
-    } catch (error) {}
+    } catch (error) { }
   };
 
   useEffect(() => {
@@ -577,19 +567,44 @@ export default function UserReports() {
       maximumFractionDigits: 2,
     });
 
-    const scrollToTasks=()=>{
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: 'smooth' // Optional: adds smooth scrolling effect
+  const scrollToTasks = () => {
+    window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: 'smooth' // Optional: adds smooth scrolling effect
     });
-    }
+  }
 
-    const clearFilters = ()=>{
-       setParameters("");
-      setParametersName("");
-      setParameters1("");
-      setParametersName1("");
-    }
+  const clearFilters = () => {
+    setParameters("");
+    setParametersName("");
+    setParameters1("");
+    setParametersName1("");
+  }
+
+  const handleRowSelect = (taskId, hopperId) => {
+    setLiveTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task._id === taskId
+          ? {
+            ...task,
+            assignmorehopperList: task.assignmorehopperList.map((hopper) =>
+              hopper._id === hopperId
+                ? { ...hopper, selected: !hopper.selected }
+                : hopper
+            ),
+          }
+          : task
+      )
+    );
+  };
+
+  const handleCheckboxChange = (taskId, hopperId) => {
+    setCheckedMoreHopper((prev) =>
+      prev.includes(hopperId)
+        ? prev.filter((id) => id !== hopperId)
+        : [...prev, hopperId]
+    );
+  };
 
   return (
     <>
@@ -597,7 +612,7 @@ export default function UserReports() {
         {loading && <Loader />}
         <SimpleGrid
           className="dshbrd_crds"
-          columns={{ base: 1, md: 2, lg: 3, xl: 4 , "2xl": 5 }}
+          columns={{ base: 1, md: 2, lg: 3, xl: 4, "2xl": 5 }}
           gap="20px"
           mb="20px"
         >
@@ -662,7 +677,7 @@ export default function UserReports() {
                 </Text>
                 <Flex align="center" className="card_grth">
                   {taskCount?.live_published_content &&
-                  taskCount?.live_published_content?.type === "decrease" ? (
+                    taskCount?.live_published_content?.type === "decrease" ? (
                     <Text fontWeight="600" color="#ec4e54" me="5px">
                       <BsArrowDown />
                       {taskCount?.live_published_content?.percentage?.toFixed(
@@ -783,7 +798,7 @@ export default function UserReports() {
                 </Text>
                 <Flex align="center" className="card_grth">
                   {taskCount?.live_uploaded_content &&
-                  taskCount?.live_uploaded_content?.type === "decrease" ? (
+                    taskCount?.live_uploaded_content?.type === "decrease" ? (
                     <Text fontWeight="600" color="#ec4e54" me="5px">
                       <BsArrowDown />
                       {taskCount?.live_uploaded_content?.percentage?.toFixed(2)}
@@ -814,7 +829,7 @@ export default function UserReports() {
                             src={
                               curr?.videothubnail ||
                               process.env.REACT_APP_UPLOADED_CONTENT +
-                                curr?.imageAndVideo
+                              curr?.imageAndVideo
                             }
                             // src={curr?.videothubnail}
                             className="content_img"
@@ -825,7 +840,7 @@ export default function UserReports() {
                             src={
                               curr?.videothubnail ||
                               process.env.REACT_APP_UPLOADED_CONTENT +
-                                curr?.videothubnail
+                              curr?.videothubnail
                             }
                             // src={curr?.videothubnail}
 
@@ -886,9 +901,9 @@ export default function UserReports() {
             </div>
 
             <a
-            onClick={() => {
-              history.push("/admin/invoicing-and-payments");
-            }}
+              onClick={() => {
+                history.push("/admin/invoicing-and-payments");
+              }}
             >
               <div className="cardcontent dash-c-body">
                 <div className="cardCustomHead tp_txt">
@@ -913,7 +928,7 @@ export default function UserReports() {
                   sx={{ fontSize: 15 }}
                   className="cardcontent_head subhead"
                 >
-                  Total Invoice value
+                  Total invoice value
                 </Text>
                 <Flex align="center" className="card_grth">
                   <Text fontWeight="600" color="#10AF0C" me="5px">
@@ -926,39 +941,7 @@ export default function UserReports() {
               </div>
               <div className="dash-c-foot">
                 <div className="card-imgs-wrap">
-                  {taskCount &&
-                    taskCount.live_published_content?.task
-                      ?.slice(0, 3)
-                      .map((curr) => {
-                        return curr?.content &&
-                          curr?.content[0].media_type === "image" ? (
-                          <img
-                            src={curr?.content[0]?.watermark}
-                            className="content_img"
-                            alt="Content thumbnail"
-                          />
-                        ) : curr?.content[0].media_type === "video" ? (
-                          <img
-                            // src={
-                            //   process.env.REACT_APP_CONTENT +
-                            //   curr?.content[0].thumbnail
-                            // }
-                            src={curr?.content[0]?.watermark}
-                            className="content_img"
-                            alt="Content thumbnail"
-                          />
-                        ) : curr?.content[0].media_type === "audio" ? (
-                          <span>
-                            <img
-                              src={interview}
-                              alt="Content thumbnail"
-                              className="icn m_auto"
-                            />
-                          </span>
-                        ) : (
-                          ""
-                        );
-                      })}
+
                   <span>
                     <BsArrowRight />
                   </span>
@@ -996,9 +979,9 @@ export default function UserReports() {
               </div>
             </div>
             <a
-            onClick={() => {
-              history.push("/admin/invoicing-and-payments");
-            }}
+              onClick={() => {
+                history.push("/admin/invoicing-and-payments");
+              }}
             >
               <div className="cardcontent dash-c-body">
                 <div className="cardCustomHead tp_txt">
@@ -1007,19 +990,6 @@ export default function UserReports() {
                     variant="body2"
                     className="card-head-txt hd_txt mb-2"
                   >
-                    {/* {taskCount?.total_commision?.amount >= trillion
-                      ? `${(
-                        taskCount?.total_commision?.amount / trillion || 0
-                      )?.toFixed()} trillion`
-                      : taskCount?.total_commision?.amount >= billion
-                        ? `${(
-                          taskCount?.total_commision?.amount / billion || 0
-                        )?.toFixed()} billion`
-                        : taskCount?.total_commision?.amount >= million
-                          ? `${(
-                            taskCount?.total_commision?.amount / million || 0
-                          )?.toFixed()} million`
-                          : (taskCount?.total_commision?.amount || 0)?.toFixed(1)} */}
                     £{" "}
                     {formatAmountInMillion(
                       taskCount?.total_commision?.amount || 0
@@ -1034,16 +1004,16 @@ export default function UserReports() {
                 </Text>
                 <Flex align="center" className="card_grth">
                   {taskCount?.total_commision &&
-                  taskCount?.total_commision?.type === "decrease" ? (
+                    taskCount?.total_commision?.type === "decrease" ? (
                     <Text fontWeight="600" color="#ec4e54" me="5px">
                       <BsArrowDown />
-                      {taskCount?.total_commision?.percentage?.toFixed(2)}%
+                      {taskCount?.total_commision?.amount != 0 ? taskCount?.total_commision?.percentage?.toFixed(2) : 0}%
                     </Text>
                   ) : (
                     <Text color="#10AF0C" me="5px" fontWeight="600">
                       {" "}
                       <BsArrowUp />{" "}
-                      {taskCount?.total_commision?.percentage?.toFixed(2)}%
+                      {taskCount?.total_commision?.amount != 0 ? taskCount?.total_commision?.percentage?.toFixed(2) : 0}%
                     </Text>
                   )}
                   <Text color="black" fontSize="15px" fontWeight="300"></Text>
@@ -1054,44 +1024,6 @@ export default function UserReports() {
               </div>
               <div className="dash-c-foot">
                 <div className="card-imgs-wrap">
-                  {taskCount &&
-                    taskCount.live_published_content?.task
-                      ?.slice(0, 3)
-                      .map((curr) => {
-                        return curr?.content &&
-                          curr?.content[0].media_type === "image" ? (
-                          <img
-                            // src={
-                            //   process.env.REACT_APP_CONTENT +
-                            //   curr?.content[0].media
-                            // }
-                            src={curr?.content[0]?.watermark}
-                            className="content_img"
-                            alt="Content thumbnail"
-                          />
-                        ) : curr?.content[0].media_type === "video" ? (
-                          <img
-                            // src={
-                            //   process.env.REACT_APP_CONTENT +
-                            //   curr?.content[0].thumbnail
-                            // }
-                            src={curr?.content[0]?.watermark}
-                            className="content_img"
-                            alt="Content thumbnail"
-                          />
-                        ) : curr?.content[0].media_type === "audio" ? (
-                          <span>
-                            <img
-                              src={interview}
-                              alt="Content thumbnail"
-                              className="icn m_auto"
-                            />
-                          </span>
-                        ) : (
-                          ""
-                        );
-                      })}
-
                   <span>
                     <BsArrowRight />
                   </span>
@@ -1130,12 +1062,12 @@ export default function UserReports() {
             </div>
 
             <a
-         
-             onClick={() => {
-              // history.push("/live-tasks/id/component");
-              scrollToTasks()
 
-            }}
+              onClick={() => {
+                // history.push("/live-tasks/id/component");
+                scrollToTasks()
+
+              }}
             >
               <div className="cardcontent dash-c-body">
                 <div className="cardCustomHead tp_txt">
@@ -1151,11 +1083,11 @@ export default function UserReports() {
                   sx={{ fontSize: 15 }}
                   className="cardcontent_head subhead"
                 >
-                   Tasks
+                  Tasks
                 </Text>
                 <Flex align="center" className="card_grth">
                   {taskCount?.live_task &&
-                  taskCount?.live_task?.type === "decrease" ? (
+                    taskCount?.live_task?.type === "decrease" ? (
                     <Text fontWeight="600" color="#ec4e54" me="5px">
                       <BsArrowDown />
                       {taskCount?.live_task?.percentage?.toFixed(2)}%
@@ -1183,7 +1115,7 @@ export default function UserReports() {
                             src={
                               curr?.videothubnail ||
                               process.env.REACT_APP_UPLOADED_CONTENT +
-                                curr?.imageAndVideo
+                              curr?.imageAndVideo
                             }
                             className="content_img"
                             alt="Content thumbnail"
@@ -1193,7 +1125,7 @@ export default function UserReports() {
                             src={
                               curr?.videothubnail ||
                               process.env.REACT_APP_UPLOADED_CONTENT +
-                                curr?.videothubnail
+                              curr?.videothubnail
                             }
                             className="content_img"
                             alt="Content thumbnail"
@@ -1367,7 +1299,7 @@ export default function UserReports() {
                 </Text>
                 <Flex align="center" className="card_grth">
                   {taskCount?.total_publication &&
-                  taskCount?.total_publication?.type === "decrease" ? (
+                    taskCount?.total_publication?.type === "decrease" ? (
                     <Text fontWeight="600" color="#ec4e54" me="5px">
                       <BsArrowDown />
                       {taskCount?.total_publication?.percentage?.toFixed(2)}%
@@ -1461,7 +1393,7 @@ export default function UserReports() {
                 </Text>
                 <Flex align="center" className="card_grth">
                   {taskCount?.total_hopper &&
-                  taskCount?.total_hopper?.type === "decrease" ? (
+                    taskCount?.total_hopper?.type === "decrease" ? (
                     <Text fontWeight="600" color="#ec4e54" me="5px">
                       <BsArrowDown />
                       {taskCount?.total_hopper?.percentage?.toFixed(2)}%
@@ -1492,7 +1424,7 @@ export default function UserReports() {
                               // curr?.admin_detail?.admin_profile
                               curr?.hasOwnProperty("avatar_id")
                                 ? process.env.REACT_APP_HOPPER_AVATAR +
-                                  curr?.avatar_id?.avatar
+                                curr?.avatar_id?.avatar
                                 : curr?.admin_detail?.admin_profile
                             }
                             alt="Content thumbnail"
@@ -1550,16 +1482,16 @@ export default function UserReports() {
                   </Tooltip>
                 </a>
                 <span onClick={() => DownloadCsv(currentPagePublishdContent)}>
-                <Tooltip label={"Print"}>
-                  <img src={print} className="opt_icons" />
-                </Tooltip>
+                  <Tooltip label={"Print"}>
+                    <img src={print} className="opt_icons" />
+                  </Tooltip>
                 </span>
 
                 <div className="fltr_btn">
                   <Text fontSize={"15px"}>
                     <span
                       onClick={() => {
-                        if(hideShow.type !== "Live published content"){
+                        if (hideShow.type !== "Live published content") {
                           clearFilters()
                         }
                         setHideShow((prevHideShow) => ({
@@ -1568,7 +1500,7 @@ export default function UserReports() {
                           type: "Live published content",
                         }))
                       }
-                        
+
                       }
                     >
                       Sort
@@ -1639,8 +1571,8 @@ export default function UserReports() {
                         <Tr key={curr._id}>
                           <Td>
                             {curr &&
-                            curr?.content &&
-                            curr?.content?.length > 0 ? (
+                              curr?.content &&
+                              curr?.content?.length > 0 ? (
                               <a
                                 onClick={() => {
                                   history.push(
@@ -1650,80 +1582,80 @@ export default function UserReports() {
                               >
                                 {
                                   curr?.content?.length === 1 ? (
-                                  curr?.content[0]?.media_type === "image" ? (
-                                    <img
-                                      // src={
-                                      //   process.env.REACT_APP_CONTENT +
-                                      //   curr.content[0]?.media
-                                      // }
-                                      src={curr.content[0]?.watermark}
-                                      className="content_img"
-                                      alt="Content thumbnail"
-                                    />
-                                  ) : curr.content[0].media_type === "audio" ? (
-                                    <img
-                                      src={interview}
-                                      alt="Content thumbnail"
-                                      className="icn m_auto"
-                                    />
-                                  ) : curr.content[0].media_type === "video" ? (
-                                    <img
-                                      // src={
-                                      //   process.env.REACT_APP_CONTENT +
-                                      //   curr.content[0]?.thumbnail
-                                      // }
-                                      src={curr.content[0]?.watermark}
-                                      className="content_img"
-                                      alt="Content thumbnail"
-                                    />
-                                  ) : null
-                                ) : (
-                                  curr.content.length > 1 && (
-                                    <div className="content_imgs_wrap contnt_lngth_wrp">
-                                      <div className="content_imgs">
-                                        {curr.content.map((value , index) => (
-                                         index < 3 &&
-                                          <>
-                                            {value.media_type === "image" ? (
-                                              <img
-                                                key={value._id}
-                                                // src={
-                                                //   process.env
-                                                //     .REACT_APP_CONTENT +
-                                                //   value.media ?? ""
-                                                // }
-                                                src={value?.watermark}
-                                                className="content_img"
-                                                alt="Content thumbnail"
-                                              />
-                                            ) : value.media_type === "audio" ? (
-                                              <img
-                                                src={interview}
-                                                alt="Content thumbnail"
-                                                className="icn m_auto"
-                                              />
-                                            ) : value.media_type === "video" ? (
-                                              <img
-                                                key={value._id}
-                                                // src={
-                                                //   process.env
-                                                //     .REACT_APP_CONTENT +
-                                                //   value.thumbnail ?? ""
-                                                // }
-                                                src={value?.watermark}
-                                                className="content_img"
-                                                alt="Content thumbnail"
-                                              />
-                                            ) : null}
-                                          </>
-                                        ))}
+                                    curr?.content[0]?.media_type === "image" ? (
+                                      <img
+                                        // src={
+                                        //   process.env.REACT_APP_CONTENT +
+                                        //   curr.content[0]?.media
+                                        // }
+                                        src={curr.content[0]?.watermark}
+                                        className="content_img"
+                                        alt="Content thumbnail"
+                                      />
+                                    ) : curr.content[0].media_type === "audio" ? (
+                                      <img
+                                        src={interview}
+                                        alt="Content thumbnail"
+                                        className="icn m_auto"
+                                      />
+                                    ) : curr.content[0].media_type === "video" ? (
+                                      <img
+                                        // src={
+                                        //   process.env.REACT_APP_CONTENT +
+                                        //   curr.content[0]?.thumbnail
+                                        // }
+                                        src={curr.content[0]?.watermark}
+                                        className="content_img"
+                                        alt="Content thumbnail"
+                                      />
+                                    ) : null
+                                  ) : (
+                                    curr.content.length > 1 && (
+                                      <div className="content_imgs_wrap contnt_lngth_wrp">
+                                        <div className="content_imgs">
+                                          {curr.content.map((value, index) => (
+                                            index < 3 &&
+                                            <>
+                                              {value.media_type === "image" ? (
+                                                <img
+                                                  key={value._id}
+                                                  // src={
+                                                  //   process.env
+                                                  //     .REACT_APP_CONTENT +
+                                                  //   value.media ?? ""
+                                                  // }
+                                                  src={value?.watermark}
+                                                  className="content_img"
+                                                  alt="Content thumbnail"
+                                                />
+                                              ) : value.media_type === "audio" ? (
+                                                <img
+                                                  src={interview}
+                                                  alt="Content thumbnail"
+                                                  className="icn m_auto"
+                                                />
+                                              ) : value.media_type === "video" ? (
+                                                <img
+                                                  key={value._id}
+                                                  // src={
+                                                  //   process.env
+                                                  //     .REACT_APP_CONTENT +
+                                                  //   value.thumbnail ?? ""
+                                                  // }
+                                                  src={value?.watermark}
+                                                  className="content_img"
+                                                  alt="Content thumbnail"
+                                                />
+                                              ) : null}
+                                            </>
+                                          ))}
+                                        </div>
+                                        <span className="arrow_span">
+                                          <BsArrowRight />
+                                        </span>
                                       </div>
-                                      <span className="arrow_span">
-                                        <BsArrowRight />
-                                      </span>
-                                    </div>
-                                  )
-                                )}
+                                    )
+                                  )}
                               </a>
                             ) : null
                             }
@@ -1818,7 +1750,7 @@ export default function UserReports() {
                               )}
 
                               {image && image?.length > 0 && (
-                                <Tooltip label={"Camera"}>
+                                <Tooltip label={"Photo"}>
                                   <img
                                     src={camera}
                                     alt="Content thumbnail"
@@ -1953,14 +1885,12 @@ export default function UserReports() {
                               {curr?.purchased_publication?.company_bank_details
                                 ?.bank_name ?? ""}
                             </p>
-                            <p>{`Sort Code ${
-                              curr?.purchased_publication?.company_bank_details
-                                ?.sort_code ?? ""
-                            }`}</p>
-                            <p>{`Account ${
-                              curr?.purchased_publication?.company_bank_details
-                                ?.account_number ?? ""
-                            }`}</p>
+                            <p>{`Sort Code ${curr?.purchased_publication?.company_bank_details
+                              ?.sort_code ?? ""
+                              }`}</p>
+                            <p>{`Account ${curr?.purchased_publication?.company_bank_details
+                              ?.account_number ?? ""
+                              }`}</p>
                           </Td>
                           <Td className="item_detail">
                             <img
@@ -2045,7 +1975,7 @@ export default function UserReports() {
                           <Td>
                             {(profile?.subadmin_rights?.viewRightOnly &&
                               profile?.subadmin_rights?.controlContent) ||
-                            profile?.subadmin_rights?.controlContent ? (
+                              profile?.subadmin_rights?.controlContent ? (
                               <Button
                                 className="theme_btn tbl_btn"
                                 onClick={() => PublishedUpdated(index)}
@@ -2078,7 +2008,7 @@ export default function UserReports() {
             pageCount={totalPublishdContentPages}
             previousLabel="<"
             renderOnZeroPageCount={null}
-            forcePage={currentPagePublishdContent - 1} 
+            forcePage={currentPagePublishdContent - 1}
           />
         </Card>
 
@@ -2133,8 +2063,8 @@ export default function UserReports() {
                 <div className="fltr_btn">
                   <Text fontSize={"15px"}>
                     <span
-                      onClick={() =>{
-                        if(hideShow.type !== "Live uploaded content"){
+                      onClick={() => {
+                        if (hideShow.type !== "Live uploaded content") {
                           clearFilters()
                         }
                         setHideShow((prevHideShow) => ({
@@ -2181,11 +2111,6 @@ export default function UserReports() {
                     <Th>Amount paid</Th>
                     <Th>Amount payable</Th>
                     <Th>Uploaded by</Th>
-
-                    {/* <Th>Payment pending</Th>
-                    <Th>Presshop commission</Th>
-                    <Th>Payment details</Th> */}
-
                     <Th>Mode</Th>
                     <Th>Remarks</Th>
                     <Th>Employee details</Th>
@@ -2195,12 +2120,16 @@ export default function UserReports() {
                 <Tbody>
                   {liveUploadedContent &&
                     liveUploadedContent.map((curr, index) => {
+                      const imageCount = curr?.uploaded_content?.filter((el) => el.type == "image")?.length;
+                      const videoCount = curr?.uploaded_content?.filter((el) => el.type == "video")?.length;
+                      const interviewCount = curr?.uploaded_content?.filter((el) => el.type == "interview")?.length;
+
                       return (
                         <Tr>
                           <Td className="content_wrap new_content_wrap">
                             {curr &&
-                            curr.uploaded_content &&
-                            curr.uploaded_content.length > 0 ? (
+                              curr.uploaded_content &&
+                              curr.uploaded_content.length > 0 ? (
                               <a
                                 onClick={() => {
                                   history.push(
@@ -2213,7 +2142,7 @@ export default function UserReports() {
                                     src={
                                       curr?.videothubnail ||
                                       process.env.REACT_APP_UPLOADED_CONTENT +
-                                        curr.uploaded_content[0]?.imageAndVideo
+                                      curr.uploaded_content[0]?.imageAndVideo
                                     }
                                   />
                                 ) : (
@@ -2229,7 +2158,7 @@ export default function UserReports() {
                                                 value?.videothubnail ||
                                                 process.env
                                                   .REACT_APP_UPLOADED_CONTENT +
-                                                  value.imageAndVideo
+                                                value.imageAndVideo
                                               }
                                               className="content_img"
                                               alt="Content thumbnail"
@@ -2246,7 +2175,7 @@ export default function UserReports() {
                                                 value?.videothubnail ||
                                                 process.env
                                                   .REACT_APP_UPLOADED_CONTENT +
-                                                  value.thumbnail
+                                                value.thumbnail
                                               }
                                               alt="Content thumbnail"
                                               className="icn m_auto"
@@ -2301,8 +2230,8 @@ export default function UserReports() {
                           <Td className="text_center">
                             <div className="dir_col text_center">
                               {curr?.task_id &&
-                              curr?.task_id?.need_photos === true ? (
-                                <Tooltip label={"Camera"}>
+                                curr?.task_id?.need_photos === true ? (
+                                <Tooltip label={"Photo"}>
                                   <img
                                     src={camera}
                                     alt="Content thumbnail"
@@ -2313,7 +2242,7 @@ export default function UserReports() {
                                 ""
                               )}
                               {curr?.task_id &&
-                              curr?.task_id?.need_interview === true ? (
+                                curr?.task_id?.need_interview === true ? (
                                 <Tooltip label={"Interview"}>
                                   <img
                                     src={interview}
@@ -2325,7 +2254,7 @@ export default function UserReports() {
                                 ""
                               )}
                               {curr?.task_id &&
-                              curr?.task_id?.need_videos === true ? (
+                                curr?.task_id?.need_videos === true ? (
                                 <Tooltip label={"Video"}>
                                   <img
                                     src={video}
@@ -2338,11 +2267,6 @@ export default function UserReports() {
                               )}
                             </div>
                           </Td>
-                          {/* <Td className="text_center">
-                          <Tooltip label={curr?.category_details[0]?.name}>
-                            {curr?.category_details.length <= 0 ? "No Category Defined" : <img src={curr?.category_details[0]?.icon} className="icn m_auto" />}
-                          </Tooltip>
-                        </Td> */}
                           <Td className="text_center">
                             <Tooltip label={curr?.category_details?.name}>
                               {
@@ -2355,22 +2279,20 @@ export default function UserReports() {
                           </Td>
                           <Td className="text_center">
                             <div className="dir_col text_center">
-                              <p className="text_center">{curr?.imagecount}</p>
-                              <p className="text_center">
-                                {curr?.interviewcount}
-                              </p>
-                              <p className="text_center">{curr?.videocount}</p>
+                              <p className="text_center">{imageCount || 0}</p>
+                              <p className="text_center">{interviewCount || 0}</p>
+                              <p className="text_center">{videoCount || 0}</p>
                             </div>
                           </Td>
                           <Td className="text_center">
                             <div className="dir_col">
-                              <p>£ {curr?.total_image_price ?? "0"}</p>
-                              <p>£ {curr?.total_interview_price ?? "0"}</p>
-                              <p>£ {curr?.total_video_price ?? "0"}</p>
+                              <p>£ {curr?.task_id?.photo_price ?? "0"}</p>
+                              <p>£ {curr?.task_id?.interview_price ?? "0"}</p>
+                              <p>£ {curr?.task_id?.videos_price ?? "0"}</p>
                             </div>
                           </Td>
                           <Td className="">
-                            {curr?.sale_status === "sold" ? (
+                            {curr?.task_id?.totalfund_invested?.length > 0 ? (
                               <span className="txt_success_mdm">sold</span>
                             ) : (
                               <span className="txt_danger_mdm">unsold</span>
@@ -2378,43 +2300,42 @@ export default function UserReports() {
                           </Td>
                           <Td className="timedate_wrap">
                             &pound;
-                            {formatAmountInMillion(
-                              curr?.total_amount_recieved ?? "0"
-                            )}
-                            <p>
+                            {curr?.task_id?.totalfund_invested?.length > 0 ? formatAmountInMillion(
+                              curr?.total_amount_recieved
+                            ) : 0}
+                            {/* <p>
                               {" "}
                               <a className="back_link timedate">
                                 <BsEye className="icn_time" />
                                 View
                               </a>
-                            </p>
+                            </p> */}
                           </Td>
                           <Td className="timedate_wrap">
                             &pound;
-                            {formatAmountInMillion(
-                              curr?.total_presshop_commission ?? "0"
-                            )}
+                            {curr?.task_id?.totalfund_invested?.length > 0 ? formatAmountInMillion(
+                              curr?.total_presshop_commission
+                            ) : 0}
                           </Td>
                           <Td className="timedate_wrap">
                             &pound;
                             {formatAmountInMillion(
                               curr?.total_amount_paid ?? "0"
                             )}
-                            <p>
+                            {/* <p>
                               {" "}
                               <a className="back_link timedate">
                                 <BsEye className="icn_time" />
                                 View
                               </a>
-                            </p>
+                            </p> */}
                           </Td>
                           <Td className="timedate_wrap">
                             &pound;
-                            {formatAmountInMillion(
-                              curr?.total_amount_payable ?? "0"
-                            )}
+                            {curr?.task_id?.totalfund_invested?.length > 0 ? formatAmountInMillion(
+                              curr?.total_amount_payable
+                            ) : 0}
                           </Td>
-
                           <Td className="item_detail">
                             <img
                               src={
@@ -2514,7 +2435,7 @@ export default function UserReports() {
             pageCount={liveUploadedContentTotalPages}
             previousLabel="<"
             renderOnZeroPageCount={null}
-            forcePage={liveUploadedContPage - 1} 
+            forcePage={liveUploadedContPage - 1}
           />
         </Card>
 
@@ -2534,28 +2455,28 @@ export default function UserReports() {
                 fontFamily={"AirbnbBold"}
                 lineHeight="100%"
               >
-                 Tasks
+                Tasks
               </Text>
               <div className="opt_icons_wrap">
 
-              {/* <Tooltip label={"Share"}>
+                {/* <Tooltip label={"Share"}>
                (
                   ) : ( "" )
               </Tooltip> */}
 
-                  <a onClick={() => { setShow(true); setCsv(path3);}}
-                    className="txt_danger_mdm">
-                      <Tooltip label={"Share"}>
-                        <img src={share} className="opt_icons" alt="Content thumbnail" />
-                      </Tooltip>
-                  </a>
-              
-                
-                    <span onClick={() => DownloadCsvLiveTask(currentPageLiveTask)}>
-                    <Tooltip label={"Print"}>
-                      <img src={print} className="opt_icons" />
-                    </Tooltip>
-                    </span>
+                <a onClick={() => { setShow(true); setCsv(path3); }}
+                  className="txt_danger_mdm">
+                  <Tooltip label={"Share"}>
+                    <img src={share} className="opt_icons" alt="Content thumbnail" />
+                  </Tooltip>
+                </a>
+
+
+                <span onClick={() => DownloadCsvLiveTask(currentPageLiveTask)}>
+                  <Tooltip label={"Print"}>
+                    <img src={print} className="opt_icons" />
+                  </Tooltip>
+                </span>
 
                 {/* <Tooltip label={"Print"}>
                   (
@@ -2565,8 +2486,8 @@ export default function UserReports() {
                 <div className="fltr_btn">
                   <Text fontSize={"15px"}>
                     <span
-                      onClick={() =>{
-                        if(hideShow.type !== "Live tasks"){
+                      onClick={() => {
+                        if (hideShow.type !== "Live tasks") {
                           clearFilters()
                         }
                         setHideShow((prevHideShow) => ({
@@ -2575,7 +2496,7 @@ export default function UserReports() {
                           type: "Live tasks",
                         }))
                       }
-                      
+
                       }
                     >
                       Sort
@@ -2627,6 +2548,10 @@ export default function UserReports() {
                 <Tbody>
                   {liveTasks &&
                     liveTasks.map((curr, index) => {
+                      const imageCount = curr?.uploaded_content?.filter((el) => el.type == "image")?.length;
+                      const videoCount = curr?.uploaded_content?.filter((el) => el.type == "video")?.length;
+                      const interviewCount = curr?.uploaded_content?.filter((el) => el.type == "interview")?.length;
+
                       return (
                         <Tr key={curr?._id}>
                           <Td className="content_wrap new_content_wrap">
@@ -2638,14 +2563,14 @@ export default function UserReports() {
                               }}
                             >
                               {curr?.uploaded_content &&
-                              curr?.uploaded_content.length <= 0 ? (
+                                curr?.uploaded_content.length <= 0 ? (
                                 "No Content"
                               ) : curr?.uploaded_content.length <= 1 ? (
                                 <img
                                   src={
                                     curr?.uploaded_content[0]?.videothubnail ||
                                     process.env.REACT_APP_UPLOADED_CONTENT +
-                                      curr?.uploaded_content[0]?.imageAndVideo
+                                    curr?.uploaded_content[0]?.imageAndVideo
                                   }
                                   className="content_img"
                                   alt="Content thumbnail"
@@ -2664,7 +2589,7 @@ export default function UserReports() {
                                                 value?.videothubnail ||
                                                 process.env
                                                   .REACT_APP_UPLOADED_CONTENT +
-                                                  value.imageAndVideo
+                                                value.imageAndVideo
                                               }
                                               className="content_img"
                                               alt="Content thumbnail"
@@ -2683,7 +2608,7 @@ export default function UserReports() {
                                                 value?.videothubnail ||
                                                 process.env
                                                   .REACT_APP_UPLOADED_CONTENT +
-                                                  value.thubnail
+                                                value.thubnail
                                               }
                                               alt="Content thumbnail"
                                               className="icn m_auto"
@@ -2728,9 +2653,9 @@ export default function UserReports() {
                           </Td>
                           <Td className="text_center">
                             <div className="dir_col text_center">
-                              <Tooltip label={"Camera"}>
+                              <Tooltip label={"Photo"}>
                                 {curr?.need_photos &&
-                                curr?.need_photos === true ? (
+                                  curr?.need_photos === true ? (
                                   <img
                                     src={camera}
                                     alt="Content thumbnail"
@@ -2743,7 +2668,7 @@ export default function UserReports() {
 
                               <Tooltip label={"Interview"}>
                                 {curr?.need_interview &&
-                                curr?.need_interview === true ? (
+                                  curr?.need_interview === true ? (
                                   <img
                                     src={interview}
                                     alt="Content thumbnail"
@@ -2756,7 +2681,7 @@ export default function UserReports() {
 
                               <Tooltip label={"Video"}>
                                 {curr?.need_videos &&
-                                curr?.need_videos === true ? (
+                                  curr?.need_videos === true ? (
                                   <img
                                     src={video}
                                     alt="Content thumbnail"
@@ -2779,13 +2704,13 @@ export default function UserReports() {
                           <Td className="text_center">
                             <div className="dir_col text_center">
                               <p className="text_center">
-                                {curr?.image_count ?? "0"}
+                                {imageCount ?? "0"}
                               </p>
                               <p className="text_center">
-                                {curr?.interview_count ?? "0"}
+                                {interviewCount ?? "0"}
                               </p>
                               <p className="text_center">
-                                {curr?.video_count ?? "0"}
+                                {videoCount ?? "0"}
                               </p>
                             </div>
                           </Td>
@@ -2798,19 +2723,19 @@ export default function UserReports() {
                               <p>
                                 £
                                 {formatAmountInMillion(
-                                  curr?.total_image_price ?? "0"
+                                  curr?.photo_price ?? "0"
                                 )}
                               </p>
                               <p>
                                 £
                                 {formatAmountInMillion(
-                                  curr?.total_interview_price ?? "0"
+                                  curr?.interview_price ?? "0"
                                 )}
                               </p>
                               <p>
                                 £
                                 {formatAmountInMillion(
-                                  curr?.total_video_price ?? "0"
+                                  curr?.videos_price ?? "0"
                                 )}
                               </p>
                             </div>
@@ -2850,10 +2775,6 @@ export default function UserReports() {
                               </div>
                             </div>
                           </Td>
-                          {/* <Td className="timedate_wrap">
-                            <p className="timedate"><img src={watch} className="icn_time" />10:25 AM</p>
-                            <p className="timedate"><img src={calendar} className="icn_time" />24 Feb, 2023</p>
-                          </Td> */}
                           <Td className="timedate_wrap">
                             <p className="timedate">
                               <img src={watch} className="icn_time" />
@@ -2875,33 +2796,26 @@ export default function UserReports() {
                             <div className="slct">
                               {curr?.assignmorehopperList &&
                                 curr?.assignmorehopperList.map((item) => {
-                                  const isActive = checkedMoreHopper.includes(
-                                    item._id
-                                  );
+                                  const isActive = checkedMoreHopper.includes(item._id) || item.selected || curr?.assign_more_hopper_history?.includes(item._id);
                                   return (
                                     <div
-                                      className={`sl_itm pos_rel ${
-                                        isActive ? "active" : ""
-                                      }`}
+                                      className={`sl_itm pos_rel ${isActive ? 'active' : ''}`}
                                       key={item._id}
                                     >
                                       <input
                                         type="checkbox"
-                                        id={item._id} // Use the same value for id and htmlFor
+                                        id={item._id}
                                         className="tsk_asign_check"
-                                        onChange={() =>
-                                          handleRowSelect(item._id)
-                                        }
+                                        checked={isActive}
+                                        onChange={() => handleCheckboxChange(curr._id, item._id)}
                                       />
                                       <label
-                                        htmlFor={item._id} // Use the same value as the associated input's id
-                                        className="asign_hpr_lbl"
+                                        className={`asign_hpr_lbl ${isActive ? 'active' : ''}`}
+                                        onClick={() => handleRowSelect(curr._id, item._id)}
                                       >
                                         <p>{`${item?.first_name} ${item?.last_name}`}</p>
                                         <span className="sml_txt">
-                                          {`${(
-                                            item.distance * 0.00062137119
-                                          ).toFixed(2)}m away`}
+                                          {`${(item.distance * 0.00062137119).toFixed(2)}m away`}
                                         </span>
                                       </label>
                                     </div>
@@ -2910,31 +2824,65 @@ export default function UserReports() {
                             </div>
                           </Td>
 
-                          <Td className="timedate_wrap">
-                            &pound;{curr?.total_amount_recieved ?? "0"}
-                            <p>
+
+                          <Td>
+                            &pound;{" "}
+                            {curr?.totalfund_invested?.length > 0 ? formatAmountInMillion(curr?.total_amount_recieved) : 0}
+                            {/* <p>
                               {" "}
-                              <a className="back_link timedate">
+                              <a
+                                className="back_link timedate"
+                                onClick={() => {
+                                  if (curr?.transaction_id) {
+                                    history.push(
+                                      `/admin/Payment-Transaction/${curr?.transaction_id}/Payment transaction `
+                                    );
+                                    // history.push("/admin/invoicing-and-payments");
+                                  } else {
+                                    toast.error(
+                                      "Payment is not completed yet."
+                                    );
+                                  }
+                                }}
+                              >
                                 <BsEye className="icn_time" />
                                 View
                               </a>
-                            </p>
+                            </p> */}
                           </Td>
+
                           <Td className="timedate_wrap">
-                            &pound;{curr?.total_presshop_commission ?? "0"}
+                            &pound;{curr?.totalfund_invested?.length > 0 ? curr?.total_presshop_commission : 0}
                           </Td>
-                          <Td className="timedate_wrap">
-                            &pound;{curr?.total_amount_paid ?? "0"}
-                            <p>
+
+                          <Td>
+                            &pound;{" "}
+                            {curr?.totalfund_invested?.length > 0 ? formatAmountInMillion(curr?.total_amount_paid) : 0}
+                            {/* <p>
                               {" "}
-                              <a className="back_link timedate">
+                              <a
+                                className="back_link timedate"
+                                onClick={() => {
+                                  if (curr?.transaction_id) {
+                                    history.push(
+                                      `/admin/Payment-Transaction/${curr?.transaction_id}/Payment transaction `
+                                    );
+                                    // history.push("/admin/invoicing-and-payments");
+                                  } else {
+                                    toast.error(
+                                      "Payment is not completed yet."
+                                    );
+                                  }
+                                }}
+                              >
                                 <BsEye className="icn_time" />
                                 View
                               </a>
-                            </p>
+                            </p> */}
                           </Td>
+
                           <Td className="timedate_wrap">
-                            &pound;{curr?.total_amount_payable ?? "0"}
+                            &pound;{curr?.totalfund_invested?.length > 0 ? curr?.total_amount_payable : 0}
                           </Td>
 
                           <Td className="select_wrap">

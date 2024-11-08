@@ -94,3 +94,15 @@ export async function Patch(url, body) {
   }
 }
 
+export async function UploadFile (path, data) {
+  try{
+    const formData = new FormData();
+    formData.append("path", path);
+    formData.append("images", data);
+    const result = await axios.post(`${BASE_URL}admin/upload/data`, formData);
+    return result.data
+  }
+  catch(error){
+    throw (error)
+  }
+}

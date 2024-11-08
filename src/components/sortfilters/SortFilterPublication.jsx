@@ -62,7 +62,7 @@ export default function SortFilterPublication(props) {
 
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
 
 
     }

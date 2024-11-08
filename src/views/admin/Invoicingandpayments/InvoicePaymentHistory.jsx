@@ -63,7 +63,7 @@ export default function InvoicePaymentHistory() {
         window.open(path);
       }
     } catch (err) {
-      console.log('<---Have an error ->', err);
+      // console.log('<---Have an error ->', err);
     }
   };
 

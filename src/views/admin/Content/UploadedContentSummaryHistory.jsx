@@ -246,6 +246,9 @@ export default function UploadedContentSummaryHistory() {
               <Tbody>
                 {
                   contentSummary && contentSummary.map((curr) => {
+                    const imageCount = curr?.content_id?.filter((el) => el?.type === "image")?.length;
+                    const videoCount = curr?.content_id?.filter((el) => el?.type === "video")?.length;
+                    const interviewCount = curr?.content_id?.filter((el) => el?.type === "interview")?.length;
                     return (
                       <Tr key={curr?._id}>
                         <Td className="timedate_wrap">
@@ -306,9 +309,9 @@ export default function UploadedContentSummaryHistory() {
                         </Td>
                         <Td className="text_center">
                           <div className="dir_col text_center">
-                            {curr?.task_id && curr?.task_id?.need_photos === true ? <img src={camera} alt="Content thumbnail" className="icn m_auto" /> : ""}
-                            {curr?.task_id && curr?.task_id?.need_interview === true ? <img src={interview} alt="Content thumbnail" className="icn m_auto" /> : ""}
-                            {curr?.task_id && curr?.task_id?.need_videos === true ? <img src={video} alt="Content thumbnail" className="icn m_auto" /> : ""}
+                            <Tooltip label={"Photo"}>{curr?.task_id && curr?.task_id?.need_photos === true ? <img src={camera} alt="Content thumbnail" className="icn m_auto" /> : ""}</Tooltip>
+                            <Tooltip label={"Interview"}>{curr?.task_id && curr?.task_id?.need_interview === true ? <img src={interview} alt="Content thumbnail" className="icn m_auto" /> : ""}</Tooltip>
+                            <Tooltip label={"Video"}>{curr?.task_id && curr?.task_id?.need_videos === true ? <img src={video} alt="Content thumbnail" className="icn m_auto" /> : ""}</Tooltip>
                           </div>
                         </Td>
                         <Td className="text_center">
@@ -318,20 +321,19 @@ export default function UploadedContentSummaryHistory() {
                         </Td>
                         <Td className="text_center">
                           <div className="dir_col text_center">
-                            <p className="text_center">{curr?.imagecount}</p>
-                            <p className="text_center">{curr?.interviewcount}</p>
-                            <p className="text_center">{curr?.videocount}</p>
+                            <p className="text_center">{imageCount}</p>
+                            <p className="text_center">{interviewCount}</p>
+                            <p className="text_center">{videoCount}</p>
                           </div>
                         </Td>
                         <Td className="text_center">
                           <div className="dir_col">
-                            <p>£ {formatAmountInMillion(curr?.total_image_price ?? "0")}</p>
-                            <p>£ {formatAmountInMillion(curr?.total_interview_price ?? "0")}</p>
-                            <p>£ {formatAmountInMillion(curr?.total_video_price ?? "0")}</p>
+                            <p>£ {formatAmountInMillion(curr?.task_id?.photo_price ?? "0")}</p>
+                            <p>£ {formatAmountInMillion(curr?.task_id?.interview_price ?? "0")}</p>
+                            <p>£ {formatAmountInMillion(curr?.task_id?.videos_price ?? "0")}</p>
                           </div>
                         </Td>
                         <Td className="sale-status gr">{curr?.paid_status === true ? "sold" : "unsold"}</Td>
-                        <Td>£0 </Td>
                         <Td>£0 </Td>
                         <Td>£0 </Td>
                         <Td>£0 </Td>

@@ -68,7 +68,7 @@ export default function HopperUploadedContent() {
         [parametersName]: parameters
       }
       await Post(`admin/viewUploadedContent/SummeryHopper/viewdetails`, obj).then((res) => {
-        console.log(res?.data?.data, `response of details`)
+        // console.log(res?.data?.data, `response of details`)
         setSummary(res?.data?.data)
         setPath(res?.data?.fullPath)
         const hopper = res?.data?.data[0]?.hopper_id
@@ -141,7 +141,7 @@ export default function HopperUploadedContent() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setloading(false);
     }
   }
@@ -307,9 +307,9 @@ export default function HopperUploadedContent() {
                           </Text>
                         </Td>
                         <Td className="text_center">
-                          {curr?.type === "image" ? <img src={camera} alt="Content thumbnail" className="icn m_auto" />
-                            : curr?.type === "video" ? <img src={video} alt="Content thumbnail" className="icn m_auto" />
-                              : curr?.type === "audio" ? <img src={interview} alt="Content thumbnail" className="icn m_auto" />
+                          {curr?.type === "image" ? <Tooltip label={"Photo"}><img src={camera} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
+                            : curr?.type === "video" ? <Tooltip label={"Video"}><img src={video} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
+                              : curr?.type === "audio" ? <Tooltip label={"Interview"}><img src={interview} alt="Content thumbnail" className="icn m_auto" /></Tooltip>
                                 : ""}
                         </Td>
 

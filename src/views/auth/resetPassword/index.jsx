@@ -59,7 +59,7 @@ function ResetPassword() {
           history.push("/sign-in");
 
         })} catch (err) {
-        console.log(err, `${error}`)
+        // console.log(err, `${error}`)
       }
     }
   }

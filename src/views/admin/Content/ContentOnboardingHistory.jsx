@@ -1,6 +1,6 @@
 
 // Chakra imports
-import { Box, Flex, Table, Tbody, Td, Text, Th, Thead, Tr, useColorModeValue, TableContainer, Checkbox, Textarea, Select, Button, } from "@chakra-ui/react";
+import { Box, Flex, Table, Tbody, Td, Text, Th, Thead, Tr, useColorModeValue, TableContainer, Checkbox, Textarea, Select, Button, Tooltip, } from "@chakra-ui/react";
 import Card from "components/card/Card";
 import { React, useEffect, useState } from "react";
 import calendar from "assets/img/icons/calendar.svg";
@@ -60,7 +60,7 @@ export default function ContentOnboardingHistory() {
         setLoading(false);
       });
     } catch (errors) {
-      console.log(errors);
+      // console.log(errors);
       setLoading(false);
     }
   };
@@ -78,7 +78,7 @@ export default function ContentOnboardingHistory() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
@@ -296,21 +296,19 @@ export default function ContentOnboardingHistory() {
                         </Td>
                         <Td className="text_center">
                           <div className="dir_col text_center">
-                            {audio && audio.length > 0 && <img src={interview} alt="Content thumbnail" className="icn m_auto" />}
-                            {video1 && video1.length > 0 && <img src={video} alt="Content thumbnail" className="icn m_auto" />}
-                            {image && image.length > 0 && <img src={camera} alt="Content thumbnail" className="icn m_auto" />}
-                            {Doc && Doc.length > 0 && <img src={docic} alt="Content thumbnail" className="icn m_auto" />}
-                            {Pdf && Pdf.length > 0 && <img src={pdfic} alt="Content thumbnail" className="icn m_auto" />}
+                            {audio && audio.length > 0 && <Tooltip label="Audio"><img src={interview} alt="Content thumbnail" className="icn m_auto" /></Tooltip>}
+                            {video1 && video1.length > 0 && <Tooltip label="Video"><img src={video} alt="Content thumbnail" className="icn m_auto" /></Tooltip>}
+                            {image && image.length > 0 && <Tooltip label="Photo"><img src={camera} alt="Content thumbnail" className="icn m_auto" /></Tooltip>}
+                            {Doc && Doc.length > 0 && <Tooltip label="Document"><img src={docic} alt="Content thumbnail" className="icn m_auto" /></Tooltip>}
+                            {Pdf && Pdf.length > 0 && <Tooltip label="Pdf"><img src={pdfic} alt="Content thumbnail" className="icn m_auto" /></Tooltip>}
                           </div>
                         </Td>
                         <Td className="text_center">
-                          {curr?.content_id?.type == "shared" ? <img src={shared} alt="Content thumbnail" className="icn" /> : <img src={crown} alt="Content thumbnail" className="icn" />
-                          }
+                          {curr?.content_id?.Vat[0]?.purchased_content_type == "shared" ? <Tooltip label="Shared"><img src={shared} alt="Content thumbnail" className="icn" /></Tooltip> : <Tooltip label="Exclusive"><img src={crown} alt="Content thumbnail" className="icn" /></Tooltip>}
                         </Td>
                         <Td
                           className="text_center">
-                          {/* <img src={star} alt="Content thumbnail" className="icn" /> */}
-                          {curr?.category_details?.name}
+                          <Tooltip label={curr?.category_details?.name}><img src={curr?.category_details?.icon} alt="Content thumbnail" className="icn" /></Tooltip>
                         </Td>
                         <Td className="text_center">
                           {audio && audio.length > 0 && audio.length}

@@ -49,8 +49,6 @@ export default function HeaderLinks(props) {
     "14px 17px 40px 4px rgba(112, 144, 176, 0.18)",
     "14px 17px 40px 4px rgba(112, 144, 176, 0.06)"
   );
-  const [admin, setAdmin] = useState({})
-  console.log("🚀 ~ HeaderLinks ~ admin:", admin)
   const storedLoginTime = sessionStorage.getItem('loginTime');
   const handleLogout = async () => {
     // await AuthApi.Logout(user);
@@ -59,25 +57,7 @@ export default function HeaderLinks(props) {
     return history.push("/auth/signin");
   };
 
-  // get profile 
-  const getProfile = async () => {
-    try {
-      await Get(`admin/getProfile`).then((res) => {
-        if(res){
-        setAdmin(res?.data?.profileData)}
-      })
-
-    } catch (err) {
-      // console.log(err)
-    }
-
-
-  }
-  useEffect(() => {
-    getProfile()
-
-
-  }, [])
+  const {admin} = useAuth()
 
 
   const borderButton = useColorModeValue("secondaryGray.500", "whiteAlpha.200");

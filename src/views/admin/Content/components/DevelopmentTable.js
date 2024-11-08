@@ -57,6 +57,7 @@ import PopupConfirm from "components/Pop Confirm";
 import DeletedContents from "./DeletedContents";
 import SortFilterDashboard from "components/sortfilters/SortFilterDashboard";
 import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
+import { deleteCSV } from "utils/commonFunction";
 export default function DevelopmentTable(props) {
   const [contentId, setContentId] = useState(null);
   const [adult, setAdult] = useState(null);
@@ -86,6 +87,7 @@ export default function DevelopmentTable(props) {
 
   // states for content on boarding
   const [contentList, setContentList] = useState([]);
+  const [blockedContentList, setBlockedContentList] = useState([]);
   const contOnboarding = queryParams.get('contOnboarding');
   const [currentPageContent, setCurrentPageContent] = useState(contOnboarding || 1);
   const [totalContentPages, setTotalContentPages] = useState(0);
@@ -109,17 +111,18 @@ export default function DevelopmentTable(props) {
   });
   const [categories, setCategories] = useState([]);
 
-  const [ deletedContents , setDeletedContents ] = useState([])
+  const [deletedContents, setDeletedContents] = useState([])
   const deletedContent = queryParams.get('deletedContent');
- const [ currentPageDelCont , setCurrentPageDelCont] = useState(deletedContent || 1)
- const [ deletedContentPages , setDeletedContentPages] = useState(10)
+  const [currentPageDelCont, setCurrentPageDelCont] = useState(deletedContent || 1)
+  const [deletedContentPages, setDeletedContentPages] = useState(10)
+
   // content onBoarding
   const getContentList = async (
     page,
     parametersName,
     parameters,
     parametersName1,
-    parameters1
+    parameters1,
   ) => {
     setLoading(true);
     const offset = (page - 1) * perPage;
@@ -131,6 +134,32 @@ export default function DevelopmentTable(props) {
         setpath1(res?.data?.fullPath);
         setTotalContentPages(res?.data?.totalCount / perPage);
         setLoading(false);
+        deleteCSV(res?.data?.fullPath)
+      });
+    } catch (err) {
+      // console.log("<---Have a erro ->", err);
+      setLoading(false);
+    }
+  };
+
+  const getBlockedContentList = async (
+    page,
+    parametersName,
+    parameters,
+    parametersName1,
+    parameters1,
+  ) => {
+    setLoading(true);
+    const offset = (page - 1) * perPage || 0;
+    try {
+      await Get(`admin/getContentList?status=blocked
+      &limit=${perPage}&offset=${offset}&${parametersName}=${parameters}
+      &${parametersName1}=${parameters1}`).then((res) => {
+        setBlockedContentList(res?.data?.contentList);
+        setpath1(res?.data?.fullPath);
+        setTotalContentPages(res?.data?.totalCount / perPage);
+        setLoading(false);
+        deleteCSV(res?.data?.fullPath)
       });
     } catch (err) {
       // console.log("<---Have a erro ->", err);
@@ -162,7 +191,10 @@ export default function DevelopmentTable(props) {
         checkAndApprove: currentContent.checkAndApprove,
         call_time_date: currentContent.call_time_date,
         ask_price: currentContent.ask_price,
+        original_ask_price: currentContent.original_ask_price,
+        type: currentContent.type,
         category_id: currentContent?.category_id,
+        check_explicity: currentContent?.content?.map((el) => el.watermark)
       };
       if (currentContent.status === "rejected") {
         if (!currentContent.remarks || currentContent.remarks.trim() === "") {
@@ -171,6 +203,7 @@ export default function DevelopmentTable(props) {
           const resp = await Patch(`admin/editContent`, obj);
           if (resp) {
             contentList[index].remarks = "";
+            getBlockedContentList();
             getContentList(currentPageContent);
             getContentListPublished(currentPagePublishdContent);
             toast.error("Content rejected");
@@ -202,6 +235,7 @@ export default function DevelopmentTable(props) {
           const resp = await Patch(`admin/editContent`, obj);
           if (resp) {
             contentList[index].remarks = "";
+            getBlockedContentList()
             getContentList(currentPageContent);
             getContentListPublished(currentPagePublishdContent);
             toast.success("Updated");
@@ -230,8 +264,10 @@ export default function DevelopmentTable(props) {
           const resp = await Patch(`admin/editContent`, obj);
           if (resp) {
             contentList[index].remarks = "";
+            getBlockedContentList();
             getContentList(currentPageContent);
             getContentListPublished(currentPagePublishdContent);
+            getBlockedContentList(currentPageContent)
             toast.success("Content published on the marketplace");
             mode[0][index] = currentContent.mode;
           }
@@ -255,11 +291,31 @@ export default function DevelopmentTable(props) {
         parametersName1,
         parameters1
       );
-    }else{
+    } else {
       getContentList(currentPageContent);
     }
 
     // await getContentList(currentPageContent);
+    mode.push(
+      contentList.map((value) => {
+        return value.mode;
+      })
+    );
+  }, [currentPageContent]);
+
+  useEffect(async () => {
+    if (hideShow?.type === "contentOnboarding") {
+      getBlockedContentList(
+        currentPageContent,
+        parametersName,
+        parameters,
+        parametersName1,
+        parameters1
+      );
+    } else {
+      getBlockedContentList(currentPageContent);
+    }
+
     mode.push(
       contentList.map((value) => {
         return value.mode;
@@ -276,10 +332,13 @@ export default function DevelopmentTable(props) {
       const data = await Get(
         `admin/getContentList?status=published&offset=${offset}&limit=${perPage}&${parametersName}=${parameters}`
       );
+
+      // console.log("Data pub")
       setPublishedData(data.data.contentList);
       setpath2(data?.data?.fullPath);
       setTotalPublishdContentPages(data.data.totalCount / perPage);
       setLoading(false);
+      deleteCSV(data?.data?.fullPath)
     } catch (err) {
       // console.log("<---Have a erro ->", err);
       setLoading(false);
@@ -319,7 +378,7 @@ export default function DevelopmentTable(props) {
           toast.success("Successfully updated");
         }
       }
-    } catch (error) {}
+    } catch (error) { }
   };
   // pagination
   const handlePageChangePublished = (selectedPage) => {
@@ -344,6 +403,7 @@ export default function DevelopmentTable(props) {
       if (response) {
         const onboardinPrint = response?.data?.fullPath;
         window.open(onboardinPrint);
+        deleteCSV(response?.data?.fullPath)
       }
     } catch (err) {
       // console.log("<---Have an error ->", err);
@@ -359,10 +419,10 @@ export default function DevelopmentTable(props) {
         parametersName1,
         parameters1
       );
-      }else{
+    } else {
 
-        getContentListPublished(currentPagePublishdContent);
-      }
+      getContentListPublished(currentPagePublishdContent);
+    }
   }, [currentPagePublishdContent]);
 
   // print content onBoarding
@@ -372,6 +432,7 @@ export default function DevelopmentTable(props) {
       if (response) {
         const onboardinPrint = response?.data?.fullPath;
         window.open(onboardinPrint);
+        deleteCSV(response?.data?.fullPath)
       }
     } catch (err) {
       // console.log("<---Have an error ->", err);
@@ -391,6 +452,7 @@ export default function DevelopmentTable(props) {
         setpath3(res?.data?.fullPath);
         setLiveUploadedContTotalPages(res?.data?.count / perPage);
         setLoading(false);
+        deleteCSV(res?.data?.fullPath)
       });
     } catch (error) {
       setLoading(false);
@@ -407,9 +469,10 @@ export default function DevelopmentTable(props) {
       if (response) {
         const path = response?.data?.fullPath;
         window.open(path);
+        deleteCSV(response?.data?.fullPath)
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
   // for pagination
@@ -426,7 +489,7 @@ export default function DevelopmentTable(props) {
         setCategories(data);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
   // edit live uploaded content
@@ -461,7 +524,7 @@ export default function DevelopmentTable(props) {
       await Patch(`admin/editLiveuploadedContent`, obj);
       toast.success("Successfully updated");
       getLiveUploadedContent(liveUploadedContPage);
-    } catch (err) {}
+    } catch (err) { }
     // }
   };
 
@@ -498,17 +561,16 @@ export default function DevelopmentTable(props) {
     }));
   };
   const handleDelete = async (item) => {
-    console.log(
-      item,
-      "=====================delet==============================="
-    );
     try {
-      await Post("admin/deleteContent", { content_id: item, is_deleted: true });
+      // if(item?.purchased_mediahouse?.length > 0){
+      //   return  toast.success("This is a sold content, so it cannot be deleted.");
+      // }
+      await Post("admin/deleteContent", { content_id: item._id, is_deleted: true });
       toast.success("Content Deleted Successfully");
       getContentListPublished(currentPagePublishdContent);
       getDeletedContents(currentPageDelCont)
     } catch (error) {
-      console.log(error.message);
+      // console.log(error.message);
     }
   };
   const { parameters, parametersName, parameters1, parametersName1 } = params;
@@ -542,7 +604,7 @@ export default function DevelopmentTable(props) {
         parameters1
       );
       closeSort();
-  
+
     }
     else if (hideShow?.type === "deletedContent") {
       getDeletedContents(
@@ -576,26 +638,46 @@ export default function DevelopmentTable(props) {
 
 
   //delete content listing
-  const getDeletedContents = async (page ,parametersName, parameters)=>{
+  const getDeletedContents = async (page, parametersName, parameters) => {
     setLoading(true);
     const offset = (page - 1) * perPage;
     try {
       const data = await Get(
         `admin/getContentList?status=published&is_deleted=true&limit=${perPage}&offset=${offset}&${parametersName}=${parameters}`
       );
-    setDeletedContents(data.data?.contentList)
-    setDeletedContentPages(data?.data?.totalCount / perPage);
+      setDeletedContents(data.data?.contentList)
+      setDeletedContentPages(data?.data?.totalCount / perPage);
       setLoading(false);
 
     } catch (err) {
-      console.log("<---Have a erro ->", err);
+      // console.log("<---Have a erro ->", err);
       setLoading(false);
     }
-}
+  }
 
-useEffect(()=>{
- getDeletedContents(currentPageDelCont)
-},[currentPageDelCont])
+  useEffect(() => {
+    getDeletedContents(currentPageDelCont)
+  }, [currentPageDelCont])
+
+
+  // Delete blocked content-
+  const [idOfBlockContent, setIdOfBlockContent] = useState([]);
+
+  const deleteBlockedContent = async () => {
+    try {
+      if (idOfBlockContent.length === 0) {
+        return;
+      }
+      setLoading(true);
+      await Post("admin/deleteMultiContent", { content_id: idOfBlockContent });
+      setIdOfBlockContent([]);
+      getBlockedContentList();
+      setLoading(false);
+    }
+    catch (error) {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -672,7 +754,7 @@ useEffect(()=>{
                 <Th>Location</Th>
                 <Th>Heading</Th>
                 <Th>Description</Th>
-                <Th>Voice note</Th>
+                <Th className="text_center">Voice note</Th>
                 <Th>Type</Th>
                 <Th>Licence</Th>
                 <Th>Category</Th>
@@ -681,7 +763,7 @@ useEffect(()=>{
                 <Th>Posted by</Th>
                 <Th className="width_th_comn">1st level check</Th>
                 <Th className="width_th_comn">2nd level check & call</Th>
-                <Th className="width_th_comn">Call time & date</Th>
+                <Th className="width_th_comn">Time & date</Th>
                 <Th className="check_th">Check & approve</Th>
                 <Th>Mode</Th>
                 <Th>Status</Th>
@@ -873,8 +955,8 @@ useEffect(()=>{
                         <img className="icn_edit" src={write} />
                       </Td>
 
-                      <Td>
-                        {value?.audio_description && (
+                      <Td className="text_center">
+                        {value?.audio_description ? (
                           <audio controls>
                             <source
                               src={
@@ -884,14 +966,14 @@ useEffect(()=>{
                               type="audio/mp3"
                             />
                           </audio>
-                        )}
+                        ) : "NA"}
 
                         <audio />
                       </Td>
                       <Td className="text_center">
                         <div className="dir_col text_center">
                           {audio && audio?.length > 0 && (
-                            <Tooltip label={"Interview"}>
+                            <Tooltip label={"Audio"}>
                               <img
                                 src={interview}
                                 alt="Content thumbnail"
@@ -909,7 +991,7 @@ useEffect(()=>{
                             </Tooltip>
                           )}
                           {image && image?.length > 0 && (
-                            <Tooltip label={"Camera"}>
+                            <Tooltip label={"Photo"}>
                               <img
                                 src={camera}
                                 alt="Content thumbnail"
@@ -938,23 +1020,26 @@ useEffect(()=>{
                         </div>
                       </Td>
                       <Td className="text_center">
-                        {value.type == "shared" ? (
-                          <Tooltip label={"Shared"}>
-                            <img
-                              src={shared}
-                              alt="Content thumbnail"
-                              className="icn"
-                            />
-                          </Tooltip>
-                        ) : (
-                          <Tooltip label={"Exclusive"}>
-                            <img
-                              src={crown}
-                              alt="Content thumbnail"
-                              className="icn"
-                            />
-                          </Tooltip>
-                        )}
+                        <Select
+                          placeholder="Select option"
+                          value={value?.type}
+                          name="type"
+                          onChange={(e) => {
+                            const selectedId = e.target.value;
+                            const updatedItems = contentList.map(
+                              (item, idx) => {
+                                if (idx === index) {
+                                  return { ...item, type: selectedId };
+                                }
+                                return item;
+                              }
+                            );
+                            setContentList(updatedItems);
+                          }}
+                        >
+                          <option key={"shared"} value={"shared"}>Shared</option>
+                          <option key={"exclusive"} value={"exclusive"}>Exclusive</option>
+                        </Select>
                       </Td>
                       <Td className="text_center">
                         <Tooltip label={value?.categoryData?.name}>
@@ -1005,6 +1090,7 @@ useEffect(()=>{
                             value={value.ask_price}
                             onChange={(e) => {
                               value.ask_price = e.target.value;
+                              value.original_ask_price = (e.target.value * 5) / 6;
                               setContentList((prevItems) => {
                                 const updatedItems = [...prevItems];
                                 updatedItems[index] = value;
@@ -1023,7 +1109,7 @@ useEffect(()=>{
                           alt="Content thumbnail"
                         />
                         <Text className="nameimg naming_comn">
-                        <span className="txt_mdm">{`${value?.hopper_id?.first_name}  ${value?.hopper_id?.last_name}`}{" "}</span>
+                          <span className="txt_mdm">{`${value?.hopper_id?.first_name}  ${value?.hopper_id?.last_name}`}{" "}</span>
                           <br />
                           <span>({value?.hopper_id?.user_name})</span>
                         </Text>
@@ -1081,10 +1167,6 @@ useEffect(()=>{
                               });
                             }}
                           />
-                          {console.log(
-                            "sdhhhhhhhhhhhhhhhjhv",
-                            value.firstLevelCheck?.isAdult
-                          )}
                           <span>No children</span>
                         </div>
                         <div className="check_wrap">
@@ -1113,6 +1195,30 @@ useEffect(()=>{
                           />
                           <span>GDPR check</span>
                         </div>
+
+                        {/* Newly added */}
+                        <div className="check_wrap">
+                          <Checkbox
+                            colorScheme="brandScheme"
+                            me="10px"
+                            content_id={value._id}
+                            isChecked={value.firstLevelCheck?.deep_fake_check}
+                            isDisabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            onChange={(e) => {
+                              value.firstLevelCheck.deep_fake_check = e.target.checked;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                          <span>Deep fake check</span>
+                        </div>
+
                       </Td>
 
                       <Td className="remarks_wrap">
@@ -1224,10 +1330,11 @@ useEffect(()=>{
                               : null
                           } */}
                           {value?.firstLevelCheck?.isAdult &&
-                          value?.firstLevelCheck?.isGDPR &&
-                          value?.firstLevelCheck?.nudity &&
-                          value?.checkAndApprove &&
-                          value?.secondLevelCheck ? (
+                            value?.firstLevelCheck?.isGDPR &&
+                            value?.firstLevelCheck?.nudity &&
+                            value?.firstLevelCheck?.deep_fake_check &&
+                            value?.checkAndApprove &&
+                            value?.secondLevelCheck ? (
                             <option value="published">Published</option>
                           ) : null}
                         </Select>
@@ -1278,12 +1385,12 @@ useEffect(()=>{
                       <Td>
                         {(profile?.subadmin_rights?.viewRightOnly &&
                           profile?.subadmin_rights?.controlContent) ||
-                        profile?.subadmin_rights?.controlContent ? (
+                          profile?.subadmin_rights?.controlContent ? (
                           <Button
                             className="theme_btn tbl_btn"
                             onClick={() => updateContent(index)}
                           >
-                            Save
+                            Publish
                           </Button>
                         ) : (
                           <Button
@@ -1291,7 +1398,815 @@ useEffect(()=>{
                             onClick={() => updateContent(index)}
                             disabled
                           >
-                            Save
+                            Publish
+                          </Button>
+                        )}
+                      </Td>
+                    </Tr>
+                  );
+                })}
+            </Tbody>
+          </Table>
+        </TableContainer>
+        <ReactPaginate
+          className="paginated"
+          breakLabel="..."
+          nextLabel=">"
+          onPageChange={handleChangeContent}
+          pageRangeDisplayed={5}
+          pageCount={totalContentPages}
+          previousLabel="<"
+          renderOnZeroPageCount={null}
+          previousClassName="custom-arrow"
+          nextClassName="custom-arrow"
+          forcePage={currentPageContent - 1}
+        />
+      </Card>
+
+      <Card
+        className="tab_card"
+        direction="column"
+        w="100%"
+        px="0px"
+        mb="24px"
+        overflowX={{ sm: "scroll", lg: "hidden" }}
+      >
+        <Flex px="20px" justify="space-between" mb="10px" align="center">
+          <Text
+            color={textColor}
+            fontSize="22px"
+            fontWeight="700"
+            lineHeight="100%"
+            fontFamily="AirbnbBold"
+          >
+            Blocked content summary
+          </Text>
+          <div className="opt_icons_wrap">
+            <a
+              onClick={() => {
+                setShow(true);
+                setCsv(path1);
+              }}
+              className="txt_danger_mdm"
+            >
+              <Tooltip label={"Share"}>
+                <img src={share} className="opt_icons" />
+              </Tooltip>
+            </a>
+
+            <span onClick={printOnboardingTable}>
+              <Tooltip label={"Print"}>
+                <img src={print} className="opt_icons" />
+              </Tooltip>
+            </span>
+
+            <div className="fltr_btn">
+              <Text fontSize={"15px"}>
+                <span
+                  onClick={() =>
+                    setHideShow((prevHideShow) => ({
+                      ...prevHideShow,
+                      status: true,
+                      type: "contentOnboarding",
+                    }))
+                  }
+                >
+                  Sort
+                </span>
+              </Text>
+              {hideShow.type === "contentOnboarding" && (
+                <SortFilterDashboard
+                  hideShow={hideShow}
+                  closeSort={closeSort}
+                  sendDataToParent={collectSortParms}
+                  sendDataToParent1={collectSortParms1}
+                  handleApplySorting={handleApplySorting}
+                />
+              )}
+            </div>
+          </div>
+        </Flex>
+
+        <Flex px="20px" gap={5} mb="10px" align="center">
+          <Button
+            className="theme_btn tbl_btn"
+            onClick={() => {
+              setIdOfBlockContent((prev) => {
+                let updatedData = [...prev];
+                if(updatedData.length > 0){
+                  return updatedData = []
+                }
+                else{
+                  return updatedData = blockedContentList?.map((el) => el._id)
+                }
+              })
+            }}
+          >
+            Select all
+          </Button>
+
+          <Button
+            className="theme_btn tbl_btn del-btn"
+            onClick={() => deleteBlockedContent()}
+          >
+            Delete
+          </Button>
+        </Flex>
+
+        <TableContainer className="fix_ht_table">
+          <Table mx="20px" variant="simple" className="common_table">
+            <Thead>
+              <Tr>
+                <Th>
+                  <Checkbox
+                    colorScheme="brandScheme"
+                    me="10px"
+                    isChecked={true}
+                  />
+                </Th>
+                <Th>Posted content</Th>
+                <Th>Time & date</Th>
+                <Th>Location</Th>
+                <Th>Heading</Th>
+                <Th>Description</Th>
+                <Th>Voice note</Th>
+                <Th>Type</Th>
+                <Th>Licence</Th>
+                <Th>Category</Th>
+                <Th>Volume</Th>
+                <Th>Price</Th>
+                <Th>Posted by</Th>
+                <Th className="width_th_comn">1st level check</Th>
+                <Th className="width_th_comn">2nd level check & call</Th>
+                <Th className="width_th_comn">Call time & date</Th>
+                <Th className="check_th">Check & approve</Th>
+                <Th>Mode</Th>
+                <Th>Status</Th>
+                <Th>Remarks</Th>
+                <Th>Employee details</Th>
+                <Th>CTA</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {blockedContentList &&
+                blockedContentList.map((value, index) => {
+                  const audio = value?.content?.filter(
+                    (curr) => curr?.media_type === "audio"
+                  );
+                  const image = value?.content?.filter(
+                    (curr) => curr?.media_type === "image"
+                  );
+                  const video1 = value?.content?.filter(
+                    (curr) => curr?.media_type === "video"
+                  );
+                  const Doc = value?.content?.filter(
+                    (curr) => curr?.media_type === "doc"
+                  );
+                  const Pdf = value?.content?.filter(
+                    (curr) => curr?.media_type === "pdf"
+                  );
+
+                  return (
+                    <Tr key={value._id}>
+                      <Td>
+                        <Checkbox
+                          colorScheme="brandScheme"
+                          me="10px"
+                          isChecked={idOfBlockContent.includes(value._id)}
+                          onChange={(e) => {
+                            setIdOfBlockContent((prev) => {
+                              if (idOfBlockContent.includes(value._id)) {
+                                return prev.filter((el) => el !== value._id);
+                              } else {
+                                return [...prev, value._id];
+                              }
+                            });
+                          }}
+                        />
+                      </Td>
+                      <Td>
+                        <a
+                          onClick={() =>
+                            history.push(
+                              `/admin/live-published-content/${value._id}/Manage content`
+                            )
+                          }
+                        >
+                          {value?.content.length === 1 ? (
+                            value?.content[0].media_type === "image" ? (
+                              <img
+                                // src={process.env.REACT_APP_CONTENT + value?.content[0]?.media}
+                                src={value?.content[0]?.watermark}
+                                className="content_img"
+                                alt="Content thumbnail"
+                              />
+                            ) : value?.content[0].media_type === "audio" ? (
+                              <span>
+                                <img
+                                  src={interview}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </span>
+                            ) : value?.content[0].media_type === "video" ? (
+                              <img
+                                src={
+                                  process.env.REACT_APP_CONTENT +
+                                  value?.content[0]?.thumbnail
+                                }
+                                className="content_img"
+                                alt="Content thumbnail"
+                              />
+                            ) : value?.content[0].media_type === "doc" ? (
+                              <img
+                                src={docic}
+                                className="content_img"
+                                alt="Content thumbnail"
+                              />
+                            ) : value?.content[0].media_type === "pdf" ? (
+                              <img
+                                src={pdfic}
+                                className="content_img"
+                                alt="Content thumbnail"
+                              />
+                            ) : null
+                          ) : value?.content.length === 0 ? (
+                            "no content"
+                          ) : (
+                            value?.content.length > 1 && (
+                              <div className="content_imgs_wrap contnt_lngth_wrp">
+                                <div className="content_imgs">
+                                  {value?.content.slice(0, 3).map((value) => (
+                                    <>
+                                      {value.media_type === "image" ? (
+                                        <img
+                                          // src={process.env.REACT_APP_CONTENT + value.media}
+                                          src={value?.watermark}
+                                          className="content_img"
+                                          alt="Content thumbnail"
+                                        />
+                                      ) : value.media_type === "audio" ? (
+                                        <span>
+                                          <img
+                                            src={interview}
+                                            alt="Content thumbnail"
+                                            className="icn m_auto"
+                                          />
+                                        </span>
+                                      ) : value.media_type === "audio" ? (
+                                        <img
+                                          src={
+                                            process.env.REACT_APP_CONTENT +
+                                            value.thumbnail
+                                          }
+                                          className="content_img"
+                                          alt="Content thumbnail"
+                                        />
+                                      ) : value.media_type === "doc" ? (
+                                        <img
+                                          src={docic}
+                                          className="content_img"
+                                          alt="Content thumbnail"
+                                        />
+                                      ) : value.media_type === "pdf" ? (
+                                        <img
+                                          src={pdfic}
+                                          className="content_img"
+                                          alt="Content thumbnail"
+                                        />
+                                      ) : null}
+                                    </>
+                                  ))}
+                                </div>
+                                <span className="arrow_span">
+                                  <BsArrowRight />
+                                </span>
+                              </div>
+                            )
+                          )}
+                        </a>
+                      </Td>
+
+                      <Td className="timedate_wrap">
+                        <p className="timedate">
+                          <img src={watch} className="icn_time" />
+                          {moment(value.createdAt).format("hh:mm A")}
+                        </p>
+                        <p className="timedate">
+                          <img src={calendar} className="icn_time" />
+                          {moment(value.createdAt).format("DD MMMM YYYY")}
+                        </p>
+                      </Td>
+                      <Td className="item_detail address_details">
+                        {value.location}
+                        {/* <br /> E14 5AQ */}
+                      </Td>
+                      <Td className="remarks_wrap remarks_wrap_edit">
+                        <Textarea
+                          className="desc_txtarea"
+                          isRequired
+                          defaultValue={value.heading}
+                          isDisabled={
+                            profile?.subadmin_rights?.viewRightOnly &&
+                            !profile?.subadmin_rights?.controlContent
+                          }
+                          placeholder="Enter heading..."
+                          content_id={value._id}
+                          name="heading"
+                          onChange={(e) => {
+                            value.heading = e.target.value;
+                            setContentList((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = value;
+                              return updatedItems;
+                            });
+                          }}
+                        />
+                        <img className="icn_edit" src={write} />
+                      </Td>
+                      <Td className="remarks_wrap remarks_wrap_edit">
+                        <Textarea
+                          className="desc_txtarea"
+                          content_id={value._id}
+                          defaultValue={value.description}
+                          isDisabled={
+                            profile?.subadmin_rights?.viewRightOnly &&
+                            !profile?.subadmin_rights?.controlContent
+                          }
+                          name="description"
+                          onChange={(e) => {
+                            value.description = e.target.value;
+                            setContentList((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = value;
+                              return updatedItems;
+                            });
+                          }}
+                        />
+                        <img className="icn_edit" src={write} />
+                      </Td>
+
+                      <Td>
+                        {value?.audio_description && (
+                          <audio controls>
+                            <source
+                              src={
+                                process.env.REACT_APP_CONTENT +
+                                value?.audio_description
+                              }
+                              type="audio/mp3"
+                            />
+                          </audio>
+                        )}
+
+                        <audio />
+                      </Td>
+                      <Td className="text_center">
+                        <div className="dir_col text_center">
+                          {audio && audio?.length > 0 && (
+                            <Tooltip label={"Audio"}>
+                              <img
+                                src={interview}
+                                alt="Content thumbnail"
+                                className="icn m_auto"
+                              />
+                            </Tooltip>
+                          )}
+                          {video1 && video1?.length > 0 && (
+                            <Tooltip label={"Video"}>
+                              <img
+                                src={video}
+                                alt="Content thumbnail"
+                                className="icn m_auto"
+                              />
+                            </Tooltip>
+                          )}
+                          {image && image?.length > 0 && (
+                            <Tooltip label={"Photo"}>
+                              <img
+                                src={camera}
+                                alt="Content thumbnail"
+                                className="icn m_auto"
+                              />
+                            </Tooltip>
+                          )}
+                          {Doc && Doc?.length > 0 && (
+                            <Tooltip label={"document"}>
+                              <img
+                                src={docic}
+                                alt="Content thumbnail"
+                                className="icn m_auto"
+                              />
+                            </Tooltip>
+                          )}
+                          {Pdf && Pdf?.length > 0 && (
+                            <Tooltip label={"pdf"}>
+                              <img
+                                src={pdfic}
+                                alt="Content thumbnail"
+                                className="icn m_auto"
+                              />
+                            </Tooltip>
+                          )}
+                        </div>
+                      </Td>
+                      <Td className="text_center">
+                        {/* {value.type == "shared" ? (
+                          <Tooltip label={"Shared"}>
+                            <img
+                              src={shared}
+                              alt="Content thumbnail"
+                              className="icn"
+                            />
+                          </Tooltip>
+                        ) : (
+                          <Tooltip label={"Exclusive"}>
+                            <img
+                              src={crown}
+                              alt="Content thumbnail"
+                              className="icn"
+                            />
+                          </Tooltip>
+                        )} */}
+                        <Select
+                          placeholder="Select option"
+                          value={value?.type}
+                          name="type"
+                          onChange={(e) => {
+                            const selectedId = e.target.value;
+                            const updatedItems = contentList.map(
+                              (item, idx) => {
+                                if (idx === index) {
+                                  return { ...item, type: selectedId };
+                                }
+                                return item;
+                              }
+                            );
+                            setContentList(updatedItems);
+                          }}
+                        >
+                          <option key={"shared"} value={"shared"}>Shared</option>
+                          <option key={"exclusive"} value={"exclusive"}>Exclusive</option>
+                        </Select>
+                      </Td>
+                      <Td className="text_center">
+                        <Tooltip label={value?.categoryData?.name}>
+                          {/* <img
+                            src={value?.categoryData?.icon}
+                            alt="Content thumbnail"
+                            className="icn"
+                          /> */}
+                          <Select
+                            placeholder="Select option"
+                            value={value?.category_id}
+                            name="categoryData"
+                            onChange={(e) => {
+                              const selectedId = e.target.value;
+                              const updatedItems = contentList.map(
+                                (item, idx) => {
+                                  if (idx === index) {
+                                    return { ...item, category_id: selectedId };
+                                  }
+                                  return item;
+                                }
+                              );
+                              // Update the contentList with the new array
+                              setContentList(updatedItems);
+                            }}
+                          >
+                            {categories?.map((option) => (
+                              <option key={option._id} value={option._id}>
+                                {option.name}
+                              </option>
+                            ))}
+                          </Select>
+                        </Tooltip>
+                        {/* {value?.categoryData?.name} */}
+                      </Td>
+                      <Td className="text_center">
+                        <p>{audio && audio?.length > 0 && audio?.length}</p>
+                        <p>{video1 && video1?.length > 0 && video1?.length}</p>
+                        <p>{image && image?.length > 0 && image?.length}</p>
+                        <p>{Doc && Doc?.length > 0 && Doc?.length}</p>
+                        <p>{Pdf && Pdf?.length > 0 && Pdf?.length}</p>
+                      </Td>
+                      <Td>
+                        <Flex alignItems="center" gap="4px">
+                          £
+                          <input
+                            type="number"
+                            value={value.ask_price}
+                            onChange={(e) => {
+                              value.ask_price = e.target.value;
+                              value.original_ask_price = (e.target.value * 5) / 6;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                        </Flex>
+                      </Td>
+                      <Td className="item_detail">
+                        <img
+                          src={
+                            process.env.REACT_APP_HOPPER_AVATAR +
+                            value?.hopper_id?.avatar_detail?.avatar
+                          }
+                          alt="Content thumbnail"
+                        />
+                        <Text className="nameimg naming_comn">
+                          <span className="txt_mdm">{`${value?.hopper_id?.first_name}  ${value?.hopper_id?.last_name}`}{" "}</span>
+                          <br />
+                          <span>({value?.hopper_id?.user_name})</span>
+                        </Text>
+                      </Td>
+                      <Td className="item_detail">
+                        <div className="check_wrap">
+                          <Checkbox
+                            colorScheme="brandScheme"
+                            me="10px"
+                            content_id={value._id}
+                            isChecked={value.firstLevelCheck?.nudity}
+                            isDisabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            onChange={(e) => {
+                              value.firstLevelCheck.nudity = e.target.checked;
+                              if (e.target.checked == true) {
+                                setNudity(true);
+                              } else {
+                                setNudity(false);
+                              }
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+
+                          <span>No nudity</span>
+                        </div>
+                        <div className="check_wrap">
+                          <Checkbox
+                            colorScheme="brandScheme"
+                            me="10px"
+                            // isDisabled={
+                            //   profile?.subadmin_rights?.viewRightOnly &&
+                            //   !profile?.subadmin_rights?.controlContent
+                            // }
+                            content_id={value._id}
+                            isChecked={value.firstLevelCheck?.isAdult}
+                            onChange={(e) => {
+                              // if(e.target.checked==true){
+                              //   // console.log('sdhhhhhhhhhhhhhhhjhv')
+                              //   setAdult[index](true)
+                              // }else{
+                              //   setAdult[index](false)
+                              // }
+                              value.firstLevelCheck.isAdult = e.target.checked;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                          <span>No children</span>
+                        </div>
+                        <div className="check_wrap">
+                          <Checkbox
+                            colorScheme="brandScheme"
+                            me="10px"
+                            content_id={value._id}
+                            isChecked={value.firstLevelCheck?.isGDPR}
+                            isDisabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            onChange={(e) => {
+                              value.firstLevelCheck.isGDPR = e.target.checked;
+                              if (e.target.checked == true) {
+                                setGdpr(true);
+                              } else {
+                                setGdpr(false);
+                              }
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                          <span>GDPR check</span>
+                        </div>
+
+                        {/* Newly added */}
+                        <div className="check_wrap">
+                          <Checkbox
+                            colorScheme="brandScheme"
+                            me="10px"
+                            content_id={value._id}
+                            isChecked={value.firstLevelCheck?.deep_fake_check}
+                            isDisabled={
+                              profile?.subadmin_rights?.viewRightOnly &&
+                              !profile?.subadmin_rights?.controlContent
+                            }
+                            onChange={(e) => {
+                              value.firstLevelCheck.deep_fake_check = e.target.checked;
+                              setContentList((prevItems) => {
+                                const updatedItems = [...prevItems];
+                                updatedItems[index] = value;
+                                return updatedItems;
+                              });
+                            }}
+                          />
+                          <span>Deep fake check</span>
+                        </div>
+
+                      </Td>
+
+                      <Td className="remarks_wrap">
+                        <Textarea
+                          placeholder="Enter details of call..."
+                          content_id={value._id}
+                          defaultValue={value.secondLevelCheck}
+                          isDisabled={
+                            profile?.subadmin_rights?.viewRightOnly &&
+                            !profile?.subadmin_rights?.controlContent
+                          }
+                          name="secondLevelCheck"
+                          onChange={(e) => {
+                            value.secondLevelCheck = e.target.value;
+                            setContentList((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = value;
+                              return updatedItems;
+                            });
+                          }}
+                        />
+                      </Td>
+                      <Td className="timedate_wrap">
+                        {value.mode_updated_at ? (
+                          <>
+                            <p className="timedate">
+                              <img src={watch} className="icn_time" />
+                              {moment(value.mode_updated_at).format("hh:mm A")}
+                            </p>
+                            <p className="timedate">
+                              <img src={calendar} className="icn_time" />
+                              {moment(value.mode_updated_at).format(
+                                "DD MMMM, YYYY"
+                              )}
+                            </p>
+                          </>
+                        ) : (
+                          ""
+                        )}
+                      </Td>
+                      <Td className="text_center">
+                        <Checkbox
+                          colorScheme="brandScheme"
+                          me="10px"
+                          isChecked={value.checkAndApprove}
+                          isDisabled={
+                            profile?.subadmin_rights?.viewRightOnly &&
+                            !profile?.subadmin_rights?.controlContent
+                          }
+                          onChange={(e) => {
+                            value.checkAndApprove = e.target.checked;
+                            setContentList((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = value;
+                              return updatedItems;
+                            });
+                          }}
+                        />
+                      </Td>
+                      <Td className="select_wrap">
+                        <Select
+                          isDisabled={
+                            profile?.subadmin_rights?.viewRightOnly &&
+                            !profile?.subadmin_rights?.controlContent
+                          }
+                          value={value.mode}
+                          content_id={value._id}
+                          name="mode"
+                          onChange={(e) => {
+                            value.mode = e.target.value;
+                            setContentList((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = value;
+                              return updatedItems;
+                            });
+                          }}
+                        >
+                          <option value="chat">Chat</option>
+                          <option value="call">Call</option>
+                          <option value="email">Email</option>
+                        </Select>
+                      </Td>
+
+                      <Td className="big_select_wrap">
+                        <Select
+                          value={value.status}
+                          content_id={value._id}
+                          isDisabled={
+                            profile?.subadmin_rights?.viewRightOnly &&
+                            !profile?.subadmin_rights?.controlContent
+                          }
+                          name="status"
+                          onChange={(e) => {
+                            value.status = e.target.value;
+                            setContentList((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = value;
+                              return updatedItems;
+                            });
+                          }}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="rejected">Rejected </option>
+                          {/* {
+                            value?.firstLevelCheck?.isAdult === true && value?.checkAndApprove && value?.secondLevelCheck !== undefined ||
+                              value?.firstLevelCheck?.isGDPR === true && value?.checkAndApprove && value?.secondLevelCheck !== undefined ||
+                              (value?.firstLevelCheck?.nudity === true && value?.checkAndApprove && value?.secondLevelCheck !== undefined)
+                              ? <option value="published">Published</option>
+                              : null
+                          } */}
+                          {value?.firstLevelCheck?.isAdult &&
+                            value?.firstLevelCheck?.isGDPR &&
+                            value?.firstLevelCheck?.nudity &&
+                            value?.firstLevelCheck?.deep_fake_check &&
+                            value?.checkAndApprove &&
+                            value?.secondLevelCheck ? (
+                            <option value="published">Published</option>
+                          ) : null}
+                        </Select>
+                      </Td>
+                      <Td className="remarks_wrap">
+                        <Textarea
+                          placeholder="Enter remarks if any..."
+                          content_id={value._id}
+                          disabled={
+                            profile?.subadmin_rights?.viewRightOnly &&
+                            !profile?.subadmin_rights?.controlContent
+                          }
+                          name="remarks"
+                          defaultValue={value.remarks}
+                          onChange={(e) => {
+                            value.remarks = e.target.value;
+                            setContentList((prevItems) => {
+                              const updatedItems = [...prevItems];
+                              updatedItems[index] = value;
+                              return updatedItems;
+                            });
+                          }}
+                        />
+                      </Td>
+
+                      <Td className="timedate_wrap">
+                        <p className="timedate">{value?.admin_details?.name}</p>
+                        <p className="timedate">
+                          <img src={watch} className="icn_time" />
+                          {moment(value.updatedAt).format("hh:mm A")}
+                        </p>
+                        <p className="timedate">
+                          <img src={calendar} className="icn_time" />
+                          {moment(value.updatedAt).format("DD MMMM YYYY")}
+                        </p>
+                        <a
+                          className="timedate"
+                          onClick={() =>
+                            history.push(
+                              `/admin/content-onboarding-history/${value._id}/Content onboarding history/Manage content`
+                            )
+                          }
+                        >
+                          <BsEye className="icn_time" />
+                          View history
+                        </a>
+                      </Td>
+                      <Td>
+                        {(profile?.subadmin_rights?.viewRightOnly &&
+                          profile?.subadmin_rights?.controlContent) ||
+                          profile?.subadmin_rights?.controlContent ? (
+                          <Button
+                            className="theme_btn tbl_btn"
+                            onClick={() => updateContent(index)}
+                          >
+                            Publish
+                          </Button>
+                        ) : (
+                          <Button
+                            className="theme_btn tbl_btn"
+                            onClick={() => updateContent(index)}
+                            disabled
+                          >
+                            Publish
                           </Button>
                         )}
                       </Td>
@@ -1347,9 +2262,9 @@ useEffect(()=>{
                 </Tooltip>
               </a>
               <span onClick={() => DownloadCsv(currentPagePublishdContent)}>
-              <Tooltip label={"Print"}>
-                <img src={print} className="opt_icons" />
-              </Tooltip>
+                <Tooltip label={"Print"}>
+                  <img src={print} className="opt_icons" />
+                </Tooltip>
               </span>
 
               <div className="fltr_btn">
@@ -1635,7 +2550,7 @@ useEffect(()=>{
                               )}
 
                               {image && image?.length > 0 && (
-                                <Tooltip label={"Camera"}>
+                                <Tooltip label={"Photo"}>
                                   <img
                                     src={camera}
                                     alt="Content thumbnail"
@@ -1656,7 +2571,7 @@ useEffect(()=>{
                                 />
                               </Tooltip>
                             ) : (
-                              <Tooltip label={"Crown"}>
+                              <Tooltip label={"Exclusive"}>
                                 <img
                                   src={crown}
                                   alt="Content thumbnail"
@@ -1667,7 +2582,15 @@ useEffect(()=>{
                           </Td>
 
                           <Td className="text_center">
-                            {curr?.categoryData?.name}
+                            <a>
+                              <Tooltip label={curr?.categoryData?.name}>
+                                <img
+                                  src={curr?.categoryData?.icon}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
+                            </a>
                           </Td>
                           <Td className="text_center">
                             <p>
@@ -1700,7 +2623,7 @@ useEffect(()=>{
                           <Td>
                             &pound;{" "}
                             {curr?.amount_paid_to_hopper &&
-                            curr?.amount_paid_to_hopper
+                              curr?.amount_paid_to_hopper
                               ? "0"
                               : curr?.amount_payable_to_hopper}
                           </Td>
@@ -1784,7 +2707,7 @@ useEffect(()=>{
                             </p>
                             <a
                               className="timedate"
-                              onClick={() =>{
+                              onClick={() => {
                                 // history.push(
                                 //   `/admin/live-published-content/${curr._id}/Manage content`
                                 // );
@@ -1792,7 +2715,7 @@ useEffect(()=>{
                                   `/admin/content-published-history/${curr._id}/Published Content Summary History/Manage content`
                                 )
                               }
-                              
+
                               }
                             >
                               <BsEye className="icn_time" />
@@ -1802,7 +2725,7 @@ useEffect(()=>{
                           <Td>
                             {(profile?.subadmin_rights?.viewRightOnly &&
                               profile?.subadmin_rights?.controlContent) ||
-                            profile?.subadmin_rights?.controlContent ? (
+                              profile?.subadmin_rights?.controlContent ? (
                               <Button
                                 className="theme_btn tbl_btn"
                                 onClick={() => PublishedUpdated(index)}
@@ -1819,16 +2742,16 @@ useEffect(()=>{
                               </Button>
                             )}
                             {
-                              profile?.role === "admin" ? 
-                              <PopupConfirm
-                                title="Confirmation"
-                                description="Are you sure you want to delete this content?"
-                                onConfirm={()=>handleDelete(curr._id)}
-                                buttonTitle={"Delete"}
-                              />: null
+                              profile?.role === "admin" ?
+                                <PopupConfirm
+                                  title="Confirmation"
+                                  description="Are you sure you want to delete this content?"
+                                  onConfirm={() => handleDelete(curr)}
+                                  buttonTitle={"Delete"}
+                                /> : null
                             }
                           </Td>
-                     
+
                         </Tr>
                       );
                     })}
@@ -1845,7 +2768,7 @@ useEffect(()=>{
           pageCount={totalPublishdContentPages}
           previousLabel="<"
           renderOnZeroPageCount={null}
-          forcePage={currentPagePublishdContent - 1} 
+          forcePage={currentPagePublishdContent - 1}
 
         />
       </Card>
@@ -1899,7 +2822,7 @@ useEffect(()=>{
                   </span>
                 </Text>
 
-                  {/* <SortFilterContent */}
+                {/* <SortFilterContent */}
                 {hideShow.type === "Live uploaded content" && (
                   <SortFilterDashboard
                     hideShow={hideShow}
@@ -1932,7 +2855,7 @@ useEffect(()=>{
                   <Th>Presshop commission</Th>
                   <Th>Amount paid</Th>
                   <Th>Amount payable</Th>
-                  <Th className="rcvd_comn_th">Received From</Th>
+                  {/* <Th className="rcvd_comn_th">Received From</Th> */}
                   <Th>Uploaded by</Th>
                   <Th>Mode</Th>
                   <Th>Remarks</Th>
@@ -1954,8 +2877,8 @@ useEffect(()=>{
                             }}
                           >
                             {curr &&
-                            curr.uploaded_content &&
-                            curr.uploaded_content.length === 1 ? (
+                              curr.uploaded_content &&
+                              curr.uploaded_content.length === 1 ? (
                               <img
                                 src={
                                   process.env.REACT_APP_UPLOADED_CONTENT +
@@ -1976,7 +2899,7 @@ useEffect(()=>{
                                               value?.videothubnail ||
                                               process.env
                                                 .REACT_APP_UPLOADED_CONTENT +
-                                                value.imageAndVideo
+                                              value.imageAndVideo
                                             }
                                             className="content_img"
                                             alt="Content thumbnail"
@@ -2039,8 +2962,8 @@ useEffect(()=>{
                         <Td className="text_center">
                           <div className="dir_col text_center">
                             {curr?.task_id &&
-                            curr?.task_id?.need_photos === true ? (
-                              <Tooltip label={"Camera"}>
+                              curr?.task_id?.need_photos === true ? (
+                              <Tooltip label={"Photo"}>
                                 <img
                                   src={camera}
                                   alt="Content thumbnail"
@@ -2051,7 +2974,7 @@ useEffect(()=>{
                               ""
                             )}
                             {curr?.task_id &&
-                            curr?.task_id?.need_interview === true ? (
+                              curr?.task_id?.need_interview === true ? (
                               <Tooltip label={"Inreview"}>
                                 <img
                                   src={interview}
@@ -2063,7 +2986,7 @@ useEffect(()=>{
                               ""
                             )}
                             {curr?.task_id &&
-                            curr?.task_id?.need_videos === true ? (
+                              curr?.task_id?.need_videos === true ? (
                               <Tooltip label={"Video"}>
                                 <img
                                   src={video}
@@ -2277,30 +3200,30 @@ useEffect(()=>{
           pageCount={liveUploadedContentTotalPages}
           previousLabel="<"
           renderOnZeroPageCount={null}
-          forcePage={liveUploadedContPage - 1} 
+          forcePage={liveUploadedContPage - 1}
         />
       </Card>
 
-       <DeletedContents  
-        setShow ={setShow}
+      <DeletedContents
+        setShow={setShow}
         setCsv={setCsv}
         DownloadCsv={DownloadCsv}
         setHideShow={setHideShow}
-        hideShow={hideShow}   
+        hideShow={hideShow}
         closeSort={closeSort}
         collectSortParms={collectSortParms}
-        setLoading ={setLoading}
+        setLoading={setLoading}
         deletedContents={deletedContents}
         setDeletedContents={setDeletedContents}
         handlePageChangeDeleted={handlePageChangeDeleted}
-        handleApplySorting ={handleApplySorting}
+        handleApplySorting={handleApplySorting}
         deletedContentPages={deletedContentPages}
         getDeletedContents={getDeletedContents}
         currentPageDelCont={currentPageDelCont}
         getContentListPublished={getContentListPublished}
         currentPagePublishdContent={currentPagePublishdContent}
         profile={profile}
-       />
+      />
       <Share show={show} csv={csv} update={handleClose} />
     </>
   );

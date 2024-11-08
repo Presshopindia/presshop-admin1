@@ -1,7 +1,7 @@
 
 
 // Chakra imports
-import { Box, Flex, Table, Tbody, Td, Text, Th, Thead, Tr, useColorModeValue, TableContainer, Checkbox, Textarea, Select, Button, } from "@chakra-ui/react";
+import { Box, Flex, Table, Tbody, Td, Text, Th, Thead, Tr, useColorModeValue, TableContainer, Checkbox, Textarea, Select, Button, Tooltip, } from "@chakra-ui/react";
 import Card from "components/card/Card";
 import { React } from "react";
 import calendar from "assets/img/icons/calendar.svg";
@@ -38,7 +38,6 @@ import SortFilterContent from "components/sortfilters/SortFilterContent";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import docic from "assets/img/icons/contentdoc.svg";
 import pdfic from "assets/img/icons/contentpdf.svg";
-import { Tooltip } from "@mui/material";
 export default function PublishedContenHistory() {
   const [loading, setLoading] = useState(false)
   const { id, name, component } = useParams();
@@ -91,7 +90,7 @@ export default function PublishedContenHistory() {
         window.open(onboardinPrint)
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false)
     }
   };
@@ -364,20 +363,81 @@ export default function PublishedContenHistory() {
                         </Td>
                         <Td className="text_center">
                           <div className="dir_col text_center">
-                            {audio && audio.length > 0 && <img src={interview} alt="Content thumbnail" className="icn m_auto" />}
-                            {video1 && video1.length > 0 && <img src={video} alt="Content thumbnail" className="icn m_auto" />}
-                            {image && image.length > 0 && <img src={camera} alt="Content thumbnail" className="icn m_auto" />}
-                            {Pdf && Pdf.length > 0 && <img src={camera} alt="Content thumbnail" className="icn m_auto" />}
-                            {Doc && Doc.length > 0 && <img src={camera} alt="Content thumbnail" className="icn m_auto" />}
+                            {audio && audio?.length > 0 && (
+                              <Tooltip label={"Audio"}>
+                                <img
+                                  src={interview}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </Tooltip>
+                            )}
+                            {video1 && video1?.length > 0 && (
+                              <Tooltip label={"Video"}>
+                                <img
+                                  src={video}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </Tooltip>
+                            )}
+                            {image && image?.length > 0 && (
+                              <Tooltip label={"Photo"}>
+                                <img
+                                  src={camera}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </Tooltip>
+                            )}
+                            {Pdf && Pdf.length > 0 && (
+                              <Tooltip label={"PDF"}>
+                                <img
+                                  src={camera}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </Tooltip>
+                            )}
+                            {Doc && Doc.length > 0 && (
+                              <Tooltip label={"Doc"}>
+                                <img
+                                  src={camera}
+                                  alt="Content thumbnail"
+                                  className="icn m_auto"
+                                />
+                              </Tooltip>
+                            )}
 
                           </div>
                         </Td>
                         <Td className="text_center">
-                          {curr?.content_id?.type == "shared" ? <img src={shared} alt="Content thumbnail" className="icn" /> : <img src={crown} alt="Content thumbnail" className="icn" />
-                          }
+                          {curr?.content_id?.type == "shared" ? (
+                            <Tooltip label={"Shared"}>
+                              <img
+                                src={shared}
+                                alt="Content thumbnail"
+                                className="icn"
+                              />
+                            </Tooltip>
+                          ) : (
+                            <Tooltip label={"Exclusive"}>
+                              <img
+                                src={crown}
+                                alt="Content thumbnail"
+                                className="icn"
+                              />
+                            </Tooltip>
+                          )}
                         </Td>
                         <Td>
-                          {curr?.content_id?.categoryDetails?.name}
+                          <Tooltip label={curr?.content_id?.categoryDetails?.name}>
+                            <img
+                              src={curr?.content_id?.categoryDetails?.icon}
+                              alt="Content thumbnail"
+                              className="icn"
+                            />
+                          </Tooltip>
                         </Td>
                         <Td className="text_center">
                           {audio && audio.length > 0 && audio.length}

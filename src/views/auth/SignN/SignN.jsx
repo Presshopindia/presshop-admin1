@@ -119,11 +119,11 @@ function SignIn() {
       try {
         await Post("admin/add/fcm", formdata)
           .then((resp) => {
-            console.log("resp", resp)
+            // console.log("resp", resp)
           })
       }
       catch (error) {
-        console.log(error)
+        // console.log(error)
       }
     }
   }

@@ -95,7 +95,7 @@ export default function SourcedContentful() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setloading(false);
     }
   }

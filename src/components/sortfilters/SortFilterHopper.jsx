@@ -61,7 +61,7 @@ export default function SortFilterHopper(props) {
 
       }
     } catch (error) {
-      console.log(error)
+      // console.log(error)
     }
   };
 

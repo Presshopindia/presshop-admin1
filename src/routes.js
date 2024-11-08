@@ -90,6 +90,9 @@ import InvoicePaymentHistory from "views/admin/Invoicingandpayments/InvoicePayme
 import EditEmployee from "views/admin/EmployeeRegistration/EditEmployee";
 import SearchedContentlist from "views/admin/SearchedContentlist/SearchedContentlist";
 import SubscribedEmail from "components/sidebar/components/SubscribedEmail";
+import RatingIcon from "assets/img/rating_icon.png"
+import Rating from "views/admin/Rating/Rating";
+
 const routes = [
   {
     name: "Dashboard",
@@ -304,6 +307,21 @@ const routes = [
       />
     ),
     component: Notification,
+    secondary: true,
+  },
+  {
+    name: "Rating & reviews",
+    layout: "/admin",
+    path: "/rating",
+    icon: (
+      <img
+        src={RatingIcon}
+        width='20px'
+        height='20px'
+        color='inherit'
+      />
+    ),
+    component: Rating,
     secondary: true,
   },
   // {

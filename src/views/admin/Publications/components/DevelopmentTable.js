@@ -102,7 +102,7 @@ export default function DevelopmentTable(props) {
     const offset = (page - 1) * perPage;
     setLoading(true);
     try {
-      await Get(`admin/getPublicationList?status=pending&limit=${perPage}&offset=${offset}&${parametersName ?? ""}=${parameters ?? ""}&${parametersName1 ?? ""}=${parameters1 ?? ""}`).then((res) => {
+      await Get(`admin/getPublicationList?limit=${perPage}&offset=${offset}&${parametersName ?? ""}=${parameters ?? ""}&${parametersName1 ?? ""}=${parameters1 ?? ""}`).then((res) => {
         setpublicationData(res?.data?.data);
         setTotalPages1(res.data.totalCount / perPage);
         setpath1(res?.data?.fullPath)
@@ -142,7 +142,7 @@ export default function DevelopmentTable(props) {
         getPublication(currentPage1);
       });
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       setLoading(false);
     }
   };
@@ -150,13 +150,13 @@ export default function DevelopmentTable(props) {
   // download csv of publication control
   const printPublicationTable = async () => {
     try {
-      const response = await Get(`admin/getPublicationList?status=pending`);
+      const response = await Get(`admin/getPublicationList?`);
       if (response) {
         const onboardinPrint = response?.data?.fullPath;
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false);
     }
   };
@@ -234,7 +234,7 @@ export default function DevelopmentTable(props) {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false);
 
     }
@@ -299,7 +299,7 @@ export default function DevelopmentTable(props) {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false);
 
     }
@@ -440,10 +440,10 @@ export default function DevelopmentTable(props) {
                 </Tooltip>
               </a>
               <span onClick={printPublicationTable}>
-              <Tooltip label={"Print"}>
-                <img src={print} className="opt_icons" />
-              </Tooltip>
-                </span>
+                <Tooltip label={"Print"}>
+                  <img src={print} className="opt_icons" />
+                </Tooltip>
+              </span>
 
               <div className="fltr_btn">
                 <Text fontSize={"15px"}>
@@ -453,7 +453,7 @@ export default function DevelopmentTable(props) {
                     type: "publicationControl"
                   }))}>Sort</span>
                 </Text>
-                  {/* <SortFilterPublication hideShow={hideShow}
+                {/* <SortFilterPublication hideShow={hideShow}
                     closeSort={closeSort}
                     sendDataToParent={collectSortParms}
                     sendDataToParent1={collectSortParms1}
@@ -461,15 +461,15 @@ export default function DevelopmentTable(props) {
 
                   /> */}
                 {hideShow.type === "publicationControl" &&
-                     <SortFilterDashboard 
-                     hideShow={hideShow}
+                  <SortFilterDashboard
+                    hideShow={hideShow}
                     closeSort={closeSort}
                     sendDataToParent={collectSortParms}
                     sendDataToParent1={collectSortParms1}
                     handleApplySorting={handleApplySorting}
 
                   />
-                  }
+                }
 
                 {/* <SortFilterDashboard /> */}
               </div>
@@ -525,9 +525,11 @@ export default function DevelopmentTable(props) {
                           </p>
                         </Td>
                         <Td className="text_center">
-                        <Tooltip label={"Monitor"}>
-                          <img src={monitor} alt="tv" className="icn" />
-                        </Tooltip>
+                          {
+                            curr?.hasOwnProperty("user_type_detail") && <Tooltip label={curr?.user_type_detail?.name}>
+                              <img src={curr?.user_type_detail?.icon || monitor} alt="tv" className="icn" />
+                            </Tooltip>
+                          }
                         </Td>
                         <Td>{(curr?.ratingsforMediahouse || 0).toFixed(1)}</Td>
                         <Td className="item_detail address_details">
@@ -1053,7 +1055,7 @@ export default function DevelopmentTable(props) {
                       <Td>£ {formatAmountInMillion(curr?.purchased_content_value || 0)}</Td>
                       <Td>£ {formatAmountInMillion(curr?.total_amount_recieved || 0)} </Td>
                       <Td>£ {formatAmountInMillion(curr?.total_presshop_commission || 0)}</Td>
-                      <Td>£ {(formatAmountInMillion)} </Td>
+                      <Td>£ {formatAmountInMillion(curr?.total_amount_paid || 0)} </Td>
                       <Td>£ {formatAmountInMillion(curr?.total_amount_payable || 0)}</Td>
                       <Td className="select_wrap">
                         <Select
@@ -1143,7 +1145,7 @@ export default function DevelopmentTable(props) {
           pageCount={totalPagesSourcedContent}
           previousLabel="<"
           renderOnZeroPageCount={null}
-          forcePage={currentPageSourcedContent-1}
+          forcePage={currentPageSourcedContent - 1}
         />
       </Card>
 

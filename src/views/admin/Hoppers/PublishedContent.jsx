@@ -12,6 +12,8 @@ import publication3 from "assets/img/profile/publication3.svg";
 // import mobile from "assets/img/icons/mobile.svg"
 import crown from "assets/img/icons/crown.png";
 import watch from "assets/img/icons/watch.svg";
+import { Tooltip } from "@chakra-ui/react";
+
 import calendar from "assets/img/icons/calendar.svg";
 // import phone from "assets/img/icons/phone.svg";
 // import mail from "assets/img/icons/mail.svg";
@@ -66,7 +68,7 @@ export default function PublishedContent() {
         setNames(res?.data?.response[0])
         setPath(res?.data?.fullPath)
         setTotalPages(res?.data?.count / perPage)
-        { console.log(res?.data?.response, `<details of `) }
+        // { console.log(res?.data?.response, `<details of `) }
         setLoading(false)
       })
     } catch (error) {
@@ -95,7 +97,7 @@ export default function PublishedContent() {
       GetDetails(id)
 
     } catch (error) {
-      console.log(error, `<----errors`)
+      // console.log(error, `<----errors`)
       setLoading(false)
     }
 
@@ -126,7 +128,7 @@ export default function PublishedContent() {
         window.open(onboardinPrint);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false);
     }
   }
@@ -354,31 +356,58 @@ export default function PublishedContent() {
 
                       <Td>
 
-                        {audio && audio?.length > 0 && (<img src={interview} alt="Content thumbnail" className="icn m_auto" />)}
-                        {videos && videos?.length > 0 && (<img src={video} alt="Content thumbnail" className="icn m_auto" />)}
-                        {images && images?.length > 0 && (<img src={camera} alt="Content thumbnail" className="icn m_auto" />)}
+                        {images && images?.length > 0 && (<Tooltip label={"Photo"}>
+                          <img
+                            src={camera}
+                            alt="Content thumbnail"
+                            className="icn m_auto"
+                          />
+                        </Tooltip>)}
+
+                        {audio && audio?.length > 0 && (<Tooltip label={"Interview"}>
+                          <img
+                            src={interview}
+                            alt="Content thumbnail"
+                            className="icn m_auto"
+                          />
+                        </Tooltip>)}
+                        {videos && videos?.length > 0 && (<Tooltip label={"Video"}>
+                          <img
+                            src={video}
+                            alt="Content thumbnail"
+                            className="icn m_auto"
+                          />
+                        </Tooltip>)}
 
                       </Td>
 
                       <Td className="text_center">
                         {value.type == "shared" ? (
-                          <img
-                            src={shared}
-                            alt="Content thumbnail"
-                            className="icn"
-                          />
+                          <Tooltip label={"Shared"}>
+                            <img
+                              src={shared}
+                              alt="Content thumbnail"
+                              className="icn"
+                            />
+                          </Tooltip>
                         ) : (
-                          <img
-                            src={crown}
-                            alt="Content thumbnail"
-                            className="icn"
-                          />
+                          <Tooltip label={"Exclusive"}>
+                            <img
+                              src={crown}
+                              alt="Content thumbnail"
+                              className="icn"
+                            />
+                          </Tooltip>
                         )}
                       </Td>
                       <Td className="">
-                        {/*                   
-                    <img src={celebrity} className="icn m_auto" /> */}
-                        {value?.category_id?.name}
+                        <Tooltip label={value?.category_id?.name}>
+                          <img
+                            src={value?.category_id?.icon}
+                            alt="Content thumbnail"
+                            className="icn"
+                          />
+                        </Tooltip>
                       </Td>
                       <Td className="text_center">
                         {audio && audio?.length > 0 && audio?.length}

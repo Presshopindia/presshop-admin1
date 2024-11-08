@@ -32,7 +32,7 @@ import { Get } from "api/admin.services";
 export default function SortFilterDashboard(props) {
   const [categoryName, setCategoryName] = useState([])
   const [active, setActive] = useState()
-  console.log("🚀 ~ SortFilterDashboard ~ active:", active)
+  // console.log("🚀 ~ SortFilterDashboard ~ active:", active)
   const [active1, setActive1] = useState(null)
   const   [ query2 , setQuery2] = useState({
     key : "",
@@ -40,7 +40,7 @@ export default function SortFilterDashboard(props) {
   })
 
   const handleSortClick = (value, value2) => {
-    console.log(value , value2)
+    // console.log(value , value2)
     setActive(value)
     setActive1(value2)
     props.sendDataToParent(value, value2)
@@ -59,7 +59,7 @@ export default function SortFilterDashboard(props) {
   };
 
   const handleClear = ()=>{
-    console.log("clear")
+    // console.log("clear")
     setQuery2({
       key : "",
       value :""
@@ -80,7 +80,7 @@ export default function SortFilterDashboard(props) {
 
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 

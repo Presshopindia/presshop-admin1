@@ -52,6 +52,7 @@ import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
 import { useRef } from "react";
 import flaguk from "assets/img/uk-flag.png"
 import Loader from "components/Loader";
+import { useAuth } from "auth-context/auth.context";
 
 
 export default function EmployeeRegistration() {
@@ -149,7 +150,9 @@ export default function EmployeeRegistration() {
       controlPublication: false,
       controlContent: false,
       viewRightOnly: false,
-      other_rights: false
+      other_rights: false,
+      allow_publication_chat: false,
+      allow_hopper_chat: false
     },
 
     employee_address: {
@@ -168,203 +171,95 @@ export default function EmployeeRegistration() {
     },
   });
 
-  // hanfle address of employee
-  // const handleEmployeeAddress = (place) => {
-
-  //   let city = "";
-  //   let postalCode = "";
-
-  //   const addressComponents = place.address_components;
-  //   if (addressComponents) {
-  //     const cityComponent = addressComponents.find(
-  //       (component) =>
-  //         component.types.includes("locality") ||
-  //         component.types.includes("administrative_area_level_1") ||
-  //         component.types.includes("administrative_area_level_2")
-  //     );
-
-  //     const postalCodeComponent = addressComponents.find(
-  //       (component) => component.types.includes("postal_code")
-  //     );
-
-  //     if (cityComponent) {
-  //       city = cityComponent.long_name;
-  //     }
-  //     if (postalCodeComponent) {
-  //       postalCode = postalCodeComponent.long_name;
-  //     }
-  //   }
-
-  //   if (!city && place.formatted_address) {
-  //     city = place.formatted_address.split(",")[0];
-  //   }
-
-  //   const country =
-  //     place.address_components.find((component) =>
-  //       component.types.includes("country")
-  //     )?.long_name || "";
-
-  //   setEmployeeDetail((prevState) => ({
-  //     ...prevState,
-  //     employee_address: {
-  //       ...prevState.employee_address,
-  //       complete_address: place.formatted_address,
-  //       coordinates: [
-  //         place.geometry.location.lat(),
-  //         place.geometry.location.lng(),
-  //       ],
-  //       country: country,
-  //       city: city,
-  //       postalCode: postalCode,
-  //     },
-  //   }));
-  // };
-
-  const handleStreetChange1 = (e) => {
-    setEmployeeDetail((prev) => ({
-      ...prev,
-      employee_address: {
-        complete_address: e.target.value
-      }
-
-    }))
-  };
-
-  const handlePopupOpen1 = () => {
-    setShowPopup1(true);
-  };
-
-  const handlePopupClose1 = () => {
-    setShowPopup1(false);
-  };
-
-
-  const onMapLoadStreet1 = (map) => {
-    const searchBox = new window.google.maps.places.SearchBox(searchBoxRefStreet1.current);
-    searchBox.addListener("places_changed", () => {
-      const places = searchBox.getPlaces();
-      if (places.length === 0) {
-        return;
-      }
-      const formattedAddress = places[0].formatted_address;
-      const addressComponents = places[0].address_components;
-
-      let city = "";
-      let country = "";
-      let postalCode = "";
-      let latitude = places[0].geometry.location.lat();
-      let longitude = places[0].geometry.location.lng();
-
-      for (const component of addressComponents) {
-        if (component.types.includes("locality")) {
-          city = component.long_name;
-        }
-        if (component.types.includes("country")) {
-          country = component.long_name;
-        }
-        if (component.types.includes("postal_code")) {
-          postalCode = component.long_name;
-        }
-      }
-
-      // Update the employee state
-      setEmployeeDetail((prev) => ({
-        ...prev,
-        employee_address: {
-          country: country,
-          coordinates: [latitude, longitude],
-          city: city,
-          post_code: postalCode,
-        }
-
-      }))
-
-
-    });
-  };
-
+  const { admin } = useAuth()
 
   const AddNewEmployees = async (e) => {
     e.preventDefault();
-    // if (employeeDetail?.password !== employeeDetail?.confirmPassword) {
-    //   toast.error("The password doesn't match. Please try again");
-    // } else if (employeeDetail?.password.length < 8) {
-    //   toast.error("The chosen password is too short. Please enter at least 5 characters");
-    // } else {
-      const randomPassword = Math.floor(Math.random() * 90000000) + 10000000;
-      const formData = new FormData();
-      formData.append("name", employeeDetail.name);
-      formData.append("designation_id", employeeDetail.designation_id);
-      formData.append("department_id", employeeDetail.department_id);
-      formData.append("office_id", employeeDetail.office_id);
-      formData.append("country_code", employeeDetail.country_code);
-      formData.append("phone", employeeDetail.phone);
-      formData.append("email", employeeDetail.email);
-      formData.append("password", randomPassword);
-      formData.append("confirmPassword", randomPassword);
-      formData.append("profile_image", employeeDetail.profile_image);
-      // formData.append("bank_details",JSON.stringify(employeeDetail.bank_details));
-      formData.append("subadmin_rights",JSON.stringify(employeeDetail.subadmin_rights));
-      // formData.append("employee_address",JSON.stringify(employeeDetail.employee_address));
+    const randomPassword = Math.floor(Math.random() * 90000000) + 10000000;
+    const formData = new FormData();
+    formData.append("name", employeeDetail.name);
+    formData.append("designation_id", employeeDetail.designation_id);
+    formData.append("department_id", employeeDetail.department_id);
+    formData.append("office_id", employeeDetail.office_id);
+    formData.append("country_code", employeeDetail.country_code);
+    formData.append("phone", employeeDetail.phone);
+    formData.append("email", employeeDetail.email);
+    formData.append("password", randomPassword);
+    formData.append("confirmPassword", randomPassword);
+    formData.append("profile_image", employeeDetail.profile_image);
+    // formData.append("bank_details",JSON.stringify(employeeDetail.bank_details));
+    formData.append("subadmin_rights", JSON.stringify(employeeDetail.subadmin_rights));
+    // formData.append("employee_address",JSON.stringify(employeeDetail.employee_address));
+    formData.append("office_details", JSON.stringify({
+      address: "167-169 Great Portland Street 5th Floor, London W1W 5PF",
+      company_name: "Presshop Company",
+      company_number: "7213241154",
+      company_vat: "821321641",
+      country_code: "23",
+      name: "presshop",
+      phone: "44121212121212"
+    }
+    ))
 
-      setLoading(true);
-      try {
-        const res = await Post(`admin/addEmployee`, formData);
-        toast.success("New employee successfully added");
-        setImagePreview(null);
-        setEmployeeDetail({
-          name: "",
-          designation_id: "",
-          department_id: "",
-          office_id: "",
-          country_code: "+44",
-          phone: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          profile_image: "",
-          subadmin_rights: {
-            onboardEmployess: false,
-            blockRemoveEmployess: false,
-            assignNewEmployeeRights: false,
-            completeAccess: false,
-            controlHopper: false,
-            controlPublication: false,
-            controlContent: false,
-            viewRightOnly: false,
-            other_rights: false
-          },
-      
-          employee_address: {
-            complete_address: "",
-            coordinates: [0, 0],
-            country: "",
-            city: "",
-            post_code: ""
-          },
-      
-          bank_details: {
-            account_holder_name: "",
-            account_number: "",
-            bank_name: "",
-            sort_code: "",
-          },
-        });
-        // history.push("/admin/default")
-        setLoading(false);
-      } catch (errors) {
-        if (errors) {
-          setLoading(false)
-          toast.error(
-            errors?.response?.data?.errors?.msg ===
-              "Admin validation failed: email: EMAIL_IS_NOT_VALID"
-              ? "This email is not valid"
-              : errors?.response?.data?.errors?.msg === "EMAIL_ALREADY_EXISTS"
-                ? "This email id already exists"
-                : ""
-          );
-        }
+    console.log(admin?.office_details, employeeDetail)
+    setLoading(true);
+    try {
+      const res = await Post(`admin/addEmployee`, formData);
+      toast.success("New employee successfully added");
+      setImagePreview(null);
+      setEmployeeDetail({
+        name: "",
+        designation_id: "",
+        department_id: "",
+        office_id: "",
+        country_code: "+44",
+        phone: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        profile_image: "",
+        subadmin_rights: {
+          onboardEmployess: false,
+          blockRemoveEmployess: false,
+          assignNewEmployeeRights: false,
+          completeAccess: false,
+          controlHopper: false,
+          controlPublication: false,
+          controlContent: false,
+          viewRightOnly: false,
+          other_rights: false
+        },
+
+        employee_address: {
+          complete_address: "",
+          coordinates: [0, 0],
+          country: "",
+          city: "",
+          post_code: ""
+        },
+
+        bank_details: {
+          account_holder_name: "",
+          account_number: "",
+          bank_name: "",
+          sort_code: "",
+        },
+      });
+      // history.push("/admin/default")
+      setLoading(false);
+    } catch (errors) {
+      if (errors) {
+        setLoading(false)
+        toast.error(
+          errors?.response?.data?.errors?.msg ===
+            "Admin validation failed: email: EMAIL_IS_NOT_VALID"
+            ? "This email is not valid"
+            : errors?.response?.data?.errors?.msg === "EMAIL_ALREADY_EXISTS"
+              ? "This email id already exists"
+              : ""
+        );
       }
+    }
     // }
   };
 
@@ -450,10 +345,6 @@ export default function EmployeeRegistration() {
     setShowPopup(true);
   };
 
-  const handlePopupClose = () => {
-    setShowPopup(false);
-  };
-
 
   const onMapLoadStreet = (map) => {
     const searchBox = new window.google.maps.places.SearchBox(searchBoxRefStreet.current);
@@ -499,58 +390,13 @@ export default function EmployeeRegistration() {
     });
   };
 
-
-
-
-  // const handleAddress = (place) => {
-  //   let city = "";
-  //   const addressComponents = place.address_components;
-  //   if (addressComponents) {
-  //     const cityComponent = addressComponents?.find(
-  //       (component) =>
-  //         component.types.includes("locality") ||
-  //         component.types.includes("administrative_area_level_1") ||
-  //         component.types.includes("administrative_area_level_2")
-  //     );
-
-  //     if (cityComponent) {
-  //       city = cityComponent.long_name;
-  //     }
-  //   }
-
-  //   if (!city && place.formatted_address) {
-  //     city = place.formatted_address.split(",")[0];
-  //   }
-
-  //   const country =
-  //     place.address_components.find((component) =>
-  //       component.types.includes("country")
-  //     )?.long_name || "";
-
-  //   setOfficeDetail((previousValue) => ({
-  //     ...previousValue,
-  //     address: {
-  //       ...previousValue.address,
-  //       complete_address: place.formatted_address,
-  //       location: {
-  //         coordinates: [
-  //           place.geometry.location.lat(),
-  //           place.geometry.location.lng(),
-  //         ],
-  //       },
-  //       country: country,
-  //       city: city,
-  //     },
-  //   }));
-  // };
-
-  const togglePasswordVisiblity = () => {
-    setPasswordShown(passwordShown ? false : true);
+  // Phone input ref-
+  const phoneInputRef = useRef(null);
+  const handleCountryCodeChange = (e) => {
+    phoneInputRef.current.focus();
   };
 
-  const toggleConfirmPasswordVisiblity = () => {
-    setConfirmPasswordShown(confirmPasswordShown ? false : true);
-  };
+
   return (
     <>
       {loading && <Loader />}
@@ -979,6 +825,7 @@ export default function EmployeeRegistration() {
                           }}
                           maxLength={12}
                           required
+                          ref={phoneInputRef}
                         />
                         <PhoneInput
                           autoComplete="off"
@@ -990,10 +837,12 @@ export default function EmployeeRegistration() {
                           value={value1}
                           disabled={profile?.subadmin_rights?.viewRightOnly && !profile?.subadmin_rights?.onboardEmployess}
                           name="country_code"
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setEmployeeDetail((previousValue) => {
                               return { ...previousValue, country_code: e };
                             })
+                            handleCountryCodeChange(e)
+                          }
                           }
                         />
                       </div>
@@ -1532,6 +1381,48 @@ export default function EmployeeRegistration() {
                       />
                       <span>Allowed product master editing</span>
                     </div>
+                    <div className="check_wrap check_wrapper rights_check">
+                      <Checkbox
+                        colorScheme="brandScheme"
+                        me="10px"
+                        name="subadmin_rights.allow_publication_chat"
+                        isChecked={employeeDetail.subadmin_rights.allow_publication_chat}
+                        onChange={(e) =>
+                          setEmployeeDetail({
+                            ...employeeDetail,
+                            subadmin_rights: {
+                              ...employeeDetail.subadmin_rights,
+                              allow_publication_chat: e.target.checked,
+                            },
+                          })
+                        }
+                      />
+                      <span>Allowed to chat with the Publications</span>
+                    </div>
+                    <div className="check_wrap check_wrapper rights_check">
+                      <Checkbox
+                        colorScheme="brandScheme"
+                        me="10px"
+                        name="subadmin_rights.allow_hopper_chat"
+                        isChecked={employeeDetail.subadmin_rights.allow_hopper_chat}
+                        onChange={(e) =>
+                          setEmployeeDetail({
+                            ...employeeDetail,
+                            subadmin_rights: {
+                              ...employeeDetail.subadmin_rights,
+                              allow_hopper_chat: e.target.checked,
+                            },
+                          })
+                        }
+                      />
+                      <span>Allowed to chat with the Hoppers</span>
+                    </div>
+                    <div className="check_wrap check_wrapper rights_check">
+                    </div>
+
+                    {
+                      console.log("employeeDetail", employeeDetail)
+                    }
 
                   </Flex>
                 </div>}

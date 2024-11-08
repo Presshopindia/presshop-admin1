@@ -50,7 +50,7 @@ export default function SourcedContentHistory() {
         setLoading(false)
       })
     } catch (error) {
-      console.log(error)
+      // console.log(error)
       setLoading(false)
     }
   }
@@ -67,7 +67,7 @@ export default function SourcedContentHistory() {
         window.open(path)
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false)
     }
   };

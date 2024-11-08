@@ -52,8 +52,11 @@ import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
 import { useRef } from "react";
 import { Patch } from "api/admin.services";
 import Loader from "components/Loader";
+import { useAuth } from "auth-context/auth.context";
+import { getFilenameFromUrl } from "utils/commonFunction";
 
 export default function EmployeeRegistration() {
+  const [loading, setLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [designation, setDesigation] = useState([]);
@@ -77,6 +80,7 @@ export default function EmployeeRegistration() {
   const [value1, setValue1] = useState("");
   const [value, setValue] = useState("+44");
   const searchBoxRefStreet = useRef(null);
+  const { setChangeProfile } = useAuth()
 
   //  both are for country code end
 
@@ -106,6 +110,68 @@ export default function EmployeeRegistration() {
 
   // end
 
+
+  // New code -
+  const [userInfo, setUserInfo] = useState();
+
+  const getProfile = async () => {
+    try {
+      const result = await Get("admin/getProfile");
+      setUserInfo(result?.data?.profileData)
+    }
+    catch (error) {
+      // console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getProfile()
+  }, [])
+
+  const handleChange = async (field, value) => {
+    // Handle the asynchronous operation first
+    if (field === "profile_image") {
+      const formData = new FormData();
+      formData.append("images", value);
+      formData.append("path", "public/adminImages");
+      try {
+        const res = await Post("admin/upload/data", formData);
+        value = getFilenameFromUrl(res.data.imgs[0]);
+      } catch (error) {
+        // console.error("Error uploading image:", error);
+        return; // Exit if there's an error
+      }
+    }
+
+    // Update the state synchronously
+    setUserInfo((prev) => {
+      const updatedData = { ...prev };
+
+      if (field === "company_name" || field === "company_number" || field === "company_vat") {
+        updatedData.office_details = {
+          ...updatedData.office_details,
+          [field]: value
+        };
+      } else if (field === "bank_name" || field === "sort_code" || field === "account_number" || field === "account_holder_name") {
+        updatedData.bank_details = {
+          ...updatedData.bank_details,
+          [field]: value
+        };
+      } else {
+        updatedData[field] = value;
+      }
+
+      return updatedData;
+    });
+  };
+
+  // Phone input ref-
+  const phoneInputRef = useRef(null);
+  const handleCountryCodeChange = (e) => {
+    phoneInputRef.current.focus();
+  };
+
+
   const AddOffice = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -125,6 +191,17 @@ export default function EmployeeRegistration() {
       }
     } catch (error) {
       toast.error("An error occurred while adding the office");
+    }
+  };
+
+  const formatSortCode = (value) => {
+    const regex = /^(\d{0,2})(\d{0,2})(\d{0,2})$/;
+    const match = value.match(regex);
+
+    if (match) {
+      return `${match[1]}${match[1] && match[2] ? '-' : ''}${match[2]}${match[2] && match[3] ? '-' : ''}${match[3]}`;
+    } else {
+      return value;
     }
   };
 
@@ -166,12 +243,9 @@ export default function EmployeeRegistration() {
     },
   });
 
-  console.log("profile ------------>",profile);
-  console.log("🚀 ~ EmployeeRegistration ~ employeeDetail:", employeeDetail)
-
   // hanfle address of employee
   const handleEmployeeAddress = (place) => {
-    console.log("🚀 ~ handleEmployeeAddress ~ place:", place)
+    // console.log("🚀 ~ handleEmployeeAddress ~ place:", place)
     let city = "";
     const addressComponents = place.address_components;
     if (addressComponents) {
@@ -212,65 +286,13 @@ export default function EmployeeRegistration() {
     }));
   };
 
-  // const AddNewEmployees = async (e) => {
-  //     e.preventDefault();
-  //     if (employeeDetail?.password !== employeeDetail?.confirmPassword) {
-  //         toast.error("Password does not match");
-  //     } else if (employeeDetail?.password.length < 8) {
-  //         toast.error("Password is too short");
-  //     } else {
-  //         const formData = new FormData();
-  //         formData.append("password", employeeDetail.password);
-  //         formData.append("profile_image", employeeDetail.profile_image);
-  //         formData.append("name", employeeDetail.name);
-  //         formData.append("designation_id", employeeDetail.designation_id);
-  //         formData.append("department_id", employeeDetail.department_id);
-  //         formData.append("office_id", employeeDetail.office_id);
-  //         formData.append("country_code", employeeDetail.country_code);
-  //         formData.append("phone", employeeDetail.phone);
-  //         formData.append("email", employeeDetail.email);
-  //         formData.append("confirmPassword", employeeDetail.confirmPassword);
-  //         formData.append(
-  //             "bank_details",
-  //             JSON.stringify(employeeDetail.bank_details)
-  //         );
-  //         formData.append(
-  //             "subadmin_rights",
-  //             JSON.stringify(employeeDetail.subadmin_rights)
-  //         );
-  //         formData.append(
-  //             "employee_address",
-  //             JSON.stringify(employeeDetail.employee_address)
-  //         );
-
-  //         try {
-  //             const res = await Post(`admin/addEmployee`, formData);
-  //             toast.success("Add New Employee");
-  //             // history.push("/admin/default")
-  //         } catch (errors) {
-  //             if (errors) {
-  //                 toast.error(
-  //                     errors?.response?.data?.errors?.msg ===
-  //                         "Admin validation failed: email: EMAIL_IS_NOT_VALID"
-  //                         ? "EMAIL_IS_NOT_VALID"
-  //                         : errors?.response?.data?.errors?.msg === "EMAIL_ALREADY_EXISTS"
-  //                             ? "EMAIL_ALREADY_EXISTS"
-  //                             : ""
-  //                 );
-  //             }
-  //         }
-  //     }
-  // };
-
-  // get category
-
   const getCategory = async (type) => {
     try {
       const res = await Get(`admin/getCategory/${type}`);
 
       return res.data.categories;
     } catch (err) {
-      console.log("<---Have a erro ->", err);
+      // console.log("<---Have a erro ->", err);
     }
   };
 
@@ -280,38 +302,20 @@ export default function EmployeeRegistration() {
     profile_image: "",
   });
 
-  const [loading, setLoading] = useState(false);
   const Edit = async (e) => {
     e.preventDefault();
-    // if (editAbleProfile?.password !== editAbleProfile?.confirmPassword) {
-    //   toast.error("Password does not match");
-    // } else if (editAbleProfile?.password.length < 8) {
-    //   toast.error("Password is too short");
-    // } else {
-        setLoading(true)
-      const formData = new FormData();
-    //   formData.append("admin_password", editAbleProfile.password);
-    if(editAbleProfile.profile_image){
-        formData.append("profile_image", editAbleProfile.profile_image);
+    setLoading(true)
+    try {
+      await Patch(`admin/editProfile`, userInfo).then((res) => {
+        if (res) {
+          setChangeProfile();
+          setLoading(false);
+          toast.success(`Profile Edited`);
+        }
+      });
+    } catch (err) {
+      setLoading(false);
     }
-    if((editAbleProfile.password && editAbleProfile.cnf_password) && editAbleProfile.password == editAbleProfile.cnf_password){
-        formData.append("admin_password", editAbleProfile.password);
-    }
-    if(employeeDetail?.employee_address?.complete_address){
-      formData.append("employee_address", JSON.stringify(employeeDetail?.employee_address));
-    }
-      formData.append("id", profile?._id);
-      formData.append("_id", profile?._id);
-      try {
-        await Patch(`admin/editProfile`, formData).then((res) => {
-          if (res) {
-            setLoading(false);
-            toast.success(`Profile Edited`);
-          }
-        });
-      } catch (err) {
-        setLoading(false);
-      }
     // }
   };
 
@@ -467,96 +471,29 @@ export default function EmployeeRegistration() {
     }));
   };
 
-  // console.log(companyDetails)
-
   return (
     <>
-    {loading && <Loader/>}
-    <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
-      <Card
-        className="add_hopper admin_reg"
-        direction="column"
-        w="100%"
-        px="0px"
-        mb="24px"
-        overflowX={{ sm: "scroll", lg: "hidden" }}
-      >
-        <Container className="inner_card_wrap" maxW="1000px" color="black">
-          <div className="brd_wrap">
-            <Flex justify="space-between" mb="25px" align="center">
-              <Text
-                color={textColor}
-                fontSize="22px"
-                fontWeight="700"
-                lineHeight="100%"
-                fontFamily={"AirbnbBold"}
-              >
-                Company details
-              </Text>
-            </Flex>
-            <div className="dtl_wrap">
-              <Flex
-                className="edit_inputs_wrap"
-                px="0px"
-                justify="space-between"
-                mb="25px"
-                align="center"
-              >
-                <InputGroup flex={1}>
-                  <InputLeftElement pointerEvents="none">
-                    <img src={CmpIcon} alt="" />
-                  </InputLeftElement>
-                  <Input
-                    className="disabled"
-                    type="text"
-                    name="companyaddress"
-                    disabled={profile?.role !== "admin"}
-                    placeholder="Presso Media UK Limited"
-                    value={companyDetails?.companyaddress}
-                    onChange={handleCmpnyDetailChange}
-                  />
-                </InputGroup>
-                <InputGroup flex={1}>
-                  <InputLeftElement pointerEvents="none">
-                    <img src={HashTag} alt="" />
-                  </InputLeftElement>
-                  <Input
-                    className="disabled"
-                    name="companynumber"
-                    disabled={profile?.role !== "admin"}
-                    placeholder="Company no 13522872"
-                    value={companyDetails?.companynumber}
-                    onChange={handleCmpnyDetailChange}
-                  />
-                </InputGroup>
-                <InputGroup flex={1}>
-                  <InputLeftElement pointerEvents="none">
-                    <img src={vat} alt="" />
-                  </InputLeftElement>
-                  <Input
-                    className="disabled"
-                    name="vatnumber"
-                    disabled={profile?.role !== "admin"}
-                    placeholder="VAT no 6754 5532"
-                    value={companyDetails?.vatnumber}
-                    onChange={handleCmpnyDetailChange}
-                  />
-                </InputGroup>
-              </Flex>
-            </div>
-          </div>
-
-          {/* office detail section start */}
-          <form onSubmit={AddOffice}>
-            <div className="brd_wrap pd_in">
+      {loading && <Loader />}
+      <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
+        <Card
+          className="add_hopper admin_reg"
+          direction="column"
+          w="100%"
+          px="0px"
+          mb="24px"
+          overflowX={{ sm: "scroll", lg: "hidden" }}
+        >
+          <Container className="inner_card_wrap" maxW="1000px" color="black">
+            <div className="brd_wrap">
               <Flex justify="space-between" mb="25px" align="center">
                 <Text
                   color={textColor}
                   fontSize="22px"
+                  fontWeight="700"
                   lineHeight="100%"
                   fontFamily={"AirbnbBold"}
                 >
-                  Office details
+                  Company details
                 </Text>
               </Flex>
               <div className="dtl_wrap">
@@ -564,58 +501,123 @@ export default function EmployeeRegistration() {
                   className="edit_inputs_wrap"
                   px="0px"
                   justify="space-between"
-                  mb="20px"
+                  mb="25px"
                   align="center"
                 >
-                  <InputGroup flex={1} maxW="307px">
+                  <InputGroup flex={1}>
                     <InputLeftElement pointerEvents="none">
-                      <img src={offCup} alt="" />
+                      <img src={CmpIcon} alt="" />
                     </InputLeftElement>
                     <Input
-                      disabled={!isChecked}
-                      pattern="^(?!\s)[a-zA-Z\s&',.-]+$"
-                      title="Please enter a valid office name"
-                      value={officeDetail.office_name}
-                      name="office_id"
-                      onChange={(e) => {
-                        setOfficeDetail((pre) => {
-                          return { ...pre, office_name: e.target.value };
-                        });
-                      }}
-                      // required
+                      className="disabled"
+                      type="text"
+                      name="companyaddress"
+                      disabled={profile?.role !== "admin"}
+                      placeholder="Presso Media UK Limited"
+                      value={userInfo?.office_details?.company_name}
+                      onChange={(e) => handleChange("company_name", e.target.value)}
                     />
                   </InputGroup>
-                  
-                </Flex>
-                <Flex
-                  className="edit_inputs_wrap"
-                  px="0px"
-                  justify="space-between"
-                  mb="20px"
-                  align="center"
-                >
-                  <InputGroup flex={1} className="inpu_n_cstm">
+                  <InputGroup flex={1}>
                     <InputLeftElement pointerEvents="none">
-                      <img className="location" src={location} alt="" />
+                      <img src={HashTag} alt="" />
                     </InputLeftElement>
-                    <input
-                      placeholder="Enter Postcode"
-                      disabled={!isChecked}
-                      name="street_address"
-                      className="tsk_loc_inp form-control"
-                      type="textarea"
-                      value={street_address}
-                      onChange={handleStreetChange}
-                      onFocus={handlePopupOpen}
-                      onClick={handlePopupOpen}
-                      ref={searchBoxRefStreet}
+                    <Input
+                      className="disabled"
+                      name="companynumber"
+                      disabled={profile?.role !== "admin"}
+                      placeholder="Company no 13522872"
+                      value={userInfo?.office_details?.company_number}
+                      onChange={(e) => handleChange("company_number", e.target.value)}
                     />
-                    {showPopup && (
-                      <div className="map-popup">
-                        <GoogleMap onLoad={onMapLoadStreet}></GoogleMap>
-                      </div>
-                    )}
-                    {/* <Autocomplete
+                  </InputGroup>
+                  <InputGroup flex={1}>
+                    <InputLeftElement pointerEvents="none">
+                      <img src={vat} alt="" />
+                    </InputLeftElement>
+                    <Input
+                      className="disabled"
+                      name="vatnumber"
+                      disabled={profile?.role !== "admin"}
+                      placeholder="VAT no 6754 5532"
+                      value={userInfo?.office_details?.company_vat}
+                      onChange={(e) => handleChange("company_vat", e.target.value)}
+                    />
+                  </InputGroup>
+                </Flex>
+              </div>
+            </div>
+
+            {/* office detail section start */}
+            <form onSubmit={AddOffice}>
+              <div className="brd_wrap pd_in">
+                <Flex justify="space-between" mb="25px" align="center">
+                  <Text
+                    color={textColor}
+                    fontSize="22px"
+                    lineHeight="100%"
+                    fontFamily={"AirbnbBold"}
+                  >
+                    Office details
+                  </Text>
+                </Flex>
+                <div className="dtl_wrap">
+                  <Flex
+                    className="edit_inputs_wrap"
+                    px="0px"
+                    justify="space-between"
+                    mb="20px"
+                    align="center"
+                  >
+                    <InputGroup flex={1} maxW="307px">
+                      <InputLeftElement pointerEvents="none">
+                        <img src={offCup} alt="" />
+                      </InputLeftElement>
+                      <Input
+                        disabled={!isChecked}
+                        pattern="^(?!\s)[a-zA-Z\s&',.-]+$"
+                        title="Please enter a valid office name"
+                        value={officeDetail.office_name}
+                        name="office_id"
+                        onChange={(e) => {
+                          setOfficeDetail((pre) => {
+                            return { ...pre, office_name: e.target.value };
+                          });
+                        }}
+                      // required
+                      />
+                    </InputGroup>
+
+                  </Flex>
+                  <Flex
+                    className="edit_inputs_wrap"
+                    px="0px"
+                    justify="space-between"
+                    mb="20px"
+                    align="center"
+                  >
+                    <InputGroup flex={1} className="inpu_n_cstm">
+                      <InputLeftElement pointerEvents="none">
+                        <img className="location" src={location} alt="" />
+                      </InputLeftElement>
+                      <input
+                        placeholder="Enter Postcode"
+                        disabled={!isChecked}
+                        name="street_address"
+                        className="tsk_loc_inp form-control"
+                        type="textarea"
+                        value={street_address}
+                        onChange={handleStreetChange}
+                        onFocus={handlePopupOpen}
+                        onClick={handlePopupOpen}
+                        ref={searchBoxRefStreet}
+                      />
+                      {showPopup && (
+                        <div className="map-popup">
+                          <GoogleMap onLoad={onMapLoadStreet}></GoogleMap>
+                        </div>
+                      )}
+                      {/* <Autocomplete
                         pattern="^(?!\s*$).+$"
                         title="Please enter a value without white spaces at the start"
                         className="addr_custom_inp pdng_s"
@@ -627,210 +629,195 @@ export default function EmployeeRegistration() {
                         }}
                         required
                       /> */}
-                  </InputGroup>
-                  <InputGroup flex={0.3}>
-                    <InputLeftElement pointerEvents="none">
-                      <img className="location" src={location} alt="" />
-                    </InputLeftElement>
-                    <Input
-                      pattern="^(?!\s)[\s\S]*$"
-                      title="Please enter a value without white spaces at the start"
-                      disabled={!isChecked}
-                      value={officeDetail?.address?.pincode}
-                      onChange={(e) =>
-                        setOfficeDetail({
-                          ...officeDetail,
-                          address: {
-                            ...officeDetail.address,
-                            pincode: e.target.value,
-                          },
-                        })
-                      }
-                      // required
-                    />
-                  </InputGroup>
-
-                  <div className="select_wrapper loc_inp" flex={0.4}>
-                    <img className="location-icon" src={location} alt="" />
-                    <Input
-                      className="icon_left_side"
-                      value={officeDetail?.address?.city}
-                      disabled
-                    />
-                  </div>
-
-                  <div className="select_wrapper loc_inp" flex={0.4}>
-                    <img className="location-icon " src={location} alt="" />
-                    <Input
-                      className="icon_left_side"
-                      value={officeDetail?.address?.country}
-                      disabled
-                    />
-                  </div>
-                </Flex>
-                <Flex
-                  className="edit_inputs_wrap"
-                  px="0px"
-                  justify="space-between"
-                  align="center"
-                >
-                  <div className="numb_wrap">
-                    <input
-                      type="number"
-                      className="numb_anthr_inp"
-                      disabled={!isChecked}
-                      pattern="^[0-9]{6,15}$"
-                      title="Please enter a valid mobile number"
-                      name="phone"
-                      value={officeDetail?.phone}
-                      onChange={(e) => {
-                        setOfficeDetail((pre) => {
-                          return { ...pre, phone: e.target.value };
-                        });
-                      }}
-                      // required
-                    />
-
-                    <PhoneInput
-                      autoComplete="off"
-                      className="f_1 cntry_code ofc_phn_wrp"
-                      international
-                      defaultCountry="United Kingdom"
-                      disabled={!isChecked}
-                      value={value}
-                      name="country_code"
-                      onChange={(e) =>
-                        setOfficeDetail((previousValue) => {
-                          return { ...previousValue, country_code: e };
-                        })
-                      }
-                      // required
-                    />
-                  </div>
-
-                  <InputGroup flex={1}>
-                    <InputLeftElement pointerEvents="none">
-                      <img src={Emailicon} alt="" />
-                    </InputLeftElement>
-                    <Input
-                      disabled={!isChecked}
-                      value={officeDetail?.email}
-                      name="email"
-                      pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-                      title="Please enter a valid email address"
-                      onChange={(e) => {
-                        setOfficeDetail((pre) => {
-                          return { ...pre, email: e.target.value };
-                        });
-                      }}
-                      isRequired
-                    />
-                  </InputGroup>
-                  <InputGroup flex={1}>
-                    <InputLeftElement pointerEvents="none">
-                      <img src={Globe} alt="" />
-                    </InputLeftElement>
-                    <Input
-                      disabled={!isChecked}
-                      value={officeDetail?.website}
-                      name="website"
-                      pattern="^(https?:\/\/)?(www\.)[a-zA-Z0-9]+([-.][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}([\/\w\.-]*)*\/?$"
-                      title="Please enter a valid website URL"
-                      onChange={(e) => {
-                        setOfficeDetail((pre) => {
-                          return { ...pre, website: e.target.value };
-                        });
-                      }}
-                      isRequired
-                    />
-                  </InputGroup>
-                </Flex>
-              </div>
-              {/* <Flex
-                                justify="space-between"
-                                mt="25px"
-                                mb="0px"
-                                flexDirection="column"
-                                align="start"
-                            >
-                                <div className="check_wrap check_wrapper">
-                                    <Checkbox
-                                        colorScheme="brandScheme"
-                                        me="10px"
-                                        checked={isChecked}
-                                        isDisabled={profile?.subadmin_rights?.viewRightOnly && !profile?.subadmin_rights?.onboardEmployess || profile?.role !=="admin"}
-                                        onChange={handleCheckboxChange}
-                                    />
-                                    <span>Onboard another office</span>
-                                </div>
-                            </Flex>
-                            <Flex justify="center" mt="20px" align="center">
-                                <Button
-                                    className="admin_dtl_save"
-                                    type="submit"
-                                    disabled={!isChecked}
-                                >
-                                    Save
-                                </Button>
-                            </Flex> */}
-            </div>
-          </form>
-
-          <form onSubmit={Edit}>
-            <div className="brd_wrap">
-              <Flex justify="space-between" mb="25px" align="center">
-                <Text
-                  color={textColor}
-                  fontSize="22px"
-                  fontWeight="700"
-                  lineHeight="100%"
-                  fontFamily={"AirbnbBold"}
-                >
-                  Edit employee details
-                </Text>
-              </Flex>
-              <Flex gap="25px" mb="" align="start">
-                <div className="dtl_wrap admn_details">
-                  <Flex
-                    className="edit_inputs_wrap"
-                    justify="space-between"
-                    mb="20px"
-                    align="start"
-                  >
-                    <InputGroup flex={1}>
+                    </InputGroup>
+                    <InputGroup flex={0.3}>
                       <InputLeftElement pointerEvents="none">
-                        <img src={hopper} alt="" />
+                        <img className="location" src={location} alt="" />
                       </InputLeftElement>
                       <Input
-                        placeholder="Enter full name *"
-                        value={profile?.name}
-                        // disabled
-                        onChange={(e)=> setProfile((prev)=> ({
-                          ...prev,
-                          name: e.target.value
-                        }))}
+                        pattern="^(?!\s)[\s\S]*$"
+                        title="Please enter a value without white spaces at the start"
+                        disabled={!isChecked}
+                        value={officeDetail?.address?.pincode}
+                        onChange={(e) =>
+                          setOfficeDetail({
+                            ...officeDetail,
+                            address: {
+                              ...officeDetail.address,
+                              pincode: e.target.value,
+                            },
+                          })
+                        }
+                      // required
+                      />
+                    </InputGroup>
+
+                    <div className="select_wrapper loc_inp" flex={0.4}>
+                      <img className="location-icon" src={location} alt="" />
+                      <Input
+                        className="icon_left_side"
+                        value={officeDetail?.address?.city}
+                        disabled
+                      />
+                    </div>
+
+                    <div className="select_wrapper loc_inp" flex={0.4}>
+                      <img className="location-icon " src={location} alt="" />
+                      <Input
+                        className="icon_left_side"
+                        value={officeDetail?.address?.country}
+                        disabled
+                      />
+                    </div>
+                  </Flex>
+                  <Flex
+                    className="edit_inputs_wrap"
+                    px="0px"
+                    justify="space-between"
+                    align="center"
+                  >
+                    <div className="numb_wrap">
+                      <input
+                        type="number"
+                        className="numb_anthr_inp"
+                        disabled={!isChecked}
+                        pattern="^[0-9]{6,15}$"
+                        title="Please enter a valid mobile number"
+                        name="phone"
+                        value={officeDetail?.phone}
+                        onChange={(e) => {
+                          setOfficeDetail((pre) => {
+                            return { ...pre, phone: e.target.value };
+                          });
+                        }}
+                      // required
+                      />
+
+                      <PhoneInput
+                        autoComplete="off"
+                        className="f_1 cntry_code ofc_phn_wrp"
+                        international
+                        defaultCountry="United Kingdom"
+                        disabled={!isChecked}
+                        value={value}
+                        name="country_code"
+                        onChange={(e) =>
+                          setOfficeDetail((previousValue) => {
+                            return { ...previousValue, country_code: e };
+                          })
+                        }
+                      // required
+                      />
+                    </div>
+
+                    <InputGroup flex={1}>
+                      <InputLeftElement pointerEvents="none">
+                        <img src={Emailicon} alt="" />
+                      </InputLeftElement>
+                      <Input
+                        disabled={!isChecked}
+                        value={officeDetail?.email}
+                        name="email"
+                        pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                        title="Please enter a valid email address"
+                        onChange={(e) => {
+                          setOfficeDetail((pre) => {
+                            return { ...pre, email: e.target.value };
+                          });
+                        }}
+                      // isRequired
                       />
                     </InputGroup>
                     <InputGroup flex={1}>
                       <InputLeftElement pointerEvents="none">
-                        <img src={chair} alt="" />
+                        <img src={Globe} alt="" />
                       </InputLeftElement>
-                      <div className="select_wrapper w-slct ">
-                        {/* <img className="location-icon " src={chair} alt="" /> */}
+                      <Input
+                        disabled={!isChecked}
+                        value={officeDetail?.website}
+                        name="website"
+                        pattern="^(https?:\/\/)?(www\.)[a-zA-Z0-9]+([-.][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}([\/\w\.-]*)*\/?$"
+                        title="Please enter a valid website URL"
+                        onChange={(e) => {
+                          setOfficeDetail((pre) => {
+                            return { ...pre, website: e.target.value };
+                          });
+                        }}
+                      // isRequired
+                      />
+                    </InputGroup>
+                  </Flex>
+                </div>
+              </div>
+            </form>
+
+            <form onSubmit={Edit}>
+              <div className="brd_wrap">
+                <Flex justify="space-between" mb="25px" align="center">
+                  <Text
+                    color={textColor}
+                    fontSize="22px"
+                    fontWeight="700"
+                    lineHeight="100%"
+                    fontFamily={"AirbnbBold"}
+                  >
+                    Edit employee details
+                  </Text>
+                </Flex>
+                <Flex gap="25px" mb="" align="start">
+                  <div className="dtl_wrap admn_details">
+                    <Flex
+                      className="edit_inputs_wrap"
+                      justify="space-between"
+                      mb="20px"
+                      align="start"
+                    >
+                      <InputGroup flex={1}>
+                        <InputLeftElement pointerEvents="none">
+                          <img src={hopper} alt="" />
+                        </InputLeftElement>
+                        <Input
+                          type="text"
+                          placeholder="Enter full name *"
+                          value={userInfo?.name}
+                          onChange={(e) => handleChange("name", e.target.value)}
+                        />
+                      </InputGroup>
+                      <InputGroup flex={1}>
+                        <InputLeftElement pointerEvents="none">
+                          <img src={chair} alt="" />
+                        </InputLeftElement>
+                        <div className="select_wrapper w-slct ">
+                          <Select
+                            className="icon_left_side w_100"
+                            placeholder="Select designation *"
+                            value={userInfo?.designation_id}
+                            isDisabled={userInfo?.role !== "admin"}
+                            onChange={(e) => handleChange("designation_id", e.target.value)}
+                          // isRequired
+                          >
+                            {designation &&
+                              designation.map((curr, index) => {
+                                return (
+                                  <option key={index} value={curr._id}>
+                                    {curr.name}
+                                  </option>
+                                );
+                              })}
+                          </Select>
+                        </div>
+                      </InputGroup>
+                      <div className="select_wrapper w-slct">
+                        <img className="location-icon " src={chair} alt="" />
                         <Select
-                          className="icon_left_side w_100"
-                          placeholder="Select designation *"
-                          value={profile?.designation_id}
-                          isDisabled={true}
-                          onChange={(e) => {
-                            setProfile((pre) => {
-                              return { ...pre, designation_id: e.target.value };
-                            });
-                          }}
-                          isRequired
+                          className="icon_left_side"
+                          placeholder="Select department *"
+                          value={userInfo?.department_id}
+                          isDisabled={userInfo?.role !== "admin"}
+                          onChange={(e) => handleChange("department_id", e.target.value)}
                         >
-                          {designation &&
-                            designation.map((curr, index) => {
+                          {department &&
+                            department.map((curr, index) => {
                               return (
                                 <option key={index} value={curr._id}>
                                   {curr.name}
@@ -839,92 +826,62 @@ export default function EmployeeRegistration() {
                             })}
                         </Select>
                       </div>
-                    </InputGroup>
-                    <div className="select_wrapper w-slct">
-                      <img className="location-icon " src={chair} alt="" />
-                      <Select
-                        className="icon_left_side"
-                        placeholder="Select department *"
-                        value={profile?.department_id}
-                        isDisabled={true}
-                        onChange={(e) => {
-                          setProfile((pre) => {
-                            return { ...pre, department_id: e.target.value };
-                          });
-                        }}
-                        isRequired
-                      >
-                        {department &&
-                          department.map((curr, index) => {
-                            return (
-                              <option key={index} value={curr._id}>
-                                {curr.name}
-                              </option>
-                            );
-                          })}
-                      </Select>
-                    </div>
-                  </Flex>
-                  <Flex
-                    className="edit_inputs_wrap"
-                    justify="start"
-                    mb="20px"
-                    align="start "
-                  >
-                    <InputGroup flex={1}>
-                      <InputLeftElement pointerEvents="none">
-                        <img src={Emailicon} alt="" />
-                      </InputLeftElement>
-                      <Input
-                        placeholder="Official email id *"
-                        pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-                        title="Please enter a valid email address"
-                        value={profile?.email}
-                        onChange={(e)=> setProfile((prev)=> ({
-                          ...prev,
-                          email: e.target.value
-                        }))}
-                        // disabled
-                      />
-                    </InputGroup>
-                    <div className="numb_wrap f_1 emp_numb">
-                      <input
-                        placeholder="Mobile Number*"
-                        type="text"
-                        className="numb_anthr_inp"
-                        name="phone"
-                        pattern="^[0-9]{6,15}$"
-                        title="Please enter a valid mobile number"
-                        value={profile?.phone}
-                        disabled
-                      />
-                      <PhoneInput
-                        autoComplete="off"
-                        className="f_1 cntry_code"
-                        international
-                        id="phone"
-                        // required
-                        // defaultCountry="RU"
-                        value={profile?.country_code}
-                        onChange={(e)=> console.log("Country Code", e)}
-                        disabled
-                      />
-                    </div>
+                    </Flex>
+                    <Flex
+                      className="edit_inputs_wrap"
+                      justify="start"
+                      mb="20px"
+                      align="start "
+                    >
+                      <InputGroup flex={1}>
+                        <InputLeftElement pointerEvents="none">
+                          <img src={Emailicon} alt="" />
+                        </InputLeftElement>
+                        <Input
+                          placeholder="Official email id *"
+                          pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                          title="Please enter a valid email address"
+                          value={userInfo?.email}
+                          onChange={(e) => handleChange("email", e.target.value)}
+                        />
+                      </InputGroup>
+                      <div className="numb_wrap f_1 emp_numb">
+                        <input
+                          placeholder="Mobile Number*"
+                          type="text"
+                          className="numb_anthr_inp"
+                          name="phone"
+                          pattern="^[0-9]{6,15}$"
+                          title="Please enter a valid mobile number"
+                          value={userInfo?.phone}
+                          onChange={(e) => {
+                            if (e.target.value.length <= 12) {
+                              handleChange("phone", e.target.value)
+                            }
+                          }}
+                          ref={phoneInputRef}
+                        />
+                        <PhoneInput
+                          autoComplete="off"
+                          className="f_1 cntry_code"
+                          international
+                          id="phone"
+                          value={userInfo?.country_code}
+                          onChange={(e) => {
+                            setUserInfo({ ...userInfo, country_code: e });
+                            handleCountryCodeChange(e)
+                          }}
+                        />
+                      </div>
 
-                    <div className="select_wrapper w-slct spc_select">
-                      <img src={chair} className="location-icon" alt="" />
-                      <Select
+                      <div className="select_wrapper w-slct spc_select">
+                        <img src={chair} className="location-icon" alt="" />
+                        <Select
                           className="icon_left_side"
                           placeholder="Select office name  *"
-                          value={profile?.office_id}
-                          isDisabled={true}
-
-                          onChange={(e) => {
-                            setProfile((pre) => {
-                              return { ...pre, office_id: e.target.value };
-                            });
-                          }}
-                          isRequired
+                          value={userInfo?.office_id}
+                          isDisabled={userInfo?.role !== "admin"}
+                          onChange={(e) => handleChange("office_id", e.target.value)}
                         >
                           {officeName &&
                             officeName.map((curr, index) => {
@@ -935,322 +892,244 @@ export default function EmployeeRegistration() {
                               );
                             })}
                         </Select>
+                      </div>
+                    </Flex>
+                    <Flex
+                      className="edit_inputs_wrap"
+                      justify="start"
+                      mb="25px"
+                      align="center"
+                    >
+                      <InputGroup
+                        flex={1}
+                        maxW="255px"
+                        className="chkra_password_grp"
+                      >
+                        <InputLeftElement pointerEvents="none">
+                          <img src={lock} alt="" />
+                        </InputLeftElement>
+                        <Input
+                          type={passwordShown === true ? "text" : "password"}
+                          placeholder="Choose password"
+                          className="chkra_inpu_pass"
+                          name="password"
+                          autoComplete="new-password"
+                          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[A-Za-z\d!@#$%^&*()]{8,}$"
+                          title="Password must contain at least 8 characters including one uppercase letter, one lowercase letter, one digit, and one special character"
+                          value={userInfo?.admin_password}
+                          onChange={(e) => handleChange("admin_password", e.target.value)}
+                        />
+                        <InputRightElement
+                          onClick={() => togglePasswordVisiblity()}
+                        >
+                          <img src={eye} alt="" />
+                        </InputRightElement>
+                      </InputGroup>
+                      <InputGroup
+                        flex={1}
+                        maxW="255px"
+                        className="chkra_password_grp"
+                      >
+                        <InputLeftElement pointerEvents="none">
+                          <img src={lock} alt="" />
+                        </InputLeftElement>
+                        <Input
+                          type={confirmPasswordShown ? "text" : "password"}
+                          placeholder="Confirm password"
+                          className="chkra_inpu_pass"
+                          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[A-Za-z\d!@#$%^&*()]{8,}$"
+                          title="Password must contain at least 8 characters including one uppercase letter, one lowercase letter, one digit, and one special character"
+                          name="confirmPassword"
+                          autoComplete="off"
+                          value={userInfo?.confirmPassword}
+                          onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                        // isRequired
+                        />
+                        {!passwordsMatch && <div>Passwords do not match</div>}
+                        <InputRightElement>
+                          <img
+                            src={eye}
+                            alt=""
+                            onClick={toggleConfirmPasswordVisiblity}
+                          />
+                        </InputRightElement>
+                      </InputGroup>
+                    </Flex>
+                  </div>
+                  <div className="dtl_wrap_img">
+                    <div className="Admin_img" align="center">
+                      <div className="edit_img_curr">
+                        <input
+                          type="file"
+                          id="admin_img_curr"
+                          name="profile_image"
+                          // value={userInfo?.profile_image}
+                          onChange={(e) => handleChange("profile_image", e.target.files[0])}
+                          accept="image/*"
+                        />
+                        {
+                          <img
+                            src={
+                              imagePreview ||
+                              `https://uat-presshope.s3.eu-west-2.amazonaws.com/public/adminImages/${userInfo?.profile_image}`
+                            }
+                            className="uploaded_img nimg"
+                            alt="Preview"
+                          />
+                        }
+                      </div>
                     </div>
-                  </Flex>
+                  </div>
+                </Flex>
+              </div>
+
+              <div className="brd_wrap pd_in pdng_tp new_emp_prsn_dtl">
+                <Flex justify="space-between" mb="25px" mt="25px" align="center">
+                  <Text
+                    color={textColor}
+                    fontSize="22px"
+                    fontWeight="700"
+                    lineHeight="100%"
+                    fontFamily={"AirbnbBold"}
+                  >
+                    Edit employee personal details
+                  </Text>
+                </Flex>
+                <div className="dtl_wrap">
                   <Flex
                     className="edit_inputs_wrap"
-                    justify="start"
-                    mb="25px"
+                    px="0px"
+                    justify="space-between"
+                    mb="20px"
                     align="center"
                   >
-                    <InputGroup
-                      flex={1}
-                      maxW="255px"
-                      className="chkra_password_grp"
-                    >
+                    <InputGroup flex={1}>
                       <InputLeftElement pointerEvents="none">
-                        <img src={lock} alt="" />
+                        <img className="location" src={location} alt="" />
                       </InputLeftElement>
-                      <Input
-                        type={passwordShown === true ? "text" : "password"}
-                        placeholder="Choose password"
-                        className="chkra_inpu_pass"
-                        name="password"
-                        autoComplete="new-password"
-                        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[A-Za-z\d!@#$%^&*()]{8,}$"
-                        title="Password must contain at least 8 characters including one uppercase letter, one lowercase letter, one digit, and one special character"
-                        value={editAbleProfile?.password}
-                        // isDisabled={
-                        //   profile?.subadmin_rights?.viewRightOnly &&
-                        //   !profile?.subadmin_rights?.onboardEmployess
-                        // }
-                        onChange={(e) => {
-                          setEditableProfile((pre) => {
-                            return { ...pre, password: e.target.value };
-                          });
-                        }}
-                        // isRequired
-                      />
-                      <InputRightElement
-                        onClick={() => togglePasswordVisiblity()}
-                      >
-                        <img src={eye} alt="" />
-                      </InputRightElement>
-                    </InputGroup>
-                    <InputGroup
-                      flex={1}
-                      maxW="255px"
-                      className="chkra_password_grp"
-                    >
-                      <InputLeftElement pointerEvents="none">
-                        <img src={lock} alt="" />
-                      </InputLeftElement>
-                      <Input
-                        type={confirmPasswordShown ? "text" : "password"}
-                        placeholder="Confirm password"
-                        className="chkra_inpu_pass"
-                        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])[A-Za-z\d!@#$%^&*()]{8,}$"
-                        title="Password must contain at least 8 characters including one uppercase letter, one lowercase letter, one digit, and one special character"
-                        name="confirmPassword"
-                        // isDisabled={
-                        //   profile?.subadmin_rights?.viewRightOnly &&
-                        //   !profile?.subadmin_rights?.onboardEmployess
-                        // }
-                        autoComplete="off"
-                        value={editAbleProfile?.confirmPassword}
-                        onChange={(e) => {
-                          setEditableProfile((pre) => {
-                            return { ...pre, confirmPassword: e.target.value };
-                          });
-                        }}
-                        // isRequired
-                      />
-                      {!passwordsMatch && <div>Passwords do not match</div>}
-                      <InputRightElement>
-                        <img
-                          src={eye}
-                          alt=""
-                          onClick={toggleConfirmPasswordVisiblity}
-                        />
-                      </InputRightElement>
-                    </InputGroup>
-                  </Flex>
-                </div>
-                <div className="dtl_wrap_img">
-                  <div className="Admin_img" align="center">
-                    <div className="edit_img_curr">
-                      <input
-                        type="file"
-                        id="admin_img_curr"
-                        name="profile_image"
-                        value={
-                          editAbleProfile?.profile_image[0] &&
-                          editAbleProfile?.profile_image[0]
-                        }
+                      <Autocomplete
+                        // pattern="^(?!\s)[\s\S]*$"
+                        title="Please enter a value without white spaces at the start"
+                        className="addr_custom_inp"
+                        apiKey={"AIzaSyApYpgGb1pLhudPj9EBdMxd8tArd0nGp5M"}
                         disabled={
                           profile?.subadmin_rights?.viewRightOnly &&
                           !profile?.subadmin_rights?.onboardEmployess
                         }
-                        isRequired
-                        onChange={handleImage}
-                        accept="image/*"
-                        // required
+                        onPlaceSelected={(place) => {
+                          handleEmployeeAddress(place);
+                        }}
+                      // required
                       />
-                      {
-                        <img
-                          src={
-                            imagePreview ||
-                            `https://uat-presshope.s3.eu-west-2.amazonaws.com/public/adminImages/${profile?.profile_image}`
-                          }
-                          className="uploaded_img nimg"
-                          alt="Preview"
-                        />
-                      }
+                    </InputGroup>
+                    <InputGroup flex={0.3}>
+                      <InputLeftElement pointerEvents="none">
+                        <img className="location" src={location} alt="" />
+                      </InputLeftElement>
+                      <Input
+                        placeholder="Post code"
+                        className="disabled"
+                        pattern="^(?!\s)[\s\S]*$"
+                        title="Please enter a value without white spaces at the start"
+                        disabled={
+                          profile?.subadmin_rights?.viewRightOnly &&
+                          !profile?.subadmin_rights?.onboardEmployess
+                        }
+                        value={userInfo?.office_details?.company_name}
+                        onChange={(e) => handleChange("company_name", e.target.value)}
+                      // required
+                      />
+                    </InputGroup>
+
+                    <div className="select_wrapper" flex={0.4}>
+                      <img className="location-icon " src={location} alt="" />
+                      <Input
+                        placeholder="City"
+                        className="icon_left_side no_dsbl"
+                        value={employeeDetail?.employee_address?.city || profile?.employee_address?.city}
+                      // disabled
+                      />
                     </div>
-                  </div>
+
+                    <div className="select_wrapper" flex={0.4}>
+                      <img className="location-icon " src={location} alt="" />
+                      <Input
+                        placeholder="Country"
+                        className="icon_left_side no_dsbl"
+                        value={employeeDetail?.employee_address?.country || profile?.employee_address?.country}
+                      // disabled
+                      />
+                    </div>
+                  </Flex>
+                  <Flex
+                    className="edit_inputs_wrap"
+                    px="0px"
+                    justify="space-between"
+                    align="center"
+                  >
+                    <InputGroup flex={1}>
+                      <InputLeftElement>
+                        <img src={useric} alt="" />
+                      </InputLeftElement>
+                      <Input
+                        placeholder="Enter bank holder name"
+                        pattern="^(?! )[a-zA-Z\s'-]+$"
+                        title="Please enter a valid bank holder name"
+                        value={userInfo?.bank_details?.account_holder_name}
+                        onChange={(e) => handleChange("account_holder_name", e.target.value)}
+                      // required
+                      />
+                    </InputGroup>
+                    <InputGroup flex={1}>
+                      <InputLeftElement>
+                        <img src={bankic} alt="" />
+                      </InputLeftElement>
+                      <Input
+                        placeholder="Enter bank name"
+                        pattern="^(?!^\s)(?!.*\s$)[a-zA-Z0-9\s]+$"
+                        title="Please enter a valid bank name without white spaces at the start or end"
+                        value={userInfo?.bank_details?.bank_name}
+                        onChange={(e) => handleChange("bank_name", e.target.value)}
+                      // required
+                      />
+                    </InputGroup>
+                    <InputGroup flex={0.7}>
+                      <InputLeftElement>
+                        <img src={sortcodeic} alt="" />
+                      </InputLeftElement>
+                      <Input
+                        placeholder="Enter sort code"
+                        // pattern="^(?!^\s)(?!.*\s$)[a-zA-Z0-9\s]+$"
+                        // pattern="^[0-9]{2}-[0-9]{2}-[0-9]{2}$"
+                        title="please enter valid sort code"
+                        value={userInfo?.bank_details?.sort_code}
+                        onChange={(e) => {
+                          let value = formatSortCode(e.target.value.replace(/[^0-9]/g, ''));
+                          handleChange("sort_code", value)
+                        }}
+                        maxLength={8}
+                      // required
+                      />
+                    </InputGroup>
+                    <InputGroup flex={1}>
+                      <InputLeftElement>
+                        <img src={accountic} alt="" />
+                      </InputLeftElement>
+                      <Input
+                        placeholder="Enter account number"
+                        pattern="^[a-zA-Z0-9]+$"
+                        title="Please enter a valid account number"
+                        value={userInfo?.bank_details?.account_number}
+                        onChange={(e) => handleChange("account_number", e.target.value)}
+                      // required
+                      />
+                    </InputGroup>
+                  </Flex>
                 </div>
-              </Flex>
-            </div>
-
-            <div className="brd_wrap pd_in pdng_tp new_emp_prsn_dtl">
-              <Flex justify="space-between" mb="25px" mt="25px" align="center">
-                <Text
-                  color={textColor}
-                  fontSize="22px"
-                  fontWeight="700"
-                  lineHeight="100%"
-                  fontFamily={"AirbnbBold"}
-                >
-                  Edit employee personal details
-                </Text>
-              </Flex>
-              <div className="dtl_wrap">
-                <Flex
-                  className="edit_inputs_wrap"
-                  px="0px"
-                  justify="space-between"
-                  mb="20px"
-                  align="center"
-                >
-                  <InputGroup flex={1}>
-                    <InputLeftElement pointerEvents="none">
-                      <img className="location" src={location} alt="" />
-                    </InputLeftElement>
-                    <Autocomplete
-                      // pattern="^(?!\s)[\s\S]*$"
-                      title="Please enter a value without white spaces at the start"
-                      className="addr_custom_inp"
-                      apiKey={"AIzaSyApYpgGb1pLhudPj9EBdMxd8tArd0nGp5M"}
-                      disabled={
-                        profile?.subadmin_rights?.viewRightOnly &&
-                        !profile?.subadmin_rights?.onboardEmployess
-                      }
-                      onPlaceSelected={(place) => {
-                        handleEmployeeAddress(place);
-                      }}
-                      // required
-                    />
-                  </InputGroup>
-                  <InputGroup flex={0.3}>
-                    <InputLeftElement pointerEvents="none">
-                      <img className="location" src={location} alt="" />
-                    </InputLeftElement>
-                    <Input
-                      placeholder="Post code"
-                      className="disabled"
-                      pattern="^(?!\s)[\s\S]*$"
-                      title="Please enter a value without white spaces at the start"
-                      value={employeeDetail?.employee_address?.post_code || profile?.employee_address?.post_code}
-                      disabled={
-                        profile?.subadmin_rights?.viewRightOnly &&
-                        !profile?.subadmin_rights?.onboardEmployess
-                      }
-                      onChange={(e) =>
-                        setEmployeeDetail((prevState) => ({
-                          ...prevState,
-                          employee_address: {
-                            ...prevState.employee_address,
-                            post_code: e.target.value,
-                          },
-                        }))
-                      }
-                      // required
-                    />
-                  </InputGroup>
-
-                  <div className="select_wrapper" flex={0.4}>
-                    <img className="location-icon " src={location} alt="" />
-                    <Input
-                      placeholder="City"
-                      className="icon_left_side no_dsbl"
-                      value={employeeDetail?.employee_address?.city ||  profile?.employee_address?.city}
-                      // disabled
-                    />
-                  </div>
-
-                  <div className="select_wrapper" flex={0.4}>
-                    <img className="location-icon " src={location} alt="" />
-                    <Input
-                      placeholder="Country"
-                      className="icon_left_side no_dsbl"
-                      value={employeeDetail?.employee_address?.country || profile?.employee_address?.country}
-                      // disabled
-                    />
-                  </div>
-                </Flex>
-                <Flex
-                  className="edit_inputs_wrap"
-                  px="0px"
-                  justify="space-between"
-                  align="center"
-                >
-                  <InputGroup flex={1}>
-                    <InputLeftElement>
-                      <img src={useric} alt="" />
-                    </InputLeftElement>
-                    <Input
-                      placeholder="Enter bank holder name"
-                      value={profile?.bank_details?.account_holder_name}
-                      pattern="^(?! )[a-zA-Z\s'-]+$"
-                      title="Please enter a valid bank holder name"
-                      disabled={
-                        profile?.subadmin_rights?.viewRightOnly &&
-                        !profile?.subadmin_rights?.onboardEmployess
-                      }
-                      onChange={(e) =>
-                        setEmployeeDetail((prevState) => ({
-                          ...prevState,
-                          bank_details: {
-                            ...prevState.bank_details,
-                            account_holder_name: e.target.value,
-                          },
-                        }))
-                      }
-                      // required
-                    />
-                  </InputGroup>
-                  <InputGroup flex={1}>
-                    <InputLeftElement>
-                      <img src={bankic} alt="" />
-                    </InputLeftElement>
-                    <Input
-                      placeholder="Enter bank name"
-                      pattern="^(?!^\s)(?!.*\s$)[a-zA-Z0-9\s]+$"
-                      title="Please enter a valid bank name without white spaces at the start or end"
-                      value={profile?.bank_details?.bank_name}
-                      disabled={
-                        profile?.subadmin_rights?.viewRightOnly &&
-                        !profile?.subadmin_rights?.onboardEmployess
-                      }
-                      onChange={(e) =>
-                        setEmployeeDetail((prevState) => ({
-                          ...prevState,
-                          bank_details: {
-                            ...prevState.bank_details,
-                            bank_name: e.target.value,
-                          },
-                        }))
-                      }
-                      // required
-                    />
-                  </InputGroup>
-                  <InputGroup flex={0.7}>
-                    <InputLeftElement>
-                      <img src={sortcodeic} alt="" />
-                    </InputLeftElement>
-                    <Input
-                      placeholder="Enter sort code"
-                      // pattern="^(?!^\s)(?!.*\s$)[a-zA-Z0-9\s]+$"
-                      // pattern="^[0-9]{2}-[0-9]{2}-[0-9]{2}$"
-                      title="please enter valid sort code"
-                      value={profile?.bank_details?.sort_code}
-                      disabled={
-                        profile?.subadmin_rights?.viewRightOnly &&
-                        !profile?.subadmin_rights?.onboardEmployess
-                      }
-                      onChange={(e) =>
-                        setEmployeeDetail((prevState) => ({
-                          ...prevState,
-                          bank_details: {
-                            ...prevState.bank_details,
-                            sort_code: e.target.value,
-                          },
-                        }))
-                      }
-                      // required
-                    />
-                  </InputGroup>
-                  <InputGroup flex={1}>
-                    <InputLeftElement>
-                      <img src={accountic} alt="" />
-                    </InputLeftElement>
-                    <Input
-                      placeholder="Enter account number"
-                      pattern="^[a-zA-Z0-9]+$"
-                      title="Please enter a valid account number"
-                      value={profile?.bank_details?.account_number}
-                      disabled={
-                        profile?.subadmin_rights?.viewRightOnly &&
-                        !profile?.subadmin_rights?.onboardEmployess
-                      }
-                      onChange={(e) =>
-                        setEmployeeDetail((prevState) => ({
-                          ...prevState,
-                          bank_details: {
-                            ...prevState.bank_details,
-                            account_number: e.target.value,
-                          },
-                        }))
-                      }
-                      // required
-                    />
-                  </InputGroup>
-                </Flex>
               </div>
-            </div>
 
-            {/*  New Employee Rights*/}
-            {/* {profile?.subadmin_rights?.assignNewEmployeeRights &&
+              {/*  New Employee Rights*/}
+              {/* {profile?.subadmin_rights?.assignNewEmployeeRights &&
                             <div className="pdng_tp">
                                 <Flex justify="space-between" mb="25px" align="center">
                                     <Text
@@ -1460,15 +1339,15 @@ export default function EmployeeRegistration() {
 
                                 </Flex>
                             </div>} */}
-            <Flex justify="center" mb="20px" align="center">
-              <Button className="admin_dtl_save" type="onsubmit">
-                Save
-              </Button>
-            </Flex>
-          </form>
-        </Container>
-      </Card>
-    </Box>
+              <Flex justify="center" mb="20px" align="center">
+                <Button className="admin_dtl_save" type="onsubmit">
+                  Save
+                </Button>
+              </Flex>
+            </form>
+          </Container>
+        </Card>
+      </Box>
     </>
   );
 }

@@ -21,8 +21,6 @@ export const PendingMsgProvider = ({ children }) => {
 
 
   const { profile } = useContext(dataContext);
-  console.log("🚀 ~ PendingMsgProvider ~ profile:", profile)
-
   // getting chat list from fireStore
   const getChat = async () => {
     const chatRef = collection(getFirestore(), "Chat"); // Assuming "Chat" is the collection name
@@ -55,7 +53,7 @@ export const PendingMsgProvider = ({ children }) => {
         }
       );
     } catch (error) {
-     console.log(error)
+    //  console.log(error)
     }
   };
 
@@ -91,8 +89,6 @@ export const PendingMsgProvider = ({ children }) => {
   //       setPendingNotifications(pendingNotif);
   //   }
   // }, [notificationOther]);
-
-  console.log('pendingChats---->', pendingChats)
 
   return (
     <PendingMsgContext.Provider

@@ -7,15 +7,15 @@ export const requestForToken = async () => {
             .then((currentToken) => {
                 if (currentToken) {
                     localStorage.setItem("DeviceToken", currentToken)
-                    console.log('current token for client: ', currentToken);
+                    // console.log('current token for client: ', currentToken);
                     // Perform any other neccessary action with the token
                 } else {
                     // Show permission request UI
-                    console.log('No registration token available. Request permission to generate one.');
+                    // console.log('No registration token available. Request permission to generate one.');
                 }
             })
             .catch((err) => {
-                console.log('An error occurred while retrieving token. ', err);
+                // console.log('An error occurred while retrieving token. ', err);
             });
     }
     else if (permission === 'denied') {

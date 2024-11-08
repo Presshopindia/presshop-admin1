@@ -61,7 +61,7 @@ export default function PurchasedContentHistory() {
         window.open(path)
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false)
     }
   };

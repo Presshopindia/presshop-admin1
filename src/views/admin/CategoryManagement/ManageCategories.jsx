@@ -55,7 +55,8 @@ export default function CategoryManagement() {
     commission: "",
     content: "",
     department: "",
-    designation: ""
+    designation: "",
+    user_type: ""
   })
 
   const handleUpdate = () => setModify(!modify);
@@ -67,7 +68,7 @@ export default function CategoryManagement() {
 
     try {
       const res = await Post("admin/upload/data", formData);
-      console.log(res, `uploding files`)
+      // console.log(res, `uploding files`)
       setData((prev) => ({ ...prev, icon: res.data.imgs[0] }));
     } catch (error) {
     }
@@ -109,7 +110,7 @@ export default function CategoryManagement() {
         setLoading(false)
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       setLoading(false)
 
     }
@@ -127,7 +128,7 @@ export default function CategoryManagement() {
         getCategory();
       }
     } catch (error) {
-      console.log(error, "<-----error");
+      // console.log(error, "<-----error");
       setLoading(false)
 
     }
@@ -140,7 +141,7 @@ export default function CategoryManagement() {
       setIsEdit(true);
       onOpen(true);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       setLoading(false)
 
     }
@@ -205,7 +206,7 @@ export default function CategoryManagement() {
   }, [modify]);
   return (
     <>
-      {console.log(data.icon, `,------------split`)}
+      {/* {console.log(data.icon, `,------------split`)} */}
       {loading && <Loader />}
 
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
@@ -222,8 +223,8 @@ export default function CategoryManagement() {
                     commission: "",
                     content: "",
                     department: "",
-                    designation: ""
-
+                    designation: "",
+                    user_type: ""
                   }))
                 }}
               >
@@ -255,8 +256,8 @@ export default function CategoryManagement() {
                     commission: "",
                     content: "",
                     department: "",
-                    designation: ""
-
+                    designation: "",
+                    user_type: ""
                   }))
                 }}
               >
@@ -288,8 +289,8 @@ export default function CategoryManagement() {
                     commission: "",
                     content: "",
                     department: "",
-                    designation: ""
-
+                    designation: "",
+                    user_type: ""
                   }))
 
                 }}
@@ -322,8 +323,8 @@ export default function CategoryManagement() {
                     commission: "active",
                     content: "",
                     department: "",
-                    designation: ""
-
+                    designation: "",
+                    user_type: ""
                   }))
 
                 }}
@@ -356,8 +357,8 @@ export default function CategoryManagement() {
                     commission: "",
                     content: "active",
                     department: "",
-                    designation: ""
-
+                    designation: "",
+                    user_type: ""
                   }))
 
                 }}
@@ -391,7 +392,8 @@ export default function CategoryManagement() {
                     commission: "",
                     content: "",
                     department: "active",
-                    designation: ""
+                    designation: "",
+                    user_type: ""
                   }))
 
                 }}
@@ -424,7 +426,8 @@ export default function CategoryManagement() {
                     commission: "",
                     content: "",
                     department: "",
-                    designation: "active"
+                    designation: "active",
+                    user_type: ""
                   }))
 
                 }}
@@ -439,6 +442,40 @@ export default function CategoryManagement() {
                         <span>
                           Updated on{" "}
                           {moment(updateTime?.designation?.updatedAt).format(
+                            "DD MMMM YYYY"
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Tab>
+              <Tab
+                onClick={() => {
+                  setTypeCont("user_type")
+                  setActiveClass((pre) => ({
+                    faq: "",
+                    priceTip: "",
+                    tutorial: "",
+                    commission: "",
+                    content: "",
+                    department: "",
+                    designation: "",
+                    user_type: "active"
+                  }))
+
+                }}
+              >
+                <div className="cms_left_card w_100">
+                  <div className="cms_items">
+                    <div className={`cms_link ${activeClass.user_type}`}>
+                      <div className="hding">
+                        <p>Mediahouse type</p>
+                      </div>
+                      <div className="bdy">
+                        <span>
+                          Updated on{" "}
+                          {moment().format(
                             "DD MMMM YYYY"
                           )}
                         </span>
@@ -578,6 +615,98 @@ export default function CategoryManagement() {
                 {type && type === "designation" && (
                   <CommonCard type={type} update={handleUpdate} />
                 )}
+              </TabPanel>
+              <TabPanel>
+                <Card
+                  direction="column"
+                  w="625px"
+                  px="0px"
+                  p="17px"
+                  h="737px"
+                  overflowX={{ sm: "scroll", lg: "hidden" }}
+                >
+                  <Flex
+                    px="20px"
+                    pe="37px"
+                    justify="space-between"
+                    mb="20px"
+                    align="center"
+                  >
+                    <Text
+                      color={textColor}
+                      fontSize="22px"
+                      // fontWeight='700'
+                      lineHeight="100%"
+                      fontFamily={"AirbnbBold"}
+                    >
+                      User type (Marketplace)
+                    </Text>
+                    <div className="opt_icons_wrap">
+                      <a
+                        onClick={() => {
+                          onOpen();
+                          setIsEdit(false);
+                          setData("");
+                          handleUpdate();
+                        }}
+                        className="txt_danger_mdm"
+                      >
+                        Add
+                      </a>
+                    </div>
+                  </Flex>
+                  <TableContainer className="fix_ht_table">
+                    <Table mx="20px" variant="simple" className="common_table">
+                      <Thead>
+                        <Tr>
+                          <Th w="23%">Category icon</Th>
+                          <Th w="62%" className="text_center">
+                            Category name
+                          </Th>
+                          <Th w="15%">Action</Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        {categoryName &&
+                          categoryName.map((curr) => {
+                            return (
+                              <Tr key={curr._id}>
+                                <Td className="text_center">
+                                  <img
+                                    src={curr?.icon}
+                                    alt="crime"
+                                    className="icn"
+                                  />
+                                </Td>
+                                <Td className="contact_details text_center">
+                                  {curr?.name}
+                                </Td>
+                                <Td w="33.3%">
+                                  <div className="catmang_icns">
+                                    <a
+                                      onClick={() => {
+                                        getCategoryById(curr._id);
+                                      }}
+                                    >
+                                      <img
+                                        className="icn"
+                                        src={writeic}
+                                        alt="write"
+                                      />
+                                    </a>
+                                    <AiOutlineDelete
+                                      className="icn"
+                                      onClick={() => deleteCategory(curr?._id)}
+                                    />
+                                  </div>
+                                </Td>
+                              </Tr>
+                            );
+                          })}
+                      </Tbody>
+                    </Table>
+                  </TableContainer>
+                </Card>
               </TabPanel>
             </TabPanels>
           </Tabs>

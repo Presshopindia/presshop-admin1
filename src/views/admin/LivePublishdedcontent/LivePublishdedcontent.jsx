@@ -34,7 +34,7 @@ import avatar14 from "assets/img/avatars/avatar14.svg";
 import Hphone from "assets/img/icons/Hphone.svg";
 import { Tooltip } from "@chakra-ui/react";
 import { BsArrowLeft, BsCheckCircleFill, BsEye } from "react-icons/bs";
-import { IoIosWarning } from "react-icons/io";
+import { IoWarningOutline } from "react-icons/io5";
 import phone from "assets/img/icons/phone.svg";
 import chat from "assets/img/icons/chat.svg";
 import mail from "assets/img/icons/mail.svg";
@@ -65,7 +65,7 @@ import moment from "moment";
 import "assets/css/swiper.css";
 import { Get, Post } from "api/admin.services";
 import { useParams } from "react-router-dom";
-import { useHistory  } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import shared from "assets/img/icons/shared.svg";
 import { async } from "@firebase/util";
 import { Patch } from "api/admin.services";
@@ -82,7 +82,10 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper-bundle.min.css";
 import "swiper/swiper.min.css";
 import ActionSort from "components/sortfilters/AcrionSort";
-import { Link} from "react-router-dom";
+import { Link } from "react-router-dom";
+import { deleteCSV } from "utils/commonFunction";
+import { MdBlock } from "react-icons/md";
+import { LuDelete } from "react-icons/lu";
 
 export default function LivePublishdedcontent() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -93,7 +96,7 @@ export default function LivePublishdedcontent() {
   // const navigate = useNavigate();
   const textColor = useColorModeValue("#000", "white");
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { id, component , page  } = useParams();
+  const { id, component, page } = useParams();
   const [Details, setDetails] = useState([]);
   const [actionDetails, setActionDetails] = useState([]);
   const [time, setTime] = useState();
@@ -101,6 +104,8 @@ export default function LivePublishdedcontent() {
   const [path2, setpath2] = useState("");
   const [show, setShow] = useState(false);
   const [csv, setCsv] = useState("");
+
+  const [editable, setEditable] = useState(false);
 
   // const navigate = useNaiga
   const [createAction, setCreateAction] = useState({
@@ -114,8 +119,8 @@ export default function LivePublishdedcontent() {
     try {
       await Get(`admin/contentInfo?content_id=${id}`).then((res) => {
         setDetails(res?.data?.response[0]);
-        console.log("res------------------------->", res);
         setpath1(res?.data?.fullPath);
+        deleteCSV(res?.data?.fullPath)
         setLoading(false);
       });
     } catch (error) {
@@ -203,6 +208,7 @@ export default function LivePublishdedcontent() {
         setActionDetails(res?.data?.response);
         setTotalPages(res?.data?.count / perPage);
         setLoading(false);
+        deleteCSV(res?.data?.fullPath)
       });
     } catch (error) {
       setLoading(false);
@@ -233,9 +239,10 @@ export default function LivePublishdedcontent() {
       if (response) {
         const onboardinPrint = response?.data?.fullPath;
         window.open(onboardinPrint);
+        deleteCSV(response?.data?.fullPath)
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
@@ -249,9 +256,10 @@ export default function LivePublishdedcontent() {
       if (response) {
         const onboardinPrint = response?.data?.fullPath;
         window.open(onboardinPrint);
+        deleteCSV(response?.data?.fullPath)
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
@@ -325,28 +333,28 @@ export default function LivePublishdedcontent() {
     component === "Manage content"
       ? "content"
       : component === "Dashboard"
-      ? "default"
-      : component === "Published Content"
-      ? "published-content-list"
-      : component === "Content purchased online summary"
-      ? `publication-purchased-content-detail/${Details?.purchased_publication?.id}/Manage publications`
-      : component === "Content onboarding history"
-      ? `content-onboarding-history/${Details?._id}/Content onboarding history/Manage content`
-      : component === "Published Content Summary History"
-      ? `content-published-history/${Details?._id}/Published Content Summary History/Manage content`
-      : component === "Content purchased online summary history"
-      ? `publication-purchased-content-detail-history/${Details?._id}/Manage publications`
-      : component === "ManageHopper_published_content_summary"
-      ? `published-content/${Details?.hopper_id?._id}/Manage hoppers`
-      : component === "ManageHopper_published_content_summary_history"
-      ? `published-content-history/${Details?._id}/Manage hoppers`
-      : component === "Admin control"
-      ? `admin-controls`
-      : component === "Content control history"
-      ? `content-onboarding-history/${Details?._id}/Content control history/Admin contorls`
-      : component === "Live published content History"
-      ? `content-published-history/${Details?._id}/Live published content History/Dashboard`
-      : "";
+        ? "default"
+        : component === "Published Content"
+          ? "published-content-list"
+          : component === "Content purchased online summary"
+            ? `publication-purchased-content-detail/${Details?.purchased_publication?.id}/Manage publications`
+            : component === "Content onboarding history"
+              ? `content-onboarding-history/${Details?._id}/Content onboarding history/Manage content`
+              : component === "Published Content Summary History"
+                ? `content-published-history/${Details?._id}/Published Content Summary History/Manage content`
+                : component === "Content purchased online summary history"
+                  ? `publication-purchased-content-detail-history/${Details?._id}/Manage publications`
+                  : component === "ManageHopper_published_content_summary"
+                    ? `published-content/${Details?.hopper_id?._id}/Manage hoppers`
+                    : component === "ManageHopper_published_content_summary_history"
+                      ? `published-content-history/${Details?._id}/Manage hoppers`
+                      : component === "Admin control"
+                        ? `admin-controls`
+                        : component === "Content control history"
+                          ? `content-onboarding-history/${Details?._id}/Content control history/Admin contorls`
+                          : component === "Live published content History"
+                            ? `content-published-history/${Details?._id}/Live published content History/Dashboard`
+                            : "";
 
   return (
     <>
@@ -365,7 +373,7 @@ export default function LivePublishdedcontent() {
           </a>
         </div>
         <div className="cstm_brand_txt">
-          <Text className="brnd_txt">{Details?.is_deleted ? "Deleted Content" : Details?.published_time_date ? "Live Published Content" : "Posted Content"}</Text>
+          <Text className="brnd_txt">{Details?.is_deleted ? "Deleted Content" : Details?.published_time_date ? "Live published content" : "Posted Content"}</Text>
         </div>
         <Card
           direction="column"
@@ -384,7 +392,7 @@ export default function LivePublishdedcontent() {
                 focusableElements="pagination"
                 nested={true}
                 pagination={{ clickable: true }}
-                onSlideChange={() => console.log("slide change")}
+                onSlideChange={(e) => console.log("slide change", e)}
                 onSwiper={(swiper) => console.log(swiper)}
               >
                 {Details &&
@@ -426,13 +434,13 @@ export default function LivePublishdedcontent() {
                         ) : curr?.media_type === "doc" ? (
                           <img src={docic} alt="" className="slider_cont" />
                         ) : curr?.media_type === "pdf" ? (
-                          <embed 
-                            src={`${process.env.REACT_APP_CONTENT + curr?.media}`} 
-                            type="application/pdf" 
-                            width="100%" 
-                            height="400" 
+                          <embed
+                            src={`${process.env.REACT_APP_CONTENT + curr?.media}`}
+                            type="application/pdf"
+                            width="100%"
+                            height="400"
                             cursor="pointer"
-                            style={{borderRadius:"20px", cursor:"pointer"}}
+                            style={{ borderRadius: "20px", cursor: "pointer" }}
                           />
                         ) : null}
                       </SwiperSlide>
@@ -441,6 +449,15 @@ export default function LivePublishdedcontent() {
               </Swiper>
 
               {/* Slide End */}
+
+              {image && image?.length > 0 && (
+                <div className="conttp">
+                  <div className="cont_inner">
+                    <span>{image && image?.length > 0 && image?.length}</span>
+                    <img src={camera} alt="camera" />
+                  </div>
+                </div>
+              )}
 
               {video1 && video1?.length > 0 && (
                 <div className="conttp contp_n vdo">
@@ -452,16 +469,6 @@ export default function LivePublishdedcontent() {
               )}
 
 
-              {image && image?.length > 0 && (
-                <div className="conttp">
-                  <div className="cont_inner">
-                    <span>{image && image?.length > 0 && image?.length}</span>
-                    <img src={camera} alt="camera" />
-                  </div>
-                </div>
-              )}
-
-           
               {audio && audio?.length > 0 && (
                 <div className="conttp contp_n">
                   <div className="cont_inner">
@@ -482,7 +489,7 @@ export default function LivePublishdedcontent() {
                   Content info
                 </Text>
               </div>
-              <div className="info_wrapper">
+              <div className="info_wrapper hopper-txt">
                 <div className="sub_content">
                   <Text fontSize="12px" lineHeight="16px">
                     Hopper
@@ -493,7 +500,7 @@ export default function LivePublishdedcontent() {
                     src={
                       Details?.hopper_id?.avatar_id?.avatar
                         ? process.env.REACT_APP_HOPPER_AVATAR +
-                          Details?.hopper_id?.avatar_id?.avatar
+                        Details?.hopper_id?.avatar_id?.avatar
                         : avatar13
                     }
                     className="icn_hopper_avt "
@@ -507,8 +514,9 @@ export default function LivePublishdedcontent() {
                     letterSpacing={0.3}
                   >
                     {/* {Details?.hopper_id?.user_name} */}
-                    {`${Details?.hopper_id?.first_name}  ${Details?.hopper_id?.last_name}  (${Details?.hopper_id?.user_name})` }
+                    {`${Details?.hopper_id?.first_name}  ${Details?.hopper_id?.last_name}`}
                   </Text>
+                  {`(${Details?.hopper_id?.user_name})`}
                 </div>
               </div>
               <div className="info_wrapper">
@@ -673,13 +681,26 @@ export default function LivePublishdedcontent() {
                   }));
                 }}
               />
-              <img
+              {/* <img
                 onClick={() => editPublishedContent()}
                 src={editic}
                 alt="Edit"
                 className="edit_txt_ic"
-              />
+              /> */}
             </div>
+          </Flex>
+          <Flex px="20px" mb="10px" justify={"center"} align="center">
+            <Button
+              className="theme_btn tbl_btn"
+              onClick={() => {
+                setEditable(!editable);
+                if(editable){
+                  editPublishedContent()
+                }
+              }}
+            >
+              {!editable ? "Edit" : "Save"}
+            </Button>
           </Flex>
         </Card>
 
@@ -714,9 +735,9 @@ export default function LivePublishdedcontent() {
                 </Tooltip>
               </a>{" "}
               <span onClick={() => DownloadCsvContent(id)}>
-              <Tooltip label={"Print"}>
-                <img src={print} className="opt_icons" />
-              </Tooltip>
+                <Tooltip label={"Print"}>
+                  <img src={print} className="opt_icons" />
+                </Tooltip>
               </span>
             </div>
           </Flex>
@@ -730,6 +751,9 @@ export default function LivePublishdedcontent() {
                 <Tr>
                   <Th className="sl_prc">Approval details</Th>
                   <Th className="sl_prc">Volume / type</Th>
+                  {
+                    Details?.Vat?.length > 0 && <Th className="sl_prc">License</Th>
+                  }
                   <Th className="sl_prc">Asking price</Th>
                   <Th className="sl_prc">Sale price</Th>
                   <Th className="sl_stts">Sale status</Th>
@@ -740,145 +764,284 @@ export default function LivePublishdedcontent() {
                 </Tr>
               </Thead>
               <Tbody>
-                <Tr>
-                  <Td className="timedate_wrap">
-                    <p className="timedate tick_txt">
-                      {
-                        Details?.published_time_date ? <span className="tick icn_time">
-                          <BsCheckCircleFill />
-                        </span> : <span className="tick not_posted">
-                        <IoIosWarning />
-                      </span>
-                      }
-                      {
-                        Details?.published_time_date ? "Published" : "Under review"
-                      }
-                    </p>
-                    <p className="timedate">
-                      <img src={watch} className="icn_time" />
-                      {Details?.published_time_date ? moment(Details?.published_time_date).format(`hh:mm A`) : moment(Details?.createdAt).format(`hh:mm A`)}
-                    </p>
-                    <p className="timedate">
-                      <img src={calendar} className="icn_time" />
-                      {Details?.published_time_date ? moment(Details?.published_time_date).format(`DD MMM YYYY`) : moment(Details?.createdAt).format(`DD MMM YYYY`)}
-                    </p>
-                    <a
-                      onClick={() => {
-                        // history.push("/admin/content");
-                        history.push(`/admin/content-onboarding-history/${Details?._id}/Content onboarding history/Manage content`)
-                      }}
-                    >
-                      <BsEye className="icn_time" />
-                      View
-                    </a>
-                  </Td>
-                  <Td className="text_center">
-                    <div className="dir_col vol_type">
-                      <div className="voltype_item">
-                        <span>
-                          {image && image?.length > 0 && image?.length}
-                        </span>
-                        {image && image?.length > 0 ? (
-                          <Tooltip label={"Camera"}>
-                            <img
-                              src={camera}
-                              alt="Content thumbnail"
-                              className="icn"
-                            />
-                          </Tooltip>
-                        ) : (
-                          ""
-                        )}
-                      </div>
-                      <div className="voltype_item">
-                        <span>
-                          {video1 && video1?.length > 0 && video1?.length}
-                        </span>
-                        {video1 && video1?.length > 0 ? (
-                          <Tooltip label={"Video"}>
-                            <img
-                              src={video}
-                              alt="Content thumbnail"
-                              className="icn"
-                            />
-                          </Tooltip>
-                        ) : (
-                          ""
-                        )}
-                      </div>
-
-                      <div className="voltype_item">
-                        <span>
-                          {audio && audio?.length > 0 && audio?.length}
-                        </span>
-                        {audio && audio?.length > 0 ? (
-                          <Tooltip label={"Interview"}>
-                            <img
-                              src={interview}
-                              alt="Content thumbnail"
-                              className="icn"
-                            />
-                          </Tooltip>
-                        ) : (
-                          ""
-                        )}
-                      </div>
-                    </div>
-                  </Td>
-                  <Td>£ {Details?.ask_price}</Td>
-                  <Td>£ {Details?.amount_paid}</Td>
-                  <Td className="sale-status gr">
-                    {Details?.sale_status === "sold" ? (
-                      <span className="txt_success_mdm">Sold</span>
-                    ) : (
-                      <span className="txt_danger_mdm">Unsold</span>
-                    )}
-                  </Td>
-                  <Td>
-                    £ {Details?.amount_paid}{" "}
-                    <p>
-                      {" "}
-                      <a
-                        onClick={() => {
-                          if(Details?.transaction_id){
-                            history.push(
-                              `/admin/Payment-Transaction/${Details?.transaction_id}/Payment transaction `
-                            );
-                          // history.push("/admin/invoicing-and-payments");
-                          }else{
-                            toast.error('Payment is not completed yet.')
+                {
+                  Details?.Vat?.length == 0 ?
+                    <Tr>
+                      <Td className="timedate_wrap">
+                        <p className="timedate tick_txt">
+                          {
+                            Details?.is_deleted ? <span className="tick blocked-deleted"><LuDelete /></span> :
+                              Details?.status == "pending" ? <span className="tick not_posted"><IoWarningOutline /></span> :
+                                Details?.status == "blocked" ? <span className="tick blocked-deleted"><MdBlock /></span> :
+                                  Details?.status == "published" ? <span className="tick icn_time"><BsCheckCircleFill /></span> : ""
                           }
-                        }}
-                        className="back_link timedate"
-                      >
-                        <BsEye className="icn_time" />
-                        View
-                      </a>
-                    </p>
-                  </Td>
-                  <Td>£ {Details?.commition_to_payable}</Td>
-                  <Td>
-                    &pound;{" "}
-                    {Details?.amount_paid_to_hopper &&
-                    Details?.amount_paid_to_hopper
-                      ? "0"
-                      : Details?.amount_payable_to_hopper}
-                  </Td>
-                  <Td>
-                    <p>
-                      {Details?.purchased_publication?.company_bank_details
-                        ?.bank_name ?? ""}
-                    </p>
-                    <p>{`Sort Code ${
-                      Details?.purchased_publication?.company_bank_details
-                        ?.sort_code ?? ""
-                    }`}</p>
-                    <p>{`Account ${
-                      Details?.purchased_publication?.company_bank_details
-                        ?.account_number ?? ""
-                    }`}</p>
-                  </Td>
-                </Tr>
+                          {
+                            Details?.is_deleted ? "Deleted" :
+                              Details?.status == "pending" ? "Under review" :
+                                Details?.status == "blocked" ? "Blocked" :
+                                  Details?.status == "published" ? "Published" : ""
+                          }
+                        </p>
+                        <p className="timedate">
+                          <img src={watch} className="icn_time" />
+                          {Details?.published_time_date ? moment(Details?.published_time_date).format(`hh:mm A`) : moment(Details?.createdAt).format(`hh:mm A`)}
+                        </p>
+                        <p className="timedate">
+                          <img src={calendar} className="icn_time" />
+                          {Details?.published_time_date ? moment(Details?.published_time_date).format(`DD MMM YYYY`) : moment(Details?.createdAt).format(`DD MMM YYYY`)}
+                        </p>
+                        <a
+                          onClick={() => {
+                            // history.push("/admin/content");
+                            history.push(`/admin/content-onboarding-history/${Details?._id}/Content onboarding history/Manage content`)
+                          }}
+                        >
+                          <BsEye className="icn_time" />
+                          View
+                        </a>
+                      </Td>
+                      <Td className="text_center">
+                        <div className="dir_col vol_type">
+                          <div className="voltype_item">
+                            <span>
+                              {image && image?.length > 0 && image?.length}
+                            </span>
+                            {image && image?.length > 0 ? (
+                              <Tooltip label={"Photo"}>
+                                <img
+                                  src={camera}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
+                            ) : (
+                              ""
+                            )}
+                          </div>
+                          <div className="voltype_item">
+                            <span>
+                              {video1 && video1?.length > 0 && video1?.length}
+                            </span>
+                            {video1 && video1?.length > 0 ? (
+                              <Tooltip label={"Video"}>
+                                <img
+                                  src={video}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
+                            ) : (
+                              ""
+                            )}
+                          </div>
+
+                          <div className="voltype_item">
+                            <span>
+                              {audio && audio?.length > 0 && audio?.length}
+                            </span>
+                            {audio && audio?.length > 0 ? (
+                              <Tooltip label={"Audio"}>
+                                <img
+                                  src={interview}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
+                            ) : (
+                              ""
+                            )}
+                          </div>
+                        </div>
+                      </Td>
+                      <Td>£ {Details?.ask_price}</Td>
+                      <Td>£ {Details?.amount_paid}</Td>
+                      <Td className="sale-status gr">
+                        {Details?.sale_status === "sold" ? (
+                          <span className="txt_success_mdm">Sold</span>
+                        ) : (
+                          <span className="txt_danger_mdm">Unsold</span>
+                        )}
+                      </Td>
+                      <Td>
+                        £ {Details?.amount_paid}{" "}
+                        <p>
+                          {" "}
+                          <a
+                            onClick={() => {
+                              if (Details?.transaction_id) {
+                                history.push(
+                                  `/admin/Payment-Transaction/${Details?.transaction_id}/Payment transaction `
+                                );
+                                // history.push("/admin/invoicing-and-payments");
+                              } else {
+                                toast.error('Payment is not completed yet.')
+                              }
+                            }}
+                            className="back_link timedate"
+                          >
+                            <BsEye className="icn_time" />
+                            View
+                          </a>
+                        </p>
+                      </Td>
+                      <Td>£ {Details?.commition_to_payable}</Td>
+                      <Td>
+                        &pound;{" "}
+                        {Details?.amount_paid_to_hopper &&
+                          Details?.amount_paid_to_hopper
+                          ? "0"
+                          : Details?.amount_payable_to_hopper}
+                      </Td>
+                      <Td>
+                        <p>
+                          {Details?.purchased_publication?.company_bank_details
+                            ?.bank_name ?? ""}
+                        </p>
+                        <p>{`Sort Code ${Details?.purchased_publication?.company_bank_details
+                          ?.sort_code ?? ""
+                          }`}</p>
+                        <p>{`Account ${Details?.purchased_publication?.company_bank_details
+                          ?.account_number ?? ""
+                          }`}</p>
+                      </Td>
+                    </Tr>
+                    :
+                    Details?.Vat?.map((el, i) => <Tr key={i}>
+                      <Td className="timedate_wrap">
+                        <p className="timedate tick_txt">
+                          {
+                            Details?.published_time_date ? <span className="tick icn_time">
+                              <BsCheckCircleFill />
+                            </span> : <span className="tick not_posted">
+                              <IoWarningOutline />
+                            </span>
+                          }
+                          {
+                            Details?.published_time_date ? "Published" : "Under review"
+                          }
+                        </p>
+                        <p className="timedate">
+                          <img src={watch} className="icn_time" />
+                          {Details?.published_time_date ? moment(Details?.published_time_date).format(`hh:mm A`) : moment(Details?.createdAt).format(`hh:mm A`)}
+                        </p>
+                        <p className="timedate">
+                          <img src={calendar} className="icn_time" />
+                          {Details?.published_time_date ? moment(Details?.published_time_date).format(`DD MMM YYYY`) : moment(Details?.createdAt).format(`DD MMM YYYY`)}
+                        </p>
+                        <a
+                          onClick={() => {
+                            // history.push("/admin/content");
+                            history.push(`/admin/content-onboarding-history/${Details?._id}/Content onboarding history/Manage content`)
+                          }}
+                        >
+                          <BsEye className="icn_time" />
+                          View
+                        </a>
+                      </Td>
+                      <Td className="text_center">
+                        <div className="dir_col vol_type">
+                          <div className="voltype_item">
+                            <span>
+                              {image && image?.length > 0 && image?.length}
+                            </span>
+                            {image && image?.length > 0 ? (
+                              <Tooltip label={"Photo"}>
+                                <img
+                                  src={camera}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
+                            ) : (
+                              ""
+                            )}
+                          </div>
+                          <div className="voltype_item">
+                            <span>
+                              {video1 && video1?.length > 0 && video1?.length}
+                            </span>
+                            {video1 && video1?.length > 0 ? (
+                              <Tooltip label={"Video"}>
+                                <img
+                                  src={video}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
+                            ) : (
+                              ""
+                            )}
+                          </div>
+
+                          <div className="voltype_item">
+                            <span>
+                              {audio && audio?.length > 0 && audio?.length}
+                            </span>
+                            {audio && audio?.length > 0 ? (
+                              <Tooltip label={"Audio"}>
+                                <img
+                                  src={interview}
+                                  alt="Content thumbnail"
+                                  className="icn"
+                                />
+                              </Tooltip>
+                            ) : (
+                              ""
+                            )}
+                          </div>
+                        </div>
+                      </Td>
+                      <Td className="text_center">
+                        <Tooltip label={el?.purchased_content_type == "shared" ? "Shared" : "Exclusive"}><img src={el?.purchased_content_type == "shared" ? shared : crown} alt="" className="icn" /></Tooltip>
+                      </Td>
+                      <Td>£ {Details?.ask_price}</Td>
+                      <Td>£ {el?.amount}</Td>
+                      <Td className="sale-status gr">Sold</Td>
+                      <Td>
+                        £ {el?.amount}{" "}
+                        <p>
+                          {" "}
+                          <a
+                            onClick={() => {
+                              if (el?.transaction_id) {
+                                history.push(
+                                  `/admin/Payment-Transaction/${el?.transaction_id}/Payment transaction `
+                                );
+                                // history.push("/admin/invoicing-and-payments");
+                              } else {
+                                toast.error('Payment is not completed yet.')
+                              }
+                            }}
+                            className="back_link timedate"
+                          >
+                            <BsEye className="icn_time" />
+                            View
+                          </a>
+                        </p>
+                      </Td>
+                      <Td>£ {Details?.commition_to_payable}</Td>
+                      <Td>
+                        &pound;{" "}
+                        {Details?.amount_paid_to_hopper &&
+                          Details?.amount_paid_to_hopper
+                          ? "0"
+                          : Details?.amount_payable_to_hopper}
+                      </Td>
+                      <Td>
+                        <p>
+                          {Details?.purchased_publication?.company_bank_details
+                            ?.bank_name ?? ""}
+                        </p>
+                        <p>{`Sort Code ${Details?.purchased_publication?.company_bank_details
+                          ?.sort_code ?? ""
+                          }`}</p>
+                        <p>{`Account ${Details?.purchased_publication?.company_bank_details
+                          ?.account_number ?? ""
+                          }`}</p>
+                      </Td>
+                    </Tr>)
+                }
+
               </Tbody>
             </Table>
           </TableContainer>
@@ -914,9 +1077,9 @@ export default function LivePublishdedcontent() {
                 </Tooltip>
               </a>{" "}
               <span onClick={() => DownloadCsv(hopperId, currentPage)}>
-              <Tooltip label={"Print"}>
-                <img src={print} className="opt_icons" />
-              </Tooltip>
+                <Tooltip label={"Print"}>
+                  <img src={print} className="opt_icons" />
+                </Tooltip>
               </span>
               <div className="fltr_btn">
                 <Text fontSize={"15px"}>
@@ -955,7 +1118,7 @@ export default function LivePublishdedcontent() {
                   <Th>Employee details</Th>
                   <Th>Office</Th>
                   <Th>Mode</Th>
-                  <Th>Contact number</Th>
+                  <Th>Contact</Th>
                   <Th>Conversation with Hopper</Th>
                   <Th>Action taken</Th>
                 </Tr>

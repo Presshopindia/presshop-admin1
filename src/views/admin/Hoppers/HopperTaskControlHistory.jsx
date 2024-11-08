@@ -74,7 +74,7 @@ export default function HopperTaskControlHistory() {
         window.open(path);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
@@ -129,7 +129,7 @@ export default function HopperTaskControlHistory() {
   return (
     <>
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
-        {console.log(useParams())}
+        {/* {console.log(useParams())} */}
         {loading && <Loader />}
         <div className="cstm_brand_txt">
           <Text className="brnd_txt">
@@ -248,7 +248,7 @@ export default function HopperTaskControlHistory() {
                             {curr?.assign_more_hopper_detail && curr?.assign_more_hopper_detail.map((item) => {
                               return (
                                 <>
-                                  {console.log(item, "<----------item.assign_more_hopper_detail")}
+                                  {/* {console.log(item, "<----------item.assign_more_hopper_detail")} */}
                                   <Tooltip label={`${item?.first_name} ${item?.last_name}`} placement='top'>
                                     <img src={process.env.REACT_APP_HOPPER_AVATAR + item?.avatar_details?.avatar}
                                     // className="ovrl1" 

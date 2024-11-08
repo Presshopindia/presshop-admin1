@@ -17,7 +17,7 @@ import chatic from "assets/img/icons/chat.svg";
 import { useHistory } from "react-router-dom";
 
 const SendCSVByEmail = ({ Url }) => {
-  console.log(Url, `<-----props`)
+  // console.log(Url, `<-----props`)
   const handleSendByEmail = () => {
     const emailSubject = 'CSV File';
     const emailBody = ` Download the reports 
@@ -65,7 +65,7 @@ export default function Share(props) {
   const history = useHistory();
   const csvUrl = props.csv;
   const RedirectChat = () => {
-    console.log(csvUrl, `<--------------csvUrl122222222`)
+    // console.log(csvUrl, `<--------------csvUrl122222222`)
     localStorage.setItem('csvUrl', csvUrl);
     history.push(`/admin/chat`);
   };

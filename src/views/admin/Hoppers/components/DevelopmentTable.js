@@ -48,6 +48,9 @@ import dataContext from "views/admin/ContextFolder/Createcontext";
 import Share from "components/share/Share";
 import SortFilterHopper from "components/sortfilters/SortFilterHopper";
 import { useLocation } from "react-router-dom/cjs/react-router-dom.min";
+import { getFilePath } from "utils/commonFunction";
+import { deleteCSV } from "utils/commonFunction";
+import { findCountOfContent } from "utils/commonFunction";
 
 
 export default function DevelopmentTable(props) {
@@ -119,13 +122,13 @@ export default function DevelopmentTable(props) {
 
       await Get(`admin/getHopperList?limit=${perPage}&offset=${offset}&${parametersName}=${parameters}`).then((res) => {
         setHopperDetails(res.data.response.hopperList);
-        console.log('res?.data', res?.data)
+        // console.log('res?.data', res?.data)
         setTotalHopperListPages(res.data.response?.totalCount / perPage)
         setpath1(res?.data?.fullPath)
         setLoading(false)
       })
     } catch (er) {
-      console.log(error)
+      // console.log(error)
       setLoading(false)
     }
 
@@ -144,9 +147,10 @@ export default function DevelopmentTable(props) {
       if (response) {
         const path = response?.data?.fullPath;
         window.open(path);
+        deleteCSV(path)
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
       setLoading(false);
     }
 
@@ -183,7 +187,7 @@ export default function DevelopmentTable(props) {
 
       })
     } catch (err) {
-      console.log(err)
+      // console.log(err)
       setLoading(false)
     }
   }
@@ -195,7 +199,7 @@ export default function DevelopmentTable(props) {
     const offset = (page - 1) * perPage;
     try {
       await Get(`admin/liveTasks?offset=${offset}&limit=${perPage}&${parametersName}=${parameters}`).then((res) => {
-        console.log(res, `response of live task `)
+        // console.log(res, `response of live task `)
         setLiveTasks(res.data?.response)
         setTotalLiveTaskPages(res.data?.count / perPage)
         setpath2(res?.data?.fullPath)
@@ -234,8 +238,7 @@ export default function DevelopmentTable(props) {
       task_id: liveTasks[index]._id,
       latestAdminRemark: liveTasks[index].remarks,
       mode: liveTasks[index].mode,
-      assign_more_hopper: checkedMoreHopper,
-
+      assign_more_hopper: liveTasks?.[index]?.assignmorehopperList?.filter((el) => el?.selected)?.map((el) => el?._id),
     }
     if (
       !liveTasks[index].mode ||
@@ -263,17 +266,31 @@ export default function DevelopmentTable(props) {
 
     }
   }
-  const handleRowSelect = (id) => {
-    console.log(id,)
-    setCheckedMoreHopper((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((rowId) => rowId !== id);
-      } else {
-        return [...prev, id];
-      }
-    })
-  }
 
+  const handleRowSelect = (taskId, hopperId) => {
+    setLiveTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task._id === taskId
+          ? {
+            ...task,
+            assignmorehopperList: task.assignmorehopperList.map((hopper) =>
+              hopper._id === hopperId
+                ? { ...hopper, selected: !hopper.selected }
+                : hopper
+            ),
+          }
+          : task
+      )
+    );
+  };
+
+  const handleCheckboxChange = (taskId, hopperId) => {
+    setCheckedMoreHopper((prev) =>
+      prev.includes(hopperId)
+        ? prev.filter((id) => id !== hopperId)
+        : [...prev, hopperId]
+    );
+  };
 
   // published content summarry
   const getUploadContentSummary = async (page, parameters, parametersName) => {
@@ -290,7 +307,7 @@ export default function DevelopmentTable(props) {
       })
 
     } catch (err) {
-      console.log(err)
+      // console.log(err)
 
     }
   }
@@ -305,7 +322,7 @@ export default function DevelopmentTable(props) {
         window.open(path)
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
@@ -361,7 +378,7 @@ export default function DevelopmentTable(props) {
       })
 
     } catch (err) {
-      console.log(err)
+      // console.log(err)
 
     }
   }
@@ -408,7 +425,7 @@ export default function DevelopmentTable(props) {
         window.open(path)
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   }
 
@@ -576,7 +593,7 @@ export default function DevelopmentTable(props) {
             <Thead>
               <Tr>
                 <Th>Hopper details</Th>
-                <Th>Time & date</Th>
+
                 <Th className="adr_dtl">Address</Th>
                 <Th>Contact details</Th>
                 <Th>Category</Th>
@@ -604,10 +621,7 @@ export default function DevelopmentTable(props) {
                       <Text className="nameimg naming_comn"><span className="txt_mdm">{`${curr.first_name} ${curr.last_name}`}</span><br />
                         <span >({curr?.user_name})</span></Text>
                     </Td>
-                    <Td className="timedate_wrap">
-                      <p className="timedate"><img src={watch} className="icn_time" />{moment(curr.createdAt).format('hh:mm A')}</p>
-                      <p className="timedate"><img src={calendar} className="icn_time" />{moment(curr.createdAt).format('DD MMMM YYYY')}</p>
-                    </Td>
+
                     <Td className="address_wrap">{curr.address}</Td>
                     <Td className="contact_details">
                       <div className="mobile detail_itm">
@@ -640,8 +654,9 @@ export default function DevelopmentTable(props) {
                         <option value="amateur">Amateur</option>
 
                       </Select>
+
                     </Td>
-                    <Td>4.1</Td>
+                    <Td>{curr?.ratingsforMediahouse ? curr.ratingsforMediahouse : 'N/A'}  </Td>
                     <Td className="contact_details">
                       {
                         curr?.doc_to_become_pro && curr?.doc_to_become_pro?.comp_incorporation_cert !== null ? <div className="doc_flex"> <img src={docuploaded} className='doc_uploaded' alt="document uploaded"
@@ -875,9 +890,9 @@ export default function DevelopmentTable(props) {
                 </Tooltip>
               </a>
               <span onClick={() => DownloadCsvLiveTask(currentPageLiveTask)}>
-              <Tooltip label={"Print"}>
-                <img src={print} className="opt_icons" />
-              </Tooltip>
+                <Tooltip label={"Print"}>
+                  <img src={print} className="opt_icons" />
+                </Tooltip>
               </span>
               <div className="fltr_btn">
                 <Text fontSize={"15px"}>
@@ -923,7 +938,6 @@ export default function DevelopmentTable(props) {
               <Tbody>
                 {
                   liveTasks && liveTasks.map((curr, index) => {
-                    console.log(curr, `<---`)
                     return (
                       <Tr key={curr?._id}>
                         <Td className="item_detail"><img src={curr?.mediahouse_id?.profile_image} alt="Content thumbnail" />
@@ -944,7 +958,7 @@ export default function DevelopmentTable(props) {
                           <div className="dir_col text_center">
                             {curr?.need_photos && curr?.need_photos === true ?
 
-                              <Tooltip label={"Camera"}>
+                              <Tooltip label={"Photo"}>
                                 <img src={camera} alt="Content thumbnail" className="icn m_auto" />
                               </Tooltip>
 
@@ -970,9 +984,9 @@ export default function DevelopmentTable(props) {
 
                         <Td className="text_center">
                           <div className="dir_col text_center">
-                            <p className="text_center">{curr?.image_count}</p>
-                            <p className="text_center">{curr?.interview_count}</p>
-                            <p className="text_center">{curr?.video_count}</p>
+                            <p className="text_center">{findCountOfContent(curr?.uploaded_content, "image")}</p>
+                            <p className="text_center">{findCountOfContent(curr?.uploaded_content, "video")}</p>
+                            <p className="text_center">{findCountOfContent(curr?.uploaded_content, "audio")}</p>
                           </div>
                         </Td>
 
@@ -985,32 +999,41 @@ export default function DevelopmentTable(props) {
                         <Td className="avatars_wrap">
                           <div className="overlay_imgs">
                             <div className="img_row1 top_row">
-                              {curr?.acceptedby
-                                && curr?.acceptedby.map((item) => {
-                                  const matchingAvatar = item?.avatar_details?.filter(detail => detail?._id === item?.avatar_id);
+                              {curr?.acceptedby &&
+                                curr?.acceptedby.map((item) => {
+                                  const matchingAvatar =
+                                    item?.avatar_details?.filter(
+                                      (detail) =>
+                                        detail?._id === item?.avatar_id
+                                    );
                                   if (matchingAvatar) {
-                                        {/* <> */}
                                     return (
-                                      <Tooltip key={item?._id} label={`${item?.first_name} ${item?.last_name}`} placement='top'>
+                                      <Tooltip
+                                        key={item?._id}
+                                        label={`${item?.first_name} ${item?.last_name}`}
+                                        placement="top"
+                                      >
                                         <img
-                                          src={process.env.REACT_APP_HOPPER_AVATAR + matchingAvatar[0]?.avatar}
+                                          src={
+                                            process.env
+                                              .REACT_APP_HOPPER_AVATAR +
+                                            matchingAvatar[0]?.avatar
+                                          }
                                           // className="ovrl1"
                                           alt="Avatar"
                                         />
                                       </Tooltip>
                                     );
                                   }
-                                        {/* <Text className="nameimg naming_comn"><span className="txt_mdm">{`${item.first_name} ${item.last_name}`}</span><br />
-                                      <span >({item?.user_name})</span></Text>
-                                      </> */}
 
                                   return "no one is accepted ";
                                 })}
                             </div>
                           </div>
                         </Td>
+
                         <Td className="content_wrap new_content_wrap">
-                          <a onClick={() => { history.push(`/admin/live-tasks/${curr?._id}/Live task `) }}>
+                          <a onClick={() => { history.push(`/admin/live-tasks/${curr?._id}/Uploaded contents `) }}>
                             {
                               curr?.uploaded_content && curr?.uploaded_content.length <= 0
                                 ? "No Content"
@@ -1067,19 +1090,25 @@ export default function DevelopmentTable(props) {
                         </Td>
                         <Td className="asign_wrap">
                           <div className="slct">
-                            {
-                              curr?.assignmorehopperList && curr?.assignmorehopperList.map((item) => {
-                                const isActive = checkedMoreHopper.includes(item._id);
+                            {curr?.assignmorehopperList &&
+                              curr?.assignmorehopperList.map((item) => {
+                                const isActive = checkedMoreHopper.includes(item._id) || item.selected || curr?.assign_more_hopper_history?.includes(item._id);
                                 return (
-                                  <div className={`sl_itm pos_rel ${isActive ? 'active' : ''}`}
-                                    key={item._id}>
+                                  <div
+                                    className={`sl_itm pos_rel ${isActive ? 'active' : ''}`}
+                                    key={item._id}
+                                  >
                                     <input
                                       type="checkbox"
                                       id={item._id}
                                       className="tsk_asign_check"
-                                      onChange={() => handleRowSelect(item._id)}
+                                      checked={isActive}
+                                      onChange={() => handleCheckboxChange(curr._id, item._id)}
                                     />
-                                    <label className="asign_hpr_lbl active">
+                                    <label
+                                      className={`asign_hpr_lbl ${isActive ? 'active' : ''}`}
+                                      onClick={() => handleRowSelect(curr._id, item._id)}
+                                    >
                                       <p>{`${item?.first_name} ${item?.last_name}`}</p>
                                       <span className="sml_txt">
                                         {`${(item.distance * 0.00062137119).toFixed(2)}m away`}
@@ -1088,7 +1117,6 @@ export default function DevelopmentTable(props) {
                                   </div>
                                 );
                               })}
-
                           </div>
                         </Td>
                         <Td className="select_wrap">
@@ -1193,7 +1221,7 @@ export default function DevelopmentTable(props) {
               className="txt_danger_mdm"
             >
               <Tooltip label={"Share"}>
-              <img src={share} className="opt_icons" />
+                <img src={share} className="opt_icons" />
               </Tooltip>
             </a>
             <span onClick={() => publisedContentCsv(currentPage)}>
@@ -1364,7 +1392,7 @@ export default function DevelopmentTable(props) {
               className="txt_danger_mdm"
             >
               <Tooltip label={"Share"}>
-              <img src={share} className="opt_icons" />
+                <img src={share} className="opt_icons" />
               </Tooltip>
             </a>
             <span onClick={() => downloadCsvUploadedContent(currentPageUpload)}>

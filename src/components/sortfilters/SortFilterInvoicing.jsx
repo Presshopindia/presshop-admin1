@@ -56,7 +56,7 @@ export default function SortFilterInvoicing(props) {
 
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 

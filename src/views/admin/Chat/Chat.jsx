@@ -106,7 +106,7 @@ export default function Chat() {
 
   const [roomList, setRoomList] = useState([]);
   const [roomDetails, setRoomDetails] = useState({});
-  console.log("🚀 ~ Chat ~ roomDetails:", roomDetails)
+  // console.log("🚀 ~ Chat ~ roomDetails:", roomDetails)
   const [previewUrl, setPreviewUrl] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [type, setType] = useState("text");
@@ -123,7 +123,7 @@ export default function Chat() {
   const [userStatusObj, setUserStatusObj] = useState({});
 
   const [hoopersChatList, setHoopersChatList] = useState([]);
-  console.log("🚀 ~ Chat ~ hoopersChatList:", hoopersChatList)
+  // console.log("🚀 ~ Chat ~ hoopersChatList:", hoopersChatList)
   const [search, setSearch] = useState("");
   const [totalPagesForPub, setTotalPagesForPub] = useState(10);
   const [totalPagesForHopper, setTotalPagesForHopper] = useState(10);
@@ -153,7 +153,7 @@ export default function Chat() {
 
       });
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -164,14 +164,14 @@ export default function Chat() {
           return {
             first_name: el.first_name,
             last_name: el.last_name,
-            full_name: el.first_name+el.last_name,
+            full_name: el.first_name + el.last_name,
             user_name: el.user_name,
           }
         })
         setHopperDetails(data);
       })
     } catch (error) {
-      console.log(error)
+      // console.log(error)
     }
   }
 
@@ -180,7 +180,7 @@ export default function Chat() {
       await Get(`admin/roomList?room_type=MediahousetoAdmin`).then((res) => {
         // setPublicationChats(res?.data?.data);
       });
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const getChatsListing = (pubPage = 1, HopperPage = 1, limit = 6) => {
@@ -194,15 +194,13 @@ export default function Chat() {
 
       const filteredChat = newChats.filter(
         (chat) =>
-          (chat?.receiverId === profile?._id ||
-            chat?.senderId === profile?._id) &&
           chat?.chat_with !== "presshop and admin"
       );
       setHoopersChatList(() => {
         const data = search
           ? filteredChat.filter((chat) =>
-              chat.senderName.toLowerCase().includes(search.toLowerCase())
-            )
+            chat.senderName.toLowerCase().includes(search.toLowerCase())
+          )
           : filteredChat;
         setTotalPagesForHopper(data?.length ? data.length / limit : 0);
         const startIndex = (HopperPage - 1) * limit;
@@ -211,16 +209,14 @@ export default function Chat() {
 
       const filteredPublicationsChat = newChats.filter(
         (chat) =>
-          (chat?.receiverId === profile?._id ||
-            chat?.senderId === profile?._id) &&
           chat?.chat_with === "presshop and admin" &&
           chat.senderName.toLowerCase().includes(search.toLowerCase()) // Filter based on message content
       );
       setPublicationChats(() => {
         const data = search
           ? filteredPublicationsChat.filter((chat) =>
-              chat.senderName.toLowerCase().includes(search.toLowerCase())
-            )
+            chat.senderName.toLowerCase().includes(search.toLowerCase())
+          )
           : filteredPublicationsChat;
         setTotalPagesForPub(data?.length ? data.length / limit : 0);
         const startIndex = (pubPage - 1) * limit;
@@ -250,7 +246,7 @@ export default function Chat() {
       await Get(`admin/roomList?room_type=HoppertoAdmin`).then((res) => {
         setRoomList(res?.data?.data);
       });
-    } catch (error) {}
+    } catch (error) { }
   };
 
   // handle audio record
@@ -387,13 +383,12 @@ export default function Chat() {
       senderImage: `https://uat-presshope.s3.eu-west-2.amazonaws.com/public/adminImages/${profile?.profile_image}`,
       receiverId: roomDetails?.roomId,
       receiverName: roomDetails?.sender_id
-        ? `${roomDetails?.sender_id?.first_name || ""} ${
-            roomDetails?.sender_id?.last_name || ""
-          }`
+        ? `${roomDetails?.sender_id?.first_name || ""} ${roomDetails?.sender_id?.last_name || ""
+        }`
         : roomDetails?.senderName,
       receiverImage: roomDetails?.sender_id
         ? process.env.REACT_APP_HOPPER_AVATAR +
-          roomDetails?.sender_id?.avatar_details?.avatar
+        roomDetails?.sender_id?.avatar_details?.avatar
         : roomDetails?.senderImage,
       roomId: roomDetails?.roomId,
       message: message,
@@ -489,7 +484,7 @@ export default function Chat() {
         // Combine the previous messages with the new messages
         return [...prevMessages, ...newMessages];
       });
-      
+
     });
 
     return unsubscribe;
@@ -658,7 +653,7 @@ export default function Chat() {
         messageId
       );
       await deleteDoc(messageRef);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const SendNotification = async (
@@ -858,7 +853,7 @@ export default function Chat() {
     <>
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
         {localStorage.getItem("special_navigate") === true ||
-        localStorage.getItem("special_navigate") === "true" ? (
+          localStorage.getItem("special_navigate") === "true" ? (
           <div className="back_link">
             <a
               onClick={() => {
@@ -899,97 +894,97 @@ export default function Chat() {
             <div className="chat_tabs_wrap">
               <Tabs
                 variant="unstyled"
-                // onChange={(e) => {
-                //   if (e === 0) {
-                //     GetRoomIds("MediahousetoAdmin")
-                //   }
-                //   else if (e === 1) {
-                //     GetRoomIds("HoppertoAdmin")
-                //   }
-                // }}
+              // onChange={(e) => {
+              //   if (e === 0) {
+              //     GetRoomIds("MediahousetoAdmin")
+              //   }
+              //   else if (e === 1) {
+              //     GetRoomIds("HoppertoAdmin")
+              //   }
+              // }}
               >
                 <TabList>
-                  <Tab
-                    _selected={{ color: "white", bg: "#000" }}
-                    bg="#F3F5F4"
-                    onChange={() => {}}
-                  >
-                    <span>Publications</span>
-                  </Tab>
+                  {
+                    profile?.subadmin_rights?.allow_publication_chat && <Tab
+                      _selected={{ color: "white", bg: "#000" }}
+                      bg="#F3F5F4"
+                      onChange={() => { }}
+                    >
+                      <span>Publications</span>
+                    </Tab>
+                  }
 
-                  <Tab
-                    _selected={{ color: "white", bg: "#000" }}
-                    bg="#F3F5F4"
-                    onChange={() => {}}
-                  >
-                    <span>Hoppers </span>
-                  </Tab>
+                  {
+                    profile?.subadmin_rights?.allow_hopper_chat && <Tab
+                      _selected={{ color: "white", bg: "#000" }}
+                      bg="#F3F5F4"
+                      onChange={() => { }}
+                    >
+                      <span>Hoppers </span>
+                    </Tab>
+                  }
                 </TabList>
 
                 <TabPanels>
                   {/* ********************PUBLICATION CHATS ******************************* */}
                   {
-                    console.log('publicationChats------>', publicationChats)
-                  }
-                  <TabPanel className="chat_panels">
-                    {
-                      <div className="chat_items">
-                        {publicationChats &&
-                          publicationChats?.map((curr) => {
-                            return (
-                              <div
-                                className={`chat_itm ${
-                                  activeRoomId === curr?.id ? "active" : ""
-                                }`}
-                                key={curr?._id}
-                                onClick={() => {
-                                  // setRoomDetails(curr);
-                                  setRoomInfo(curr);
-                                  handleRoomChange(curr);
-                                  setMessages([]);
-                                  GetMessages(curr?.roomId);
-                                  GetUserOnlineStatus(curr?.senderId);
-                                  handleSeenForPublications(
-                                    curr?.roomId,
-                                    "read"
-                                  );
-                                  latestMsgSeen(curr?.roomId);
-                                  // handleSeen(curr?.room_id, "seen");
-                                  updateStatusDocument(
-                                    profile?._id,
-                                    curr?.roomId
-                                  );
-                                  setActiveRoomId(curr?.id);
-                                  setHide(true);
-                                }}
-                              >
-                                <div className="cht_img">
-                                  <img
-                                    src={curr?.senderImage}
-                                    onError={(e) => {
-                                      e.target.onerror = null;
-                                      e.target.src = profileimg;
-                                    }}
-                                    alt=""
-                                  />
-                                </div>
-                                <div className="cht_txt">
-                                  <div className="hding">
-                                    <p className="chat_name">
-                                      {curr?.senderName}
-                                      <span className="pblc">
-                                        {/* &nbsp; ({curr?.sender_id?.company_name}) */}
-                                      </span>
-                                    </p>
-                                    <p
-                                      className={`msg ${
-                                        curr?.readStatus === "unread"
+                    profile?.subadmin_rights?.allow_publication_chat && <TabPanel className="chat_panels">
+                      {
+                        <div className="chat_items">
+                          {publicationChats &&
+                            publicationChats?.map((curr) => {
+                              return (
+                                <div
+                                  className={`chat_itm ${activeRoomId === curr?.id ? "active" : ""
+                                    }`}
+                                  key={curr?._id}
+                                  onClick={() => {
+                                    // setRoomDetails(curr);
+                                    setRoomInfo(curr);
+                                    handleRoomChange(curr);
+                                    setMessages([]);
+                                    GetMessages(curr?.roomId);
+                                    GetUserOnlineStatus(curr?.senderId);
+                                    handleSeenForPublications(
+                                      curr?.roomId,
+                                      "read"
+                                    );
+                                    latestMsgSeen(curr?.roomId);
+                                    // handleSeen(curr?.room_id, "seen");
+                                    updateStatusDocument(
+                                      profile?._id,
+                                      curr?.roomId
+                                    );
+                                    setActiveRoomId(curr?.id);
+                                    setHide(true);
+                                  }}
+                                >
+                                  <div className="cht_img">
+                                    <img
+                                      src={curr?.senderImage}
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = profileimg;
+                                      }}
+                                      alt=""
+                                    />
+                                  </div>
+                                  <div className="cht_txt">
+                                    <div className="hding">
+                                      <p className="chat_name">
+                                        {curr?.senderName}
+                                        <span className="pblc">
+                                          {/* &nbsp; ({curr?.sender_id?.company_name}) */}
+                                        </span>
+                                      </p>
+                                      <p
+                                        className={`msg ${curr?.readStatus === "unread"
                                           ? "unseen"
                                           : ""
-                                      }`}
-                                      key={curr?.messageId}
-                                    >
-                                      {/* {messages[messages?.length - 1]
+                                          }`}
+                                        key={curr?.messageId}
+                                      >
+                                        {/* {messages[messages?.length - 1]
                                         ?.messageType === "video"
                                         ? "video"
                                         : messages[messages?.length - 1]
@@ -1003,65 +998,65 @@ export default function Chat() {
                                               ? messages[messages?.length - 1]
                                                 ?.message
                                               : ""} */}
-                                      {curr?.messageType === "video"
-                                        ? "video"
-                                        : curr?.messageType === "image"
-                                        ? "image"
-                                        : curr?.messageType === "csv"
-                                        ? "document"
-                                        : curr?.messageType === "recording"
-                                        ? "Audio"
-                                        : curr?.messageType === "text"
-                                        ? curr?.message
-                                        : ""}
-                                    </p>
-                                  </div>
-                                  <div className="chat_time">
-                                    <p>
-                                      {moment
-                                        .utc(curr?.date)
-                                        .local()
-                                        .format("hh:mm:A")}
-                                    </p>
-                                    <p>
-                                      {moment
-                                        .utc(curr?.date)
-                                        .local()
-                                        .format("DD MMMM YYYY")}
-                                    </p>
+                                        {curr?.messageType === "video"
+                                          ? "video"
+                                          : curr?.messageType === "image"
+                                            ? "image"
+                                            : curr?.messageType === "csv"
+                                              ? "document"
+                                              : curr?.messageType === "recording"
+                                                ? "Audio"
+                                                : curr?.messageType === "text"
+                                                  ? curr?.message
+                                                  : ""}
+                                      </p>
+                                    </div>
+                                    <div className="chat_time">
+                                      <p>
+                                        {moment
+                                          .utc(curr?.date)
+                                          .local()
+                                          .format("hh:mm:A")}
+                                      </p>
+                                      <p>
+                                        {moment
+                                          .utc(curr?.date)
+                                          .local()
+                                          .format("DD MMMM YYYY")}
+                                      </p>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                        </div>
+                      }
+                      <div className="d-flex">
+                        <ReactPaginate
+                          className="paginated"
+                          breakLabel="..."
+                          nextLabel=">"
+                          onPageChange={handlePageChangePub}
+                          pageRangeDisplayed={5}
+                          pageCount={totalPagesForPub}
+                          // pageCount={10}
+                          previousLabel="<"
+                          renderOnZeroPageCount={null}
+                        />
                       </div>
-                    }
-                    <div className="d-flex">
-                      <ReactPaginate
-                        className="paginated"
-                        breakLabel="..."
-                        nextLabel=">"
-                        onPageChange={handlePageChangePub}
-                        pageRangeDisplayed={5}
-                        pageCount={totalPagesForPub}
-                        // pageCount={10}
-                        previousLabel="<"
-                        renderOnZeroPageCount={null}
-                      />
-                    </div>
-                  </TabPanel>
+                    </TabPanel>
+                  }
 
                   {/* ********************HOPPER CHATS ******************************* */}
-                  <TabPanel className="chat_panels"> 
+                  {profile?.subadmin_rights?.allow_hopper_chat && <TabPanel className="chat_panels">
                     <div className="chat_items">
                       {hoopersChatList &&
                         hoopersChatList.map((curr) => {
-                          {/* const hopperInfo = hopperDetails.find(detail => detail.full_name === curr.senderName); */}
+                          {/* const hopperInfo = hopperDetails.find(detail => detail.full_name === curr.senderName); */ }
                           return (
                             <div
-                              className={`chat_itm ${
-                                activeRoomId === curr?.id ? "active" : ""
-                              }`}
+                              className={`chat_itm ${activeRoomId === curr?.id ? "active" : ""
+                                }`}
                               key={curr?.id}
                               onClick={() => {
                                 // setRoomDetails(curr);
@@ -1096,35 +1091,34 @@ export default function Chat() {
                               <div className="cht_txt">
                                 <div className="hding">
                                   {
-                                    (curr?.senderName && curr?.senderUserName)  ? 
-                                    <p className="chat_name">
-                                    {`${curr?.senderName}`}
-                                    <span className="pblc">
-                                      &nbsp; ({curr?.senderUserName})
-                                    </span>
-                                  </p> : <p className="chat_name">
-                                    {`${curr?.senderName}`}
-                                  </p>
+                                    (curr?.senderName && curr?.senderUserName) ?
+                                      <p className="chat_name">
+                                        {`${curr?.senderName}`}
+                                        <span className="pblc">
+                                          &nbsp; ({curr?.senderUserName})
+                                        </span>
+                                      </p> : <p className="chat_name">
+                                        {`${curr?.senderName}`}
+                                      </p>
                                   }
                                   <p
-                                    className={`msg ${
-                                      curr?.readStatus === "unread"
-                                        ? "unseen"
-                                        : ""
-                                    }`}
+                                    className={`msg ${curr?.readStatus === "unread"
+                                      ? "unseen"
+                                      : ""
+                                      }`}
                                     key={curr?.messageId}
                                   >
                                     {curr?.messageType === "video"
                                       ? "video"
                                       : curr?.messageType === "image"
-                                      ? "image"
-                                      : curr?.messageType === "csv"
-                                      ? "document"
-                                      : curr?.messageType === "recording"
-                                      ? "Audio"
-                                      : curr?.messageType === "text"
-                                      ? curr?.message
-                                      : ""}
+                                        ? "image"
+                                        : curr?.messageType === "csv"
+                                          ? "document"
+                                          : curr?.messageType === "recording"
+                                            ? "Audio"
+                                            : curr?.messageType === "text"
+                                              ? curr?.message
+                                              : ""}
                                   </p>
                                 </div>
                                 <div className="chat_time">
@@ -1159,7 +1153,7 @@ export default function Chat() {
                         renderOnZeroPageCount={null}
                       />
                     </div>
-                  </TabPanel>
+                  </TabPanel>}
                 </TabPanels>
               </Tabs>
             </div>
@@ -1184,17 +1178,17 @@ export default function Chat() {
               />
               <div className="cht-user">
                 <h5>
-                  {roomDetails?.senderName  && roomDetails?.senderUserName ?
-                  
-                                 <p className="chat_name">
-                                    {`${roomDetails?.senderName}`}
-                                    <span className="pblc">
-                                      &nbsp; ({roomDetails?.senderUserName})
-                                    </span>
-                                  </p> : <p className="chat_name">
-                                    {`${roomDetails?.senderName}`}
-                                  </p>
-                    }
+                  {roomDetails?.senderName && roomDetails?.senderUserName ?
+
+                    <p className="chat_name">
+                      {`${roomDetails?.senderName}`}
+                      <span className="pblc">
+                        &nbsp; ({roomDetails?.senderUserName})
+                      </span>
+                    </p> : <p className="chat_name">
+                      {`${roomDetails?.senderName}`}
+                    </p>
+                  }
                 </h5>
                 {isUserOnline && <p className="activeStatus">Active</p>}
               </div>
@@ -1210,134 +1204,134 @@ export default function Chat() {
                     ?.map((curr) => curr?.id)
                 )
               )
-              ?.sort((a, b) => messages?.find((el) => el.id === b).date - messages.find((el) => el.id === a).date)
-              ?.map((uniqueId) => {
-                const curr = messages?.find((el) => el.id === uniqueId);
-                return (
-                  <div className="single_chat" key={curr?._id}>
-                    <div
-                      className="chat-dlt"
-                      onClick={() => handleDeleteMessage(curr?.id)}
-                    >
-                      <img src={dltIcn} alt="" />
-                    </div>
-                    <div className="single_chat_img">
-                      <img
-                        src={curr?.senderImage || profileimg}
-                        className="chat_user_img"
-                        alt="user"
-                      />
-                    </div>
-                    <div className="cht_usr_txt">
-                      <p className="usr_name">
-                        {curr?.senderName}
+                ?.sort((a, b) => messages?.find((el) => el.id === b).date - messages.find((el) => el.id === a).date)
+                ?.map((uniqueId) => {
+                  const curr = messages?.find((el) => el.id === uniqueId);
+                  return (
+                    <div className="single_chat" key={curr?._id}>
+                      <div
+                        className="chat-dlt"
+                        onClick={() => handleDeleteMessage(curr?.id)}
+                      >
+                        <img src={dltIcn} alt="" />
+                      </div>
+                      <div className="single_chat_img">
+                        <img
+                          src={curr?.senderImage || profileimg}
+                          className="chat_user_img"
+                          alt="user"
+                        />
+                      </div>
+                      <div className="cht_usr_txt">
+                        <p className="usr_name">
+                          {curr?.senderName}
 
-                        <span className="msg_time">
-                         {moment.utc(curr?.date).local().format("DD MMM")} AT  {moment.utc(curr?.date).local().format("hh:mm:A")} 
-                        </span>
-                        {curr.senderId === profile?._id &&
-                          (curr.readStatus == "unread" ? (
-                            <span className="msgChecks">
-                              <IoCheckmark
-                                style={{
-                                  display: "inline",
-                                  marginLeft: "3px",
-                                  verticalAlign: "middle",
-                                }}
-                              />
-                            </span>
-                          ) : (
-                            <>
+                          <span className="msg_time">
+                            {moment.utc(curr?.date).local().format("DD MMMM YYYY")} {moment.utc(curr?.date).local().format("hh:mm:A")}
+                          </span>
+                          {curr.senderId === profile?._id &&
+                            (curr.readStatus == "unread" ? (
                               <span className="msgChecks">
-                                <IoCheckmarkDone
+                                <IoCheckmark
                                   style={{
                                     display: "inline",
                                     marginLeft: "3px",
-                                    color: "green",
                                     verticalAlign: "middle",
                                   }}
                                 />
                               </span>
-                            </>
-                          ))}
-                      </p>
-
-                      {curr?.messageType === "image" && curr?.uploadPercent === 100 ? (
-                        <LazyLoad>
-                          <span
-                            onClick={() => {
-                              onOpen1();
-                              setBigImage(curr.message);
-                            }}
-                          >
-                            <img
-                              src={curr?.message?.includes("https") ? curr.message : null}
-                              alt="User"
-                              className="cht_in_img"
-                            />
-                          </span>
-                        </LazyLoad>
-                      ) : curr.messageType === "video" ? (
-                        <div className="pos_rel wdth_ft">
-                          <span>
-                            {!videoPlaying ||
-                            currentVideo !== curr.messageId ? (
-                              <div key={curr.messageId}>
-                                <span className="vdo_thumb_wrap">
-                                  <BsPlay
-                                    className="thumbnail_play"
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-                                      setVideoPlaying(true);
-                                      setCurrentVideo(curr.messageId);
+                            ) : (
+                              <>
+                                <span className="msgChecks">
+                                  <IoCheckmarkDone
+                                    style={{
+                                      display: "inline",
+                                      marginLeft: "3px",
+                                      color: "green",
+                                      verticalAlign: "middle",
                                     }}
                                   />
                                 </span>
-                                <img
-                                  className="cht_in_vdo"
-                                  src={curr.videoThumbnail}
-                                  alt="Video Thumbnail"
-                                />
-                              </div>
-                            ) : (
-                              <video
-                                key={curr.messageId}
-                                className="cht_in_vdo"
-                                src={curr.message}
-                                controls
-                                onEnded={() => {
-                                  setVideoPlaying(false);
-                                  setCurrentVideo(null);
-                                }}
+                              </>
+                            ))}
+                        </p>
+
+                        {curr?.messageType === "image" && curr?.uploadPercent === 100 ? (
+                          <LazyLoad>
+                            <span
+                              onClick={() => {
+                                onOpen1();
+                                setBigImage(curr.message);
+                              }}
+                            >
+                              <img
+                                src={curr?.message?.includes("https") ? curr.message : null}
+                                alt="User"
+                                className="cht_in_img"
                               />
-                            )}
-                          </span>
-                        </div>
-                      ) : curr.messageType === "audio" ? (
-                        curr.uploadPercent === 100 ? (
-                          <audio controls>
-                            <source src={curr?.message} type="audio/mpeg" />
-                          </audio>
-                        ) : null
-                      ) : curr.messageType === "csv" ? (
-                        <div>
-                          <a href={curr.message} download="file.csv">
-                            <img src={csvic} className="dwnld_csv_ic" />
-                          </a>
-                        </div>
-                      ) : curr.messageType === "recording" ? (
-                        curr.uploadPercent === 100 ? (
-                          <audio controls>
-                            <source src={curr?.message} type="audio/mpeg" />
-                          </audio>
-                        ) : null
-                      ) : (
-                        <p className="mb-0 msg">{curr.message}</p>
-                      )}
+                            </span>
+                          </LazyLoad>
+                        ) : curr.messageType === "video" ? (
+                          <div className="pos_rel wdth_ft">
+                            <span>
+                              {!videoPlaying ||
+                                currentVideo !== curr.messageId ? (
+                                <div key={curr.messageId}>
+                                  <span className="vdo_thumb_wrap">
+                                    <BsPlay
+                                      className="thumbnail_play"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        setVideoPlaying(true);
+                                        setCurrentVideo(curr.messageId);
+                                      }}
+                                    />
+                                  </span>
+                                  <img
+                                    className="cht_in_vdo"
+                                    src={curr.videoThumbnail}
+                                    alt="Video Thumbnail"
+                                  />
+                                </div>
+                              ) : (
+                                <video
+                                  key={curr.messageId}
+                                  className="cht_in_vdo"
+                                  src={curr.message}
+                                  controls
+                                  onEnded={() => {
+                                    setVideoPlaying(false);
+                                    setCurrentVideo(null);
+                                  }}
+                                />
+                              )}
+                            </span>
+                          </div>
+                        ) : curr.messageType === "audio" ? (
+                          curr.uploadPercent === 100 ? (
+                            <audio controls>
+                              <source src={curr?.message} type="audio/mpeg" />
+                            </audio>
+                          ) : null
+                        ) : curr.messageType === "csv" ? (
+                          <div>
+                            <a href={curr.message} download="file.csv">
+                              <img src={csvic} className="dwnld_csv_ic" />
+                            </a>
+                          </div>
+                        ) : curr.messageType === "recording" ? (
+                          curr.uploadPercent === 100 ? (
+                            <audio controls>
+                              <source src={curr?.message} type="audio/mpeg" />
+                            </audio>
+                          ) : null
+                        ) : (
+                          <p className="mb-0 msg">{curr.message}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
               <div ref={messagesEndRef} />
             </div>
 

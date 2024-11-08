@@ -100,7 +100,7 @@ const TableCard = (props) => {
                })
           } catch (err) {
               if(err){
-               console.log(err,`<---------msgf`)
+               // console.log(err,`<---------msgf`)
                toast.error(err.response.data
                     .errors.msg)
               }
@@ -155,7 +155,7 @@ const TableCard = (props) => {
                               </Thead>
                               <Tbody>
                                    {categoryName && categoryName.map((value) => {
-                                        console.log(value, `<-----------------values`)
+                                        // console.log(value, `<-----------------values`)
 
                                         return (
                                              <Tr >

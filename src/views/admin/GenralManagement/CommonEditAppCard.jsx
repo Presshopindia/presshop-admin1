@@ -104,7 +104,7 @@ function Common(props) {
 
     return (
         <>
-            {console.log(props?.path, `,--------props?.path`)}
+            {/* {console.log(props?.path, `,--------props?.path`)} */}
 
             <Card
                 className="rt_txt_edtr_wrap"

@@ -102,11 +102,12 @@ export default function Invoicingandpayments() {
       const response = await Get(
         `admin/getallinvoise?limit=${perPage}&offset=${offset}&${parametersName}=${parameters}&${parametersName1}=${parameters1}`
       );
-      if(response){
-      setPayment(response?.data?.resp);
-      setPath2(response?.data?.fullPath);
-      setTotalPages1(response?.data?.count / perPage);
-      setLoading(false);}
+      if (response) {
+        setPayment(response?.data?.resp);
+        setPath2(response?.data?.fullPath);
+        setTotalPages1(response?.data?.count / perPage);
+        setLoading(false);
+      }
     } catch (error) {
       // Handle error
       setLoading(false);
@@ -206,7 +207,7 @@ export default function Invoicingandpayments() {
         window.open(path);
       }
     } catch (err) {
-      console.log("<---Have an error ->", err);
+      // console.log("<---Have an error ->", err);
     }
   };
 
@@ -374,7 +375,7 @@ export default function Invoicingandpayments() {
                     color="#10AF0C"
                     fontWeight={500}
                     me="5px"
-                    
+
                   >
                     <BsArrowUp /> {reports?.content_sold?.percentage.toFixed(2)}%
                   </Text>
@@ -391,18 +392,18 @@ export default function Invoicingandpayments() {
                 <Text color="black" fontSize="15px" fontWeight="300">
                   since last{" "}
                   {hideShow?.type === "sortContentSold" &&
-                  parameters === "daily"
+                    parameters === "daily"
                     ? "Daily"
                     : hideShow?.type === "sortContentSold" &&
                       parameters === "weekly"
-                    ? "week"
-                    : hideShow?.type === "sortContentSold" &&
-                      parameters === "monthly"
-                    ? "month"
-                    : hideShow?.type === "sortContentSold" &&
-                      parameters === "yearly"
-                    ? "year"
-                    : "month"}
+                      ? "week"
+                      : hideShow?.type === "sortContentSold" &&
+                        parameters === "monthly"
+                        ? "month"
+                        : hideShow?.type === "sortContentSold" &&
+                          parameters === "yearly"
+                          ? "year"
+                          : "month"}
                 </Text>
               </Flex>
             </div>
@@ -509,18 +510,18 @@ export default function Invoicingandpayments() {
                 <Text color="black" fontSize="13px" fontWeight="300">
                   since last{" "}
                   {hideShow?.type === "sortInvoices_raised" &&
-                  parameters === "daily"
+                    parameters === "daily"
                     ? "Daily"
                     : hideShow?.type === "sortInvoices_raised" &&
                       parameters === "weekly"
-                    ? "week"
-                    : hideShow?.type === "sortInvoices_raised" &&
-                      parameters === "monthly"
-                    ? "month"
-                    : hideShow?.type === "sortInvoices_raised" &&
-                      parameters === "yearly"
-                    ? "year"
-                    : "month"}
+                      ? "week"
+                      : hideShow?.type === "sortInvoices_raised" &&
+                        parameters === "monthly"
+                        ? "month"
+                        : hideShow?.type === "sortInvoices_raised" &&
+                          parameters === "yearly"
+                          ? "year"
+                          : "month"}
                 </Text>
               </Flex>
             </div>
@@ -593,7 +594,7 @@ export default function Invoicingandpayments() {
                   letterSpacing={0.3}
                   me="5px"
                 >
-                  &pound; {reports?.Payment_received?.Payment_received.toLocaleString()}
+                  &pound; {reports?.Payment_received?.Payment_received}
                 </Text>
               </Flex>
               <Text
@@ -627,18 +628,18 @@ export default function Invoicingandpayments() {
                 <Text color="black" fontSize="13px" fontWeight="300">
                   since last{" "}
                   {hideShow?.type === "sortPayment_received" &&
-                  parameters === "daily"
+                    parameters === "daily"
                     ? "Daily"
                     : hideShow?.type === "sortPayment_received" &&
                       parameters === "weekly"
-                    ? "week"
-                    : hideShow?.type === "sortPayment_received" &&
-                      parameters === "monthly"
-                    ? "month"
-                    : hideShow?.type === "sortPayment_received" &&
-                      parameters === "yearly"
-                    ? "year"
-                    : "month"}
+                      ? "week"
+                      : hideShow?.type === "sortPayment_received" &&
+                        parameters === "monthly"
+                        ? "month"
+                        : hideShow?.type === "sortPayment_received" &&
+                          parameters === "yearly"
+                          ? "year"
+                          : "month"}
                 </Text>
               </Flex>
             </div>
@@ -711,7 +712,7 @@ export default function Invoicingandpayments() {
                   letterSpacing={0.3}
                   me="5px"
                 >
-                  &pound; {reports?.payment_paid?.payment_paid?.toLocaleString()}
+                  &pound; {(+(reports?.payment_paid?.payment_paid))?.toFixed(2)}
                 </Text>
               </Flex>
               <Text
@@ -730,7 +731,7 @@ export default function Invoicingandpayments() {
                     fontWeight={500}
                     me="5px"
                   >
-                    <BsArrowUp /> {reports?.payment_paid?.percentage}%
+                    <BsArrowUp /> {+(reports?.payment_paid?.percentage)?.toFixed(2)}%
                   </Text>
                 ) : (
                   <Text
@@ -739,24 +740,24 @@ export default function Invoicingandpayments() {
                     fontWeight={500}
                     me="5px"
                   >
-                    <BsArrowDown /> {reports?.payment_paid?.percentage}%
+                    <BsArrowDown /> {+(reports?.payment_paid?.percentage)?.toFixed(2)}%
                   </Text>
                 )}
                 <Text color="black" fontSize="13px" fontWeight="300">
                   since last{" "}
                   {hideShow?.type === "sortPayment_paid" &&
-                  parameters === "daily"
+                    parameters === "daily"
                     ? "Daily"
                     : hideShow?.type === "sortPayment_paid" &&
                       parameters === "weekly"
-                    ? "week"
-                    : hideShow?.type === "sortPayment_paid" &&
-                      parameters === "monthly"
-                    ? "month"
-                    : hideShow?.type === "sortPayment_paid" &&
-                      parameters === "yearly"
-                    ? "year"
-                    : "month"}
+                      ? "week"
+                      : hideShow?.type === "sortPayment_paid" &&
+                        parameters === "monthly"
+                        ? "month"
+                        : hideShow?.type === "sortPayment_paid" &&
+                          parameters === "yearly"
+                          ? "year"
+                          : "month"}
                 </Text>
               </Flex>
             </div>
@@ -794,11 +795,11 @@ export default function Invoicingandpayments() {
                     <img src={share} className="opt_icons" />
                   </Tooltip>
                 </a>
-                
+
                 <span onClick={() => downloadInvoicingCsv(currentPage)}>
-                <Tooltip label={"Print"}>
-                  <img src={print} className="opt_icons" />
-                </Tooltip>
+                  <Tooltip label={"Print"}>
+                    <img src={print} className="opt_icons" />
+                  </Tooltip>
                 </span>
                 <div className="fltr_btn">
                   <Text fontSize={"15px"}>
@@ -831,6 +832,7 @@ export default function Invoicingandpayments() {
               <Table mx="20px" variant="simple" className="common_table">
                 <Thead>
                   <Tr>
+                    <Th>Content</Th>
                     <Th>Publication</Th>
                     <Th>Invoice date</Th>
                     <Th>Amount invoiced</Th>
@@ -838,13 +840,13 @@ export default function Invoicingandpayments() {
                     <Th>Invoice number</Th>
                     <Th>Transaction ID</Th>
                     <Th>Amount received</Th>
-                    <Th>Presshop commission</Th>
                     <Th>VAT received</Th>
+                    {/* <Th>Presshop commission</Th> */}
                     <Th className="pmnt_rcvd_dt_th">Amount received date</Th>
-                    {/* <Th>Payment receivable</Th> */}
-                    <Th>Hopper</Th>
-                    <Th>Content</Th>
+                    <Th>Amount receivable</Th>
                     <Th>Received from</Th>
+                    {/* <Th>Hopper</Th>
+                    <Th>Content</Th> */}
                     <Th>Mode</Th>
                     <Th>Action</Th>
                     <Th>Remarks</Th>
@@ -857,6 +859,18 @@ export default function Invoicingandpayments() {
                     invoice.map((curr, index) => {
                       return (
                         <Tr>
+                          <Td className="">
+                            {
+                              curr?.type == "content"
+                                ? <a onClick={() => history.push(`/admin/live-published-content/${curr?.content_id?._id}/Manage content`)}>
+                                  <img
+                                    src={curr?.content_id?.content[0]?.watermark}
+                                    alt="Content thumbnail"
+                                  />
+                                </a>
+                                : null
+                            }
+                          </Td>
                           <Td className="">
                             <a>
                               <img
@@ -910,27 +924,46 @@ export default function Invoicingandpayments() {
                           </Td>
 
                           <Td>&pound; {curr?.amount?.toFixed(2)}</Td>
-                          <Td>&pound; {curr?.presshop_commission?.toFixed(2)}</Td>
                           <Td>&pound; {curr?.Vat?.toFixed(2)}</Td>
+                          {/* <Td>&pound; {curr?.presshop_commission?.toFixed(2)}</Td> */}
                           <Td className="timedate_wrap">
                             <p className="timedate">
                               <img src={calendar} className="icn_time" />
                               {moment(curr?.createdAt)?.format(`DD MMMM YYYY`)}
                             </p>
                           </Td>
+                          <Td></Td>
+                          <Td className="contact_details">
+                            {" "}
+                            {
+                              curr?.media_house_id?.company_bank_details
+                                ?.bank_name
+                            }
+                            <br /> Sort Code -
+                            {
+                              curr?.media_house_id?.company_bank_details
+                                ?.sort_code
+                            }
+                            <br /> Account -{" "}
+                            {
+                              curr?.media_house_id?.company_bank_details
+                                ?.account_number
+                            }
+                          </Td>
 
-                          <Td className="">
+                          {/* <Td className="">
                             <img
                               src={
-                                process.env.REACT_APP_HOPPER_AVATAR +
-                                curr?.content_id?.hopper_id?.avatar_id?.avatar
+                                curr?.type == "content" ? process.env.REACT_APP_HOPPER_AVATAR +
+                                  curr?.content_id?.hopper_id?.avatar_id?.avatar : process.env.REACT_APP_HOPPER_AVATAR +
+                                curr?.hopper_id?.avatar_id?.avatar
                               }
                               alt="Content thumbnail"
                             />
                             <Text className="nameimg naming_comn">
-                              <span className="txt_mdm">{`${curr?.content_id?.hopper_id?.first_name} ${curr?.content_id?.hopper_id?.last_name}`}</span>
+                              <span className="txt_mdm">{`${curr?.content_id?.hopper_id?.first_name || curr?.hopper_id?.first_name} ${curr?.content_id?.hopper_id?.last_name || curr?.hopper_id?.last_name}`}</span>
                             </Text>
-                            <span>({curr?.content_id?.hopper_id?.user_name})</span>
+                            <span>({curr?.content_id?.hopper_id?.user_name || curr?.hopper_id?.user_name})</span>
                           </Td>
 
                           <Td>
@@ -941,43 +974,11 @@ export default function Invoicingandpayments() {
                                 );
                               }}
                             >
-                              {curr?.content_id?.content?.length === 1 ? (
-                                curr?.content_id?.content[0].media_type === "image" ? (
-                                  <img
-                                    // src={process.env.REACT_APP_CONTENT + curr?.content_id?.content[0]?.media}
-                                    src={curr?.content_id?.content[0]?.watermark}
-                                    className="content_img"
-                                    alt="Content thumbnail"
-                                  />
-                                ) : curr?.content_id?.content[0].media_type === "audio" ? (
-                                  <img
-                                    src={interview}
-                                    alt="Content thumbnail"
-                                    className="icn m_auto"
-                                  />
-                                ) : curr?.content_id?.content[0].media_type === "video" ? (
-                                  <img
-                                    // src={process.env.REACT_APP_CONTENT + curr?.content_id?.content[0]?.thumbnail}
-                                    src={curr?.content_id?.content[0]?.watermark}
-                                    className="content_img"
-                                    alt="Content thumbnail"
-                                  />
-                                ) : curr?.content_id?.content[0].media_type === "doc" ? (
-                                  <img
-                                    // src={process.env.REACT_APP_CONTENT + curr?.content_id?.content[0]?.thumbnail}
-                                    src={docic}
-                                    className="icn m_auto"
-                                    alt="Content thumbnail"
-                                  />
-                                ) : curr?.content_id?.content[0].media_type === "pdf" ? (
-                                  <img
-                                    // src={process.env.REACT_APP_CONTENT + curr?.content_id?.content[0]?.thumbnail}
-                                    src={pdfic}
-                                    className="icn m_auto"
-                                    alt="Content thumbnail"
-                                  />
-                                ) : null
-                              ) : curr?.content_id?.content?.length === 0 ? null : (
+                              {curr?.type != "content" ? <img
+                                src={process.env.REACT_APP_UPLOADED_CONTENT + curr?.task_content_id?.imageAndVideo}
+                                className="content_img"
+                                alt="Content thumbnail"
+                              /> : curr?.content_id?.content?.length === 0 ? null : (
                                 curr?.content_id?.content?.length > 1 && (
                                   <div className="content_imgs_wrap contnt_lngth_wrp">
                                     <div className="content_imgs">
@@ -1004,8 +1005,8 @@ export default function Invoicingandpayments() {
                                                 src={value?.watermark}
                                                 className="content_img"
                                                 alt="Content thumbnail"
-                
-                
+
+
                                               />
                                             ) : curr?.content_id?.content[0].media_type ===
                                               "doc" ? (
@@ -1034,25 +1035,8 @@ export default function Invoicingandpayments() {
                                 )
                               )}
                             </a>
-                          </Td>
+                          </Td> */}
 
-                          <Td className="contact_details">
-                            {" "}
-                            {
-                              curr?.media_house_id?.company_bank_details
-                                ?.bank_name
-                            }
-                            <br /> Sort Code -
-                            {
-                              curr?.media_house_id?.company_bank_details
-                                ?.sort_code
-                            }
-                            <br /> Account -{" "}
-                            {
-                              curr?.media_house_id?.company_bank_details
-                                ?.account_number
-                            }
-                          </Td>
                           <Td className="select_wrap">
                             <Select
                               value={curr?.mode}
@@ -1086,7 +1070,7 @@ export default function Invoicingandpayments() {
                                   });
                                 }}
                               />
-                              <span>Sent reminder</span>
+                              <span>Send reminder</span>
                             </div>
 
                             <div className="check_wrap check_wrapper">
@@ -1103,7 +1087,7 @@ export default function Invoicingandpayments() {
                                   });
                                 }}
                               />
-                              <span>Sent statement</span>
+                              <span>Send statement</span>
                             </div>
 
                             <div className="check_wrap check_wrapper">
@@ -1120,7 +1104,7 @@ export default function Invoicingandpayments() {
                                   });
                                 }}
                               />
-                              <span>Blocked</span>
+                              <span>Block</span>
                             </div>
                             <div className="check_wrap check_wrapper">
                               <Checkbox
@@ -1136,7 +1120,7 @@ export default function Invoicingandpayments() {
                                   });
                                 }}
                               />
-                              <span>Removed</span>
+                              <span>Remove</span>
                             </div>
                           </Td>
 
@@ -1189,6 +1173,12 @@ export default function Invoicingandpayments() {
                             >
                               Save
                             </Button>
+                            <Button
+                              className="theme_btn tbl_btn del-btn"
+                              colorScheme="red"
+                            >
+                              Refund
+                            </Button>
                           </Td>
                         </Tr>
                       );
@@ -1206,7 +1196,7 @@ export default function Invoicingandpayments() {
             pageCount={totalPages}
             previousLabel="<"
             renderOnZeroPageCount={null}
-            forcePage={currentPage-1}
+            forcePage={currentPage - 1}
           />
         </Card>
 
@@ -1237,13 +1227,13 @@ export default function Invoicingandpayments() {
                   className="txt_danger_mdm"
                 >
                   <Tooltip label={"Share"}>
-                  <img src={share} className="opt_icons" />
+                    <img src={share} className="opt_icons" />
                   </Tooltip>
                 </a>
                 <span onClick={() => downloadPaymentCsv(currentPage1)}>
-                <Tooltip label={"Print"}>
-                  <img src={print} className="opt_icons" />
-                </Tooltip>
+                  <Tooltip label={"Print"}>
+                    <img src={print} className="opt_icons" />
+                  </Tooltip>
                 </span>
                 <div className="fltr_btn">
                   <Text fontSize={"15px"}>
@@ -1276,16 +1266,21 @@ export default function Invoicingandpayments() {
               <Table mx="20px" variant="simple" className="common_table">
                 <Thead>
                   <Tr>
+                    <Th>Content</Th>
                     <Th>Hopper</Th>
-                    <Th>Type</Th>
+                    <Th>Kind</Th>
                     <Th>Payment date</Th>
                     <Th>Amount received</Th>
                     <Th>Presshop commission</Th>
-                    <Th>Payment made</Th>
+                    <Th>Processsing charges</Th>
+                    <Th>Amount paid</Th>
                     <Th>Transaction ID</Th>
-                    <Th>Publication</Th>
-                    <Th>Content</Th>
                     <Th>Paid to</Th>
+                    <Th>Amount payable</Th>
+                    <Th>Payment due date</Th>
+                    {/* <Th>Payment made</Th>
+                    <Th>Publication</Th>
+                    <Th>Content</Th> */}
                     {/* <Th>Payment pending</Th>
                     <Th>Payment due date</Th> */}
                     <Th>Mode</Th>
@@ -1301,22 +1296,35 @@ export default function Invoicingandpayments() {
                       return (
                         <Tr>
                           <Td className="">
+                            {
+                              curr?.type == "content"
+                                ? <a onClick={() => history.push(`/admin/live-published-content/${curr?.content_id?._id}/Manage content`)}>
+                                  <img
+                                    src={curr?.content_id?.content[0]?.watermark}
+                                    alt="Content thumbnail"
+                                  />
+                                </a>
+                                : null
+                            }
+                          </Td>
+                          <Td className="">
                             <a>
                               <img
                                 src={
-                                  process.env.REACT_APP_HOPPER_AVATAR +
-                                  curr?.content_id?.hopper_id?.avatar_id?.avatar
+                                  curr?.type === "content" ? process.env.REACT_APP_HOPPER_AVATAR +
+                                    curr?.content_id?.hopper_id?.avatar_id?.avatar : process.env.REACT_APP_HOPPER_AVATAR +
+                                  curr?.hopper_id?.avatar_id?.avatar
                                 }
                                 alt="Content thumbnail"
                               />
                             </a>
                             <Text className="nameimg naming_comn">
                               {" "}
-                              <span className="txt_mdm">{`${curr?.content_id?.hopper_id?.first_name} ${curr?.content_id?.hopper_id?.last_name}`}</span>
+                              <span className="txt_mdm">{`${curr?.type === "content" ? curr?.content_id?.hopper_id?.first_name : curr?.hopper_id?.first_name} ${curr?.type === "content" ? curr?.content_id?.hopper_id?.last_name : curr?.hopper_id?.last_name}`}</span>
                               <br />
-                              <span>({curr?.content_id?.hopper_id?.user_name})</span>
+                              <span>({curr?.type === "content" ? curr?.content_id?.hopper_id?.user_name : curr?.hopper_id?.user_name})</span>
                             </Text>
-                            
+
                           </Td>
 
                           <Td className="kind_of text_center">
@@ -1325,14 +1333,14 @@ export default function Invoicingandpayments() {
                                 <img src={content} className="icn" />
                               </Tooltip>
                             ) : (
-                              <Tooltip label={"Content"}>
+                              <Tooltip label={"Task"}>
                                 <img src={conImg} className="icn" />
                               </Tooltip>
                             )}
 
 
 
-                              {/* {audio && audio?.length > 0 && (
+                            {/* {audio && audio?.length > 0 && (
                                 <Tooltip label={"Interview"}>
                                   <img
                                     src={interview}
@@ -1364,13 +1372,8 @@ export default function Invoicingandpayments() {
                             <span>&pound; {curr?.presshop_commission?.toFixed(2)}</span>
                           </Td>
 
-                          <Td>
-                            <span>
-                              {curr && curr?.paid_status_for_hopper === true
-                                ? `£${curr?.payable_to_hopper?.toFixed(2)}`
-                                : 0}
-                            </span>
-                          </Td>
+                          <Td></Td>
+                          <Td></Td>
 
                           <Td className="Invoice">
                             <p className="Invoice_Nbr">{curr?._id}</p>
@@ -1387,6 +1390,35 @@ export default function Invoicingandpayments() {
                               </a>
                               <span className="viewNow rd p-cursor">view</span>
                             </div>
+                          </Td>
+
+                          <Td className="contact_details">
+                            {" "}
+                            {
+                              curr?.media_house_id?.company_bank_details
+                                ?.bank_name
+                            }
+                            <br /> Sort Code -
+                            {
+                              curr?.media_house_id?.company_bank_details
+                                ?.sort_code
+                            }
+                            <br /> Account -{" "}
+                            {
+                              curr?.media_house_id?.company_bank_details
+                                ?.account_number
+                            }
+                          </Td>
+
+                          <Td></Td>
+                          <Td></Td>
+
+                          {/* <Td>
+                            <span>
+                              {curr && curr?.paid_status_for_hopper === true
+                                ? `£${curr?.payable_to_hopper?.toFixed(2)}`
+                                : 0}
+                            </span>
                           </Td>
 
                           <Td className="">
@@ -1415,42 +1447,12 @@ export default function Invoicingandpayments() {
                                 );
                               }}
                             >
-                              {curr?.content_id?.content?.length === 1 ? (
-                                curr?.content_id?.content[0].media_type === "image" ? (
-                                  <img
-                                    // src={process.env.REACT_APP_CONTENT + curr?.content_id?.content[0]?.media}
-                                    src={curr?.content_id?.content[0]?.watermark}
-                                    className="content_img"
-                                    alt="Content thumbnail"
-                                  />
-                                ) : curr?.content_id?.content[0].media_type === "audio" ? (
-                                  <img
-                                    src={interview}
-                                    alt="Content thumbnail"
-                                    className="icn m_auto"
-                                  />
-                                ) : curr?.content_id?.content[0].media_type === "video" ? (
-                                  <img
-                                    // src={process.env.REACT_APP_CONTENT + curr?.content_id?.content[0]?.thumbnail}
-                                    src={curr?.content_id?.content[0]?.watermark}
-                                    className="content_img"
-                                    alt="Content thumbnail"
-                                  />
-                                ) : curr?.content_id?.content[0].media_type === "doc" ? (
-                                  <img
-                                    // src={process.env.REACT_APP_CONTENT + curr?.content_id?.content[0]?.thumbnail}
-                                    src={docic}
-                                    className="icn m_auto"
-                                    alt="Content thumbnail"
-                                  />
-                                ) : curr?.content_id?.content[0].media_type === "pdf" ? (
-                                  <img
-                                    // src={process.env.REACT_APP_CONTENT + curr?.content_id?.content[0]?.thumbnail}
-                                    src={pdfic}
-                                    className="icn m_auto"
-                                    alt="Content thumbnail"
-                                  />
-                                ) : null
+                              {curr?.type == "task_content" ? (
+                                <img
+                                  src={process.env.REACT_APP_UPLOADED_CONTENT + curr?.task_content_id?.imageAndVideo}
+                                  className="content_img"
+                                  alt="Content thumbnail"
+                                />
                               ) : curr?.content_id?.content?.length === 0 ? null : (
                                 curr?.content_id?.content?.length > 1 && (
                                   <div className="content_imgs_wrap contnt_lngth_wrp">
@@ -1478,8 +1480,8 @@ export default function Invoicingandpayments() {
                                                 src={value?.watermark}
                                                 className="content_img"
                                                 alt="Content thumbnail"
-                
-                
+
+
                                               />
                                             ) : curr?.content_id?.content[0].media_type ===
                                               "doc" ? (
@@ -1508,25 +1510,7 @@ export default function Invoicingandpayments() {
                                 )
                               )}
                             </a>
-                          </Td>
-
-                          <Td className="contact_details">
-                            {" "}
-                            {
-                              curr?.media_house_id?.company_bank_details
-                                ?.bank_name
-                            }
-                            <br /> Sort Code -
-                            {
-                              curr?.media_house_id?.company_bank_details
-                                ?.sort_code
-                            }
-                            <br /> Account -{" "}
-                            {
-                              curr?.media_house_id?.company_bank_details
-                                ?.account_number
-                            }
-                          </Td>
+                          </Td> */}
 
                           {/* <Td><span>&pound; 0</span></Td> */}
                           {/* <Td className="">
@@ -1671,7 +1655,7 @@ export default function Invoicingandpayments() {
             pageCount={totalPages1}
             previousLabel="<"
             renderOnZeroPageCount={null}
-            forcePage={currentPage1-1}
+            forcePage={currentPage1 - 1}
           />
         </Card>
       </Box>
