@@ -101,6 +101,8 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^3.2.3"
+    "gh-pages": "^3.2.3",
+    "jest-sonar-reporter": "^2.0.0",
+    "sonarqube-scanner": "^4.2.6"
   }
 }
